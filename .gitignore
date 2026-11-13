@@ -1,0 +1,26 @@
+# Course materials (kept local, not tracked)
+course-materials/
+
+# macOS
+.DS_Store
+._*
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*~
+
+# LaTeX build artifacts
+*.aux
+*.log
+*.out
+*.toc
+*.synctex.gz
+*.fdb_latexmk
+*.fls
+
+# Python / Jupyter
+__pycache__/
+.ipynb_checkpoints/
+.venv/
