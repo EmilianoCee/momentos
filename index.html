@@ -1317,17 +1317,17 @@
   }
 
   // bring a topic into the part of the window that is not covered
-  function reveal(leaf, always) {
+  function reveal(leaf, always, instant) {
     const f = free();
     const sx = view.x + leaf.x * view.k, sy = view.y + leaf.y * view.k;
     const mx = 30 + (leaf.w * view.k) / 2;
     const seen = sx > f.x + mx && sx < f.x + f.w - mx && sy > f.y + 24 && sy < f.y + f.h - 24;
     if (seen && !always) return;
     const k = always ? Math.max(view.k, 1.15) : view.k;
-    go({ k: k, x: f.x + f.w / 2 - leaf.x * k, y: f.y + f.h / 2 - leaf.y * k });
+    go({ k: k, x: f.x + f.w / 2 - leaf.x * k, y: f.y + f.h / 2 - leaf.y * k }, instant);
   }
 
-  function select(leaf, centre) {
+  function select(leaf, centre, instant) {
     const wasOpen = !panel.hidden;
     selected = leaf || null;
     hovered = null;
@@ -1338,8 +1338,8 @@
     setHash(selected ? selected.id : "");
     // If the reader has not moved the view, the whole map makes room for the panel (or takes
     // the room back). Otherwise leave their view alone and only bring the topic out from under it.
-    if (!touched) { if (wasOpen !== !panel.hidden) fitAll(); }
-    else if (selected) reveal(selected, !!centre);
+    if (!touched) { if (wasOpen !== !panel.hidden) fitAll(instant); }
+    else if (selected) reveal(selected, !!centre, instant);
   }
 
   // ---------------------------------------------------------------- pointer, wheel, keys
@@ -1522,10 +1522,11 @@
     counts.parentNode.appendChild(w);
   }
 
-  function fromHash() {
+  // index.html#topic-id opens the map on that topic (the tools link back this way)
+  function fromHash(instant) {
     let id = "";
     try { id = decodeURIComponent(location.hash.slice(1)); } catch (_) { /* odd hash: ignore */ }
-    if (id && byId.has(id) && selected !== byId.get(id)) select(byId.get(id), true);
+    if (id && byId.has(id) && selected !== byId.get(id)) select(byId.get(id), true, instant === true);
   }
   window.addEventListener("hashchange", fromHash);
   let resizing = 0;
@@ -1537,7 +1538,7 @@
       else if (!touched) fitAll(true);
     }, 120);
   });
-  fromHash();
+  fromHash(true);     // arriving on a topic: no need to animate from a view nobody saw
 
   // handy when poking at the layout from the console
   window.MOMENTOS = { topics: topics, links: links, groups: groups, root: root, view: view, problems: problems, quality: quality, layoutChosen: () => chosen, drawn: () => ({ bent: bent, overruns: overruns }) };
