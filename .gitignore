@@ -20,6 +20,15 @@ course-materials/
 *.fdb_latexmk
 *.fls
 
+# MATLAB
+*.asv
+*.m~
+slprj/
+*.slxc
+
+# LTspice simulation output (schematics .asc are kept)
+*.raw
+
 # Python / Jupyter
 __pycache__/
 .ipynb_checkpoints/
