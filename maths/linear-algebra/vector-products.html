@@ -1,0 +1,685 @@
+<!doctype html>
+<!--
+  Concept:      The dot product measures how much of b lies along a. The cross product measures how much lies across it.
+  Course:       EECS 16A (inner products, projection); Math 53 and Physics 7B (cross product)
+  Play with:    Drag the tips of a and b, or scrub the angle plot, and watch the shadow and the parallelogram trade places
+  Should click: Both products come out of one right triangle: b split into a part along a and a part across a
+  Checked:      By hand for a = (4, 1), b = (2, 3): a·b = 11, a×b = 10, θ = 42.27°, shadow 2.668, height 2.425.
+                Also a = (3, 0), b = (0, 2) gives 0 and 6; swapping a and b flips the sign of a×b only;
+                (a·b)² + (a×b)² = |a|²|b|² holds for every position tried.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>vector products · momentos</title>
+<script>
+  try {
+    var saved = localStorage.getItem("momentos-theme");
+    if (saved === "light" || saved === "dark") document.documentElement.dataset.theme = saved;
+  } catch (e) { /* no storage in this preview: follow the system setting */ }
+</script>
+<style>
+  /* ---- momentos house style (same block in every tool; see templates/tool-template.html) ---- */
+  :root {
+    color-scheme: light dark;
+    --bg: light-dark(#f6f4ee, #131312);
+    --surface: light-dark(#fbfaf6, #1b1b19);
+    --ink: light-dark(#1d1c1a, #ebe8e1);
+    --ink-2: light-dark(#5f5c55, #b1ada3);
+    --ink-3: light-dark(#77736b, #8a867d);
+    --line: light-dark(rgba(29, 28, 26, 0.16), rgba(235, 232, 225, 0.18));
+    --grid: light-dark(rgba(29, 28, 26, 0.07), rgba(235, 232, 225, 0.08));
+    --accent: light-dark(#c2410c, #ff8f5a);
+    --c1: light-dark(#2458c4, #7aa7ff);
+    --c2: light-dark(#c2410c, #ff9a62);
+    --c3: light-dark(#0f7f6b, #4fd3b4);
+    --c4: light-dark(#9d3fb0, #d78be6);
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+    --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  }
+  :root[data-theme="light"] { color-scheme: light; }
+  :root[data-theme="dark"] { color-scheme: dark; }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 17px/1.55 var(--serif);
+    -webkit-font-smoothing: antialiased;
+  }
+  .bar {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 22px;
+    font: 12px/1 var(--mono);
+    letter-spacing: 0.06em;
+    color: var(--ink-3);
+  }
+  .bar a { color: var(--ink-2); text-decoration: none; border-bottom: 1px solid var(--line); padding-bottom: 2px; }
+  .bar a:hover { color: var(--accent); border-color: var(--accent); }
+  .bar .grow { flex: 1; }
+  button {
+    font: 12px/1 var(--mono);
+    color: var(--ink-2);
+    background: transparent;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 7px 10px;
+    cursor: pointer;
+  }
+  button:hover { color: var(--ink); border-color: var(--ink-2); }
+  button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  :focus-visible { outline: 1px dashed var(--ink); outline-offset: 2px; }
+
+  main { max-width: 1120px; margin: 0 auto; padding: 4px 22px 72px; }
+  h1 { font: 400 clamp(30px, 4.6vw, 44px)/1.08 var(--serif); letter-spacing: -0.015em; margin: 14px 0 10px; }
+  .lede { max-width: 62ch; margin: 0 0 26px; color: var(--ink-2); font-size: 18px; }
+  h2 {
+    font: 500 10.5px/1.4 var(--mono);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin: 0 0 10px;
+  }
+  .bench { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(280px, 1fr); gap: 28px; align-items: start; }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-top: 28px; }
+  figure { margin: 0; }
+  .stage { border: 1px solid var(--line); border-radius: 4px; background: var(--surface); overflow: hidden; }
+  .stage svg { display: block; width: 100%; height: auto; touch-action: none; user-select: none; -webkit-user-select: none; }
+  figcaption { padding: 9px 12px; border-top: 1px solid var(--line); font: 11.5px/1.5 var(--mono); color: var(--ink-3); }
+  .controls { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 12px; }
+  .controls label { font: 12px/1 var(--mono); color: var(--ink-2); display: inline-flex; align-items: center; gap: 6px; margin-left: 6px; }
+  input[type="range"] { accent-color: var(--ink); }
+  input[type="checkbox"] { accent-color: var(--ink); }
+
+  .notes { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 44px; margin-top: 46px; padding-top: 28px; border-top: 1px solid var(--line); }
+  .notes p { margin: 0 0 14px; max-width: 62ch; }
+  .notes p b { font-weight: 600; }
+  .notes ul { margin: 0 0 26px; padding: 0; list-style: none; }
+  .notes li { margin: 0 0 10px; padding-left: 14px; border-left: 1px solid var(--line); font-size: 16px; line-height: 1.45; }
+  .notes li a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--line); }
+  .notes li a:hover { color: var(--accent); border-color: var(--accent); }
+  details { margin-top: 4px; }
+  summary { font: 11.5px/1.4 var(--mono); color: var(--ink-3); cursor: pointer; }
+  details p, details span { color: var(--ink-2); font-size: 15px; }
+
+  @media (max-width: 860px) {
+    .bench, .pair, .notes { grid-template-columns: 1fr; }
+    .notes { gap: 28px; }
+  }
+
+  /* ---- this tool ---- */
+  .ca { color: var(--c1); } .cb { color: var(--c2); } .cd { color: var(--c3); } .cx { color: var(--c4); }
+  var { font-style: italic; font-family: var(--serif); }
+
+  .grid line { stroke: var(--grid); stroke-width: 1; }
+  .grid .axis { stroke: var(--line); }
+  .tick { font: 9.5px var(--mono); fill: var(--ink-3); }
+  .lbl { font: italic 600 17px var(--serif); paint-order: stroke; stroke: var(--surface); stroke-width: 4px; stroke-linejoin: round; }
+  .tag { font: 10.5px var(--mono); letter-spacing: 0.04em; paint-order: stroke; stroke: var(--surface); stroke-width: 4px; stroke-linejoin: round; }
+  .vec { stroke-width: 2.4; stroke-linecap: round; fill: none; }
+  .head { stroke: none; }
+  .a { stroke: var(--c1); } .a.head, .a.lbl { fill: var(--c1); stroke: none; } .a.lbl { stroke: var(--surface); }
+  .b { stroke: var(--c2); } .b.head, .b.lbl { fill: var(--c2); stroke: none; } .b.lbl { stroke: var(--surface); }
+  .along { stroke: var(--c3); stroke-width: 4; stroke-linecap: round; }
+  .across { stroke: var(--c4); stroke-width: 2.4; stroke-linecap: round; }
+  .guide { stroke: var(--ink-3); stroke-width: 1; stroke-dasharray: 2 5; fill: none; }
+  .para { fill: var(--c4); fill-opacity: 0.13; stroke: var(--c4); stroke-opacity: 0.45; stroke-width: 1; stroke-dasharray: 3 4; }
+  .corner, .arc { fill: none; stroke: var(--ink-2); stroke-width: 1; }
+  .sense { stroke: var(--c4); stroke-width: 1.4; fill: none; }
+  .sense-dot { fill: var(--c4); }
+  .handle { fill: transparent; stroke: transparent; stroke-width: 1.5; cursor: grab; outline: none; }
+  .handle:hover, .handle:focus-visible { stroke: var(--ink-2); stroke-dasharray: 3 3; }
+  .handle.grab { cursor: grabbing; }
+
+  .read { font: 13px/1.5 var(--mono); }
+  .read .vecs { display: grid; grid-template-columns: auto 1fr auto; gap: 2px 14px; margin-bottom: 20px; font-variant-numeric: tabular-nums; }
+  .read .vecs b { font: italic 600 17px/1.2 var(--serif); }
+  .read .vecs .dim { color: var(--ink-3); }
+  .card { border-top: 1px solid var(--line); padding: 14px 0 16px; }
+  .card .head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+  .card .name { font: 500 10.5px/1.4 var(--mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3); }
+  .card .big { font: 400 34px/1 var(--serif); font-variant-numeric: tabular-nums; }
+  .card table { border-collapse: collapse; width: 100%; margin-top: 8px; font-variant-numeric: tabular-nums; }
+  .card td { padding: 2px 0; vertical-align: baseline; }
+  .card td:first-child { color: var(--ink-2); padding-right: 14px; white-space: nowrap; width: 1%; }
+  .card sub { font-size: 0.74em; line-height: 0; }
+  .card td:last-child { text-align: right; white-space: nowrap; padding-left: 8px; }
+  .card .say { margin: 8px 0 0; color: var(--ink-2); font: 15px/1.4 var(--serif); }
+  .ident { margin: 0; padding: 12px 0 0; border-top: 1px solid var(--line); color: var(--ink-2); font-variant-numeric: tabular-nums; }
+
+  .curve { fill: none; stroke-width: 2; }
+  .curve.d { stroke: var(--c3); } .curve.x { stroke: var(--c4); }
+  .dot-d { fill: var(--c3); } .dot-x { fill: var(--c4); }
+  .now { stroke: var(--ink); stroke-width: 1; }
+  .frame { stroke: var(--line); stroke-width: 1; fill: none; }
+  #sweep { cursor: ew-resize; }
+  #solid { cursor: grab; }
+  .plane3 { fill: var(--ink); fill-opacity: 0.035; stroke: var(--line); stroke-width: 1; }
+  .normal { stroke: var(--c4); stroke-width: 2.6; stroke-linecap: round; }
+  .normal.head { fill: var(--c4); stroke: none; }
+  .zaxis { stroke: var(--ink-3); stroke-width: 1; stroke-dasharray: 2 4; }
+  .slider { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-top: 1px solid var(--line); font: 11.5px/1 var(--mono); color: var(--ink-3); }
+  .slider input { flex: 1; min-width: 0; }
+</style>
+</head>
+<body>
+
+<header class="bar">
+  <a href="../../index.html#dot-product">← map</a>
+  <span>maths / linear-algebra</span>
+  <span class="grow"></span>
+  <button type="button" id="theme" aria-label="Switch between light and dark">◐</button>
+</header>
+
+<main>
+  <h1>Vector products</h1>
+  <p class="lede">There are two ways to multiply two arrows, and both come from one picture. Split <b class="cb"><var>b</var></b> into the part that lies <span class="cd">along</span> <b class="ca"><var>a</var></b> and the part that lies <span class="cx">across</span> it. The dot product measures the first part. The cross product measures the second.</p>
+
+  <div class="bench">
+    <div>
+      <figure class="stage">
+        <svg id="plane" viewBox="0 0 640 480" role="group" aria-label="Two vectors a and b drawn from the origin, with b split into a part along a and a part across a"></svg>
+        <figcaption>Drag the tips of <b class="ca">a</b> and <b class="cb">b</b>. With a tip focused, the arrow keys nudge it (hold Shift for a fine nudge).</figcaption>
+      </figure>
+      <div class="controls">
+        <button type="button" data-preset="perp">make them perpendicular</button>
+        <button type="button" data-preset="par">parallel</button>
+        <button type="button" data-preset="anti">opposite</button>
+        <button type="button" data-preset="swap">swap a and b</button>
+        <button type="button" data-preset="reset">reset</button>
+        <label><input type="checkbox" id="snap" checked> snap to the grid</label>
+      </div>
+    </div>
+
+    <aside class="read" aria-live="off">
+      <div class="vecs">
+        <b class="ca">a</b><span id="r-a"></span><span class="dim" id="r-la"></span>
+        <b class="cb">b</b><span id="r-b"></span><span class="dim" id="r-lb"></span>
+        <b>θ</b><span id="r-th"></span><span class="dim">from a round to b</span>
+      </div>
+
+      <div class="card">
+        <div class="head"><span class="name">dot product&nbsp; a · b</span><span class="big cd" id="r-dot"></span></div>
+        <table>
+          <tr><td>a<sub>x</sub>b<sub>x</sub> + a<sub>y</sub>b<sub>y</sub></td><td id="r-dot-c"></td><td id="r-dot-c2"></td></tr>
+          <tr><td>|a||b| cos θ</td><td id="r-dot-g"></td><td id="r-dot-g2"></td></tr>
+          <tr><td>|a| × <span class="cd">along</span></td><td id="r-dot-p"></td><td id="r-dot-p2"></td></tr>
+        </table>
+        <p class="say" id="r-dot-say"></p>
+      </div>
+
+      <div class="card">
+        <div class="head"><span class="name">cross product&nbsp; a × b</span><span class="big cx" id="r-cross"></span></div>
+        <table>
+          <tr><td>a<sub>x</sub>b<sub>y</sub> − a<sub>y</sub>b<sub>x</sub></td><td id="r-cross-c"></td><td id="r-cross-c2"></td></tr>
+          <tr><td>|a||b| sin θ</td><td id="r-cross-g"></td><td id="r-cross-g2"></td></tr>
+          <tr><td>|a| × <span class="cx">across</span></td><td id="r-cross-p"></td><td id="r-cross-p2"></td></tr>
+        </table>
+        <p class="say" id="r-cross-say"></p>
+      </div>
+
+      <p class="ident" id="r-ident"></p>
+    </aside>
+  </div>
+
+  <div class="pair">
+    <figure class="stage">
+      <svg id="sweep" viewBox="0 0 520 230" role="img" aria-label="Dot and cross product plotted against the angle between the vectors"></svg>
+      <div class="slider">
+        <span>θ</span>
+        <input type="range" id="theta" min="-180" max="180" step="1" aria-label="Angle from a to b, in degrees">
+        <span id="theta-out"></span>
+      </div>
+      <figcaption>Turn <b class="cb">b</b> around without changing its length. The <span class="cd">dot product</span> follows the cosine of the angle, the <span class="cx">cross product</span> the sine.</figcaption>
+    </figure>
+    <figure class="stage">
+      <svg id="solid" viewBox="0 0 520 268" role="img" aria-label="The same two vectors seen from the side, with the cross product standing at right angles to their plane"></svg>
+      <figcaption>The same plane seen from the side. In three dimensions <span class="cx">a × b</span> is itself an arrow, at right angles to both. Drag to look around.</figcaption>
+    </figure>
+  </div>
+
+  <section class="notes">
+    <div>
+      <h2>What should click</h2>
+      <p><b>One triangle, two products.</b> Drop a perpendicular from the tip of <var>b</var> onto the line through <var>a</var>. One leg of the triangle runs <span class="cd">along</span> <var>a</var>: it is the shadow <var>b</var> casts on <var>a</var>. The other leg runs <span class="cx">across</span> <var>a</var>: it is how far the tip of <var>b</var> stands off from that line. Multiply the along leg by |<var>a</var>| and you have <var>a</var>·<var>b</var>. Multiply the across leg by |<var>a</var>| and you have <var>a</var>×<var>b</var>, which is also the area of the parallelogram: base times height.</p>
+      <p><b>Cosine and sine.</b> Turn <var>b</var> through a full circle. The along leg follows cos θ and the across leg follows sin θ, so each product is at its largest exactly when the other is zero. Between them they always account for everything: (<var>a</var>·<var>b</var>)² + (<var>a</var>×<var>b</var>)² = |<var>a</var>|²|<var>b</var>|².</p>
+      <p><b>What the signs mean.</b> <var>a</var>·<var>b</var> turns negative when <var>b</var> leans against <var>a</var>, so that its shadow falls behind the origin. <var>a</var>×<var>b</var> turns negative when <var>b</var> is clockwise from <var>a</var>: the parallelogram has flipped over.</p>
+      <p><b>In three dimensions</b> the cross product is an arrow. It stands at right angles to the plane of <var>a</var> and <var>b</var>, its length is the area of the parallelogram, and the right-hand rule gives its direction: curl your fingers from <var>a</var> round to <var>b</var> and your thumb points along <var>a</var>×<var>b</var>. The flip of the parallelogram is that arrow going from out of the page (⊙) to into it (⊗).</p>
+    </div>
+    <div>
+      <h2>Predict, then try</h2>
+      <ul>
+        <li>Slide the tip of <var>b</var> parallel to <var>a</var>. Which product should not change?
+          <details><summary>why</summary><span>The cross product. The across leg stays the same length, so the parallelogram keeps its height.</span></details></li>
+        <li>Now slide it straight toward the line of <var>a</var>. Which one holds still this time?
+          <details><summary>why</summary><span>The dot product. The along leg does not change.</span></details></li>
+        <li>Make <var>a</var> twice as long. What happens to the shadow, and to <var>a</var>·<var>b</var>?
+          <details><summary>why</summary><span>The shadow of <var>b</var> on <var>a</var> depends only on the direction of <var>a</var>, so it stays put. The product doubles.</span></details></li>
+        <li>At what angle are the two products equal?
+          <details><summary>why</summary><span>Where cos θ = sin θ: at 45°, and again at −135° where both are negative.</span></details></li>
+      </ul>
+      <h2>Where this shows up</h2>
+      <ul>
+        <li><a href="../../index.html#fourier-series">Fourier series</a>: each coefficient is this shadow, with the signal as <var>b</var> and one harmonic as <var>a</var>.</li>
+        <li><a href="../../index.html#ac-power">AC power</a>: with the voltage and current phasors as the two arrows, half of <var>a</var>·<var>b</var> is the average power and half of <var>a</var>×<var>b</var> is the reactive power.</li>
+        <li><a href="../../index.html#complex-plane">Complex numbers</a>: multiply the conjugate of <var>a</var> by <var>b</var> and you get (<var>a</var>·<var>b</var>) + j(<var>a</var>×<var>b</var>), both products in one number.</li>
+        <li><a href="../../index.html#determinant">Determinant</a>: in the plane, <var>a</var>×<var>b</var> is det[<var>a</var> <var>b</var>].</li>
+        <li><a href="../../index.html#work">Work</a> is <var>F</var>·<var>d</var>, and the <a href="../../index.html#magnetic-force">magnetic force</a> is q<var>v</var>×<var>B</var>.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+
+  const NS = "http://www.w3.org/2000/svg";
+  function S(name, attrs, parent) {
+    const el = document.createElementNS(NS, name);
+    for (const k in attrs) el.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(el);
+    return el;
+  }
+  const $ = (id) => document.getElementById(id);
+  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+  const DEG = 180 / Math.PI;
+
+  // numbers the way a person would write them: no trailing zeros, a real minus sign
+  function fmt(v, d) {
+    if (d === undefined) d = 2;
+    let s = (Math.round(v * Math.pow(10, d)) / Math.pow(10, d)).toFixed(d);
+    if (s.indexOf(".") >= 0) s = s.replace(/0+$/, "").replace(/\.$/, "");
+    if (s === "-0") s = "0";
+    return s.replace("-", "−");
+  }
+  const par = (v) => (v < 0 ? "(" + fmt(v) + ")" : fmt(v));
+
+  // ------------------------------------------------------------ state
+
+  const U = 40, OX = 320, OY = 240;            // pixels per unit and where the origin sits
+  const XMAX = 7.5, YMAX = 5.5;
+  const X = (x) => OX + x * U, Y = (y) => OY - y * U;
+  const START = { a: { x: 4, y: 1 }, b: { x: 2, y: 3 } };
+  let a = { x: START.a.x, y: START.a.y }, b = { x: START.b.x, y: START.b.y };
+
+  // Everything the page shows is derived here, once, from a and b.
+  function measure() {
+    const la = Math.hypot(a.x, a.y), lb = Math.hypot(b.x, b.y);
+    const dot = a.x * b.x + a.y * b.y;
+    const cross = a.x * b.y - a.y * b.x;
+    const ok = la > 1e-9 && lb > 1e-9;
+    const ux = la > 1e-9 ? a.x / la : 1, uy = la > 1e-9 ? a.y / la : 0;   // unit vector along a
+    const along = la > 1e-9 ? dot / la : 0;      // signed length of the shadow of b on a
+    const across = la > 1e-9 ? cross / la : 0;   // signed stand-off of b from the line of a
+    return {
+      la: la, lb: lb, dot: dot, cross: cross, ok: ok, ux: ux, uy: uy, along: along, across: across,
+      theta: ok ? Math.atan2(cross, dot) : 0,     // signed angle from a round to b
+      foot: { x: ux * along, y: uy * along }
+    };
+  }
+
+  // ------------------------------------------------------------ the plane
+
+  const plane = $("plane");
+  const grid = S("g", { class: "grid" }, plane);
+  for (let i = -8; i <= 8; i++) S("line", { x1: X(i), y1: 0, x2: X(i), y2: 480, class: i === 0 ? "axis" : "" }, grid);
+  for (let j = -6; j <= 6; j++) S("line", { x1: 0, y1: Y(j), x2: 640, y2: Y(j), class: j === 0 ? "axis" : "" }, grid);
+  for (let i = -6; i <= 6; i += 2) if (i) S("text", { x: X(i), y: Y(0) + 13, "text-anchor": "middle", class: "tick" }, plane).textContent = fmt(i);
+  for (let j = -4; j <= 4; j += 2) if (j) S("text", { x: X(0) - 6, y: Y(j) + 3, "text-anchor": "end", class: "tick" }, plane).textContent = fmt(j);
+
+  const el = {
+    para: S("polygon", { class: "para" }, plane),
+    aline: S("line", { class: "guide" }, plane),
+    across: S("line", { class: "across" }, plane),
+    along: S("line", { class: "along" }, plane),
+    corner: S("path", { class: "corner" }, plane),
+    arc: S("path", { class: "arc" }, plane),
+    va: S("line", { class: "vec a" }, plane),
+    ha: S("polygon", { class: "head a" }, plane),
+    vb: S("line", { class: "vec b" }, plane),
+    hb: S("polygon", { class: "head b" }, plane),
+    sense: S("g", {}, plane),
+    tAlong: S("text", { class: "tag", "text-anchor": "middle", fill: "var(--c3)" }, plane),
+    tAcross: S("text", { class: "tag", "text-anchor": "middle", fill: "var(--c4)" }, plane),
+    tTheta: S("text", { class: "tag", "text-anchor": "middle", fill: "var(--ink-2)" }, plane),
+    la: S("text", { class: "lbl a", "text-anchor": "middle" }, plane),
+    lb: S("text", { class: "lbl b", "text-anchor": "middle" }, plane),
+    ga: S("circle", { class: "handle", r: 17, tabindex: 0, role: "slider", "aria-label": "Tip of vector a" }, plane),
+    gb: S("circle", { class: "handle", r: 17, tabindex: 0, role: "slider", "aria-label": "Tip of vector b" }, plane)
+  };
+  el.tAlong.textContent = "along";
+  el.tAcross.textContent = "across";
+  el.tTheta.textContent = "θ";
+  el.la.textContent = "a";
+  el.lb.textContent = "b";
+  S("circle", { r: 8, class: "sense" }, el.sense);
+  const senseDot = S("circle", { r: 2.2, class: "sense-dot" }, el.sense);
+  const senseX = S("path", { d: "M-5.2 -5.2 L5.2 5.2 M-5.2 5.2 L5.2 -5.2", class: "sense" }, el.sense);
+
+  function setLine(line, x1, y1, x2, y2) {
+    line.setAttribute("x1", x1.toFixed(2)); line.setAttribute("y1", y1.toFixed(2));
+    line.setAttribute("x2", x2.toFixed(2)); line.setAttribute("y2", y2.toFixed(2));
+  }
+  // an arrow in screen coordinates: the shaft stops short so the head's point is the true tip
+  function arrow(line, head, x1, y1, x2, y2, size) {
+    const dx = x2 - x1, dy = y2 - y1, len = Math.hypot(dx, dy);
+    if (len < 1e-6) { setLine(line, x1, y1, x1, y1); head.setAttribute("points", ""); return; }
+    const ux = dx / len, uy = dy / len, h = Math.min(size, len);
+    const bx = x2 - ux * h, by = y2 - uy * h;
+    setLine(line, x1, y1, bx, by);
+    head.setAttribute("points", [x2, y2, bx - uy * h * 0.42, by + ux * h * 0.42, bx + uy * h * 0.42, by - ux * h * 0.42].map((v) => v.toFixed(2)).join(" "));
+  }
+  function place(text, x, y) { text.setAttribute("x", x.toFixed(2)); text.setAttribute("y", (y + 4).toFixed(2)); }
+  // text centred on (x, y) and turned to run along a direction, never upside down
+  function placeAlong(text, x, y, dx, dy) {
+    let deg = Math.atan2(dy, dx) * DEG;
+    if (deg > 90) deg -= 180;
+    if (deg < -90) deg += 180;
+    text.setAttribute("x", 0);
+    text.setAttribute("y", 4);
+    text.setAttribute("transform", "translate(" + x.toFixed(2) + " " + y.toFixed(2) + ") rotate(" + deg.toFixed(2) + ")");
+  }
+
+  function drawPlane(m) {
+    const ax = X(a.x), ay = Y(a.y), bx = X(b.x), by = Y(b.y), fx = X(m.foot.x), fy = Y(m.foot.y);
+    // screen-space unit vectors: u along a, n from the foot of the perpendicular toward b
+    const su = { x: m.ux, y: -m.uy };
+    const sgn = m.across >= 0 ? 1 : -1;
+    const sn = { x: -m.uy * sgn, y: -m.ux * sgn };
+
+    el.para.setAttribute("points", [OX, OY, ax, ay, X(a.x + b.x), Y(a.y + b.y), bx, by].map((v) => v.toFixed(2)).join(" "));
+    setLine(el.aline, OX - su.x * 900, OY - su.y * 900, OX + su.x * 900, OY + su.y * 900);
+    el.aline.style.display = m.la > 1e-9 ? "" : "none";
+    setLine(el.along, OX, OY, fx, fy);
+    setLine(el.across, fx, fy, bx, by);
+    arrow(el.va, el.ha, OX, OY, ax, ay, 13);
+    arrow(el.vb, el.hb, OX, OY, bx, by, 13);
+
+    // little square where the perpendicular meets the line of a
+    const big = Math.abs(m.across) * U > 16 && Math.abs(m.along) * U > 16;
+    const back = m.along >= 0 ? -1 : 1, q = 9;
+    el.corner.setAttribute("d", big
+      ? "M" + (fx + su.x * q * back).toFixed(2) + " " + (fy + su.y * q * back).toFixed(2) +
+        " l" + (sn.x * q).toFixed(2) + " " + (sn.y * q).toFixed(2) +
+        " l" + (-su.x * q * back).toFixed(2) + " " + (-su.y * q * back).toFixed(2)
+      : "");
+
+    // the angle, drawn the short way round from a to b
+    const pa = Math.atan2(a.y, a.x), r = 26;
+    if (m.ok && Math.abs(m.theta) > 0.03) {
+      const x1 = OX + r * Math.cos(pa), y1 = OY - r * Math.sin(pa);
+      const x2 = OX + r * Math.cos(pa + m.theta), y2 = OY - r * Math.sin(pa + m.theta);
+      el.arc.setAttribute("d", "M" + x1.toFixed(2) + " " + y1.toFixed(2) + " A" + r + " " + r + " 0 0 " + (m.theta > 0 ? 0 : 1) + " " + x2.toFixed(2) + " " + y2.toFixed(2));
+      const mid = pa + m.theta / 2;
+      place(el.tTheta, OX + 41 * Math.cos(mid), OY - 41 * Math.sin(mid));
+      el.tTheta.style.display = Math.min(m.la, m.lb) * U > 60 ? "" : "none";
+    } else {
+      el.arc.setAttribute("d", "");
+      el.tTheta.style.display = "none";
+    }
+
+    // each leg of the triangle carries its name, written along it on the outside
+    placeAlong(el.tAlong, (OX + fx) / 2 - sn.x * 13, (OY + fy) / 2 - sn.y * 13, su.x, su.y);
+    el.tAlong.style.display = Math.abs(m.along) * U > 58 ? "" : "none";
+    placeAlong(el.tAcross, (fx + bx) / 2 - su.x * 12 * back, (fy + by) / 2 - su.y * 12 * back, sn.x, sn.y);
+    el.tAcross.style.display = Math.abs(m.across) * U > 62 ? "" : "none";
+    const outA = m.la > 1e-9 ? { x: a.x / m.la, y: a.y / m.la } : { x: 1, y: 0 };
+    const outB = m.lb > 1e-9 ? { x: b.x / m.lb, y: b.y / m.lb } : { x: 0, y: 1 };
+    place(el.la, ax + outA.x * 18, ay - outA.y * 18);
+    place(el.lb, bx + outB.x * 18, by - outB.y * 18);
+
+    // which way the cross product points: out of the page or into it
+    const show = Math.abs(m.cross) > 1e-9;
+    el.sense.style.display = show ? "" : "none";
+    el.sense.setAttribute("transform", "translate(" + X((a.x + b.x) / 2).toFixed(2) + " " + Y((a.y + b.y) / 2).toFixed(2) + ")");
+    senseDot.style.display = m.cross > 0 ? "" : "none";
+    senseX.style.display = m.cross < 0 ? "" : "none";
+
+    el.ga.setAttribute("cx", ax.toFixed(2)); el.ga.setAttribute("cy", ay.toFixed(2));
+    el.gb.setAttribute("cx", bx.toFixed(2)); el.gb.setAttribute("cy", by.toFixed(2));
+    el.ga.setAttribute("aria-valuetext", "a = (" + fmt(a.x) + ", " + fmt(a.y) + ")");
+    el.gb.setAttribute("aria-valuetext", "b = (" + fmt(b.x) + ", " + fmt(b.y) + ")");
+  }
+
+  // ------------------------------------------------------------ the numbers
+
+  function drawNumbers(m) {
+    $("r-a").textContent = "(" + fmt(a.x) + ", " + fmt(a.y) + ")";
+    $("r-b").textContent = "(" + fmt(b.x) + ", " + fmt(b.y) + ")";
+    $("r-la").textContent = "|a| = " + fmt(m.la);
+    $("r-lb").textContent = "|b| = " + fmt(m.lb);
+    $("r-th").textContent = m.ok ? fmt(m.theta * DEG, 1) + "°" : "—";
+
+    const cos = m.ok ? m.dot / (m.la * m.lb) : 0, sin = m.ok ? m.cross / (m.la * m.lb) : 0;
+    $("r-dot").textContent = fmt(m.dot);
+    $("r-dot-c").textContent = par(a.x) + "·" + par(b.x) + " + " + par(a.y) + "·" + par(b.y);
+    $("r-dot-c2").textContent = "= " + fmt(m.dot);
+    $("r-dot-g").textContent = fmt(m.la) + " · " + fmt(m.lb) + " · " + par(cos);
+    $("r-dot-g2").textContent = "= " + fmt(m.la * m.lb * cos);
+    $("r-dot-p").textContent = fmt(m.la) + " × " + par(m.along);
+    $("r-dot-p2").textContent = "= " + fmt(m.la * m.along);
+    $("r-dot-say").textContent = !m.ok ? "One of the arrows has no length, so there is nothing to compare."
+      : Math.abs(cos) < 0.02 ? "Perpendicular: b has no part along a."
+      : m.dot > 0 ? "Positive: b leans the same way as a."
+      : "Negative: b leans against a, so the part along a points backwards.";
+
+    $("r-cross").textContent = fmt(m.cross);
+    $("r-cross-c").textContent = par(a.x) + "·" + par(b.y) + " − " + par(a.y) + "·" + par(b.x);
+    $("r-cross-c2").textContent = "= " + fmt(m.cross);
+    $("r-cross-g").textContent = fmt(m.la) + " · " + fmt(m.lb) + " · " + par(sin);
+    $("r-cross-g2").textContent = "= " + fmt(m.la * m.lb * sin);
+    $("r-cross-p").textContent = fmt(m.la) + " × " + par(m.across);
+    $("r-cross-p2").textContent = "= " + fmt(m.la * m.across);
+    $("r-cross-say").textContent = !m.ok ? "No length, no area."
+      : Math.abs(sin) < 0.02 ? "Parallel: the parallelogram has collapsed, so its area is zero."
+      : m.cross > 0 ? "Positive: b is counter-clockwise from a, and a × b points out of the page ⊙."
+      : "Negative: b is clockwise from a, and a × b points into the page ⊗.";
+
+    $("r-ident").textContent = "(a·b)² + (a×b)² = " + fmt(m.dot * m.dot) + " + " + fmt(m.cross * m.cross) + " = " + fmt(m.dot * m.dot + m.cross * m.cross) + " = |a|²|b|²";
+  }
+
+  // ------------------------------------------------------------ products against the angle
+
+  const sweep = $("sweep");
+  const SW = { x0: 46, x1: 500, yc: 112, amp: 78 };
+  const sx = (deg) => SW.x0 + ((deg + 180) / 360) * (SW.x1 - SW.x0);
+  S("rect", { x: SW.x0, y: SW.yc - SW.amp - 12, width: SW.x1 - SW.x0, height: 2 * SW.amp + 24, class: "frame" }, sweep);
+  S("line", { x1: SW.x0, y1: SW.yc, x2: SW.x1, y2: SW.yc, stroke: "var(--line)" }, sweep);
+  [-180, -90, 0, 90, 180].forEach((d) => {
+    S("line", { x1: sx(d), y1: SW.yc - SW.amp - 12, x2: sx(d), y2: SW.yc + SW.amp + 12, stroke: "var(--grid)" }, sweep);
+    S("text", { x: sx(d), y: SW.yc + SW.amp + 27, "text-anchor": "middle", class: "tick" }, sweep).textContent = fmt(d) + "°";
+  });
+  const sweepMax = S("text", { x: SW.x0 - 6, y: SW.yc - SW.amp + 3, "text-anchor": "end", class: "tick" }, sweep);
+  const sweepMin = S("text", { x: SW.x0 - 6, y: SW.yc + SW.amp + 3, "text-anchor": "end", class: "tick" }, sweep);
+  S("text", { x: SW.x0 - 6, y: SW.yc + 3, "text-anchor": "end", class: "tick" }, sweep).textContent = "0";
+  function wave(fn) {
+    let d = "";
+    for (let deg = -180; deg <= 180; deg += 3) d += (deg === -180 ? "M" : "L") + sx(deg).toFixed(1) + " " + (SW.yc - SW.amp * fn(deg / DEG)).toFixed(1);
+    return d;
+  }
+  S("path", { d: wave(Math.cos), class: "curve d" }, sweep);
+  S("path", { d: wave(Math.sin), class: "curve x" }, sweep);
+  S("text", { x: sx(0), y: SW.yc - SW.amp - 18, class: "tag", fill: "var(--c3)", "text-anchor": "middle" }, sweep).textContent = "a · b";
+  S("text", { x: sx(90), y: SW.yc - SW.amp - 18, class: "tag", fill: "var(--c4)", "text-anchor": "middle" }, sweep).textContent = "a × b";
+  const now = S("line", { class: "now", y1: SW.yc - SW.amp - 12, y2: SW.yc + SW.amp + 12 }, sweep);
+  const nowD = S("circle", { r: 4.5, class: "dot-d" }, sweep);
+  const nowX = S("circle", { r: 4.5, class: "dot-x" }, sweep);
+  const thetaIn = $("theta"), thetaOut = $("theta-out");
+
+  function drawSweep(m) {
+    const deg = m.theta * DEG, x = sx(deg), big = m.la * m.lb;
+    now.setAttribute("x1", x.toFixed(2)); now.setAttribute("x2", x.toFixed(2));
+    nowD.setAttribute("cx", x.toFixed(2)); nowD.setAttribute("cy", (SW.yc - SW.amp * Math.cos(m.theta)).toFixed(2));
+    nowX.setAttribute("cx", x.toFixed(2)); nowX.setAttribute("cy", (SW.yc - SW.amp * Math.sin(m.theta)).toFixed(2));
+    sweepMax.textContent = fmt(big, 1);
+    sweepMin.textContent = fmt(-big, 1);
+    if (document.activeElement !== thetaIn) thetaIn.value = Math.round(deg);
+    thetaOut.textContent = m.ok ? fmt(deg, 0) + "°" : "—";
+  }
+
+  // ------------------------------------------------------------ the same thing in three dimensions
+
+  const solid = $("solid");
+  const cam = { az: -0.5, el: 0.44 };
+  const C3 = { x: 260, y: 172, s: 15, k: 1, z: 0.3 };   // z: drawn height per unit of a × b; k: zoom of the whole scene
+  const g3 = S("g", {}, solid);
+  function P(x, y, z) {
+    const ca = Math.cos(cam.az), sa = Math.sin(cam.az);
+    const xr = x * ca - y * sa, yr = x * sa + y * ca;
+    return [C3.x + xr * C3.s * C3.k, C3.y - (yr * Math.sin(cam.el) + z * Math.cos(cam.el)) * C3.s * C3.k];
+  }
+  const pts = (list) => list.map((p) => p[0].toFixed(1) + "," + p[1].toFixed(1)).join(" ");
+
+  function drawSolid(m) {
+    while (g3.firstChild) g3.removeChild(g3.firstChild);
+    const o = P(0, 0, 0);
+    function line(p, q, cls) { return S("line", { x1: p[0].toFixed(1), y1: p[1].toFixed(1), x2: q[0].toFixed(1), y2: q[1].toFixed(1), class: cls }, g3); }
+    function arrow3(q, cls, size) {
+      const l = S("line", { class: cls }, g3), h = S("polygon", { class: cls + " head" }, g3);
+      arrow(l, h, o[0], o[1], q[0], q[1], size);
+    }
+    function label(q, text, fill, dx, dy) {
+      const t = S("text", { x: (q[0] + dx).toFixed(1), y: (q[1] + dy).toFixed(1), class: "tag", fill: fill, "text-anchor": "middle" }, g3);
+      t.textContent = text;
+    }
+    // If the arrow would run off the figure, zoom the whole scene out rather than draw it shorter than it is.
+    const h = m.cross * C3.z;
+    const room = (h >= 0 ? C3.y - 22 : 268 - C3.y - 24) / (C3.s * Math.cos(cam.el));
+    C3.k = Math.min(1, room / Math.max(Math.abs(h), 1e-9));
+    const tip = P(0, 0, h);
+    function normal() {
+      if (Math.abs(m.cross) < 1e-9) return;
+      arrow3(tip, "normal", 12);
+      label(tip, "a × b", "var(--c4)", 0, h > 0 ? -9 : 17);
+    }
+    function sheet() {
+      S("polygon", { points: pts([P(-8, -6, 0), P(8, -6, 0), P(8, 6, 0), P(-8, 6, 0)]), class: "plane3" }, g3);
+      line(P(-8, 0, 0), P(8, 0, 0), "zaxis");
+      line(P(0, -6, 0), P(0, 6, 0), "zaxis");
+      S("polygon", { points: pts([o, P(a.x, a.y, 0), P(a.x + b.x, a.y + b.y, 0), P(b.x, b.y, 0)]), class: "para" }, g3);
+      arrow3(P(a.x, a.y, 0), "vec a", 10);
+      arrow3(P(b.x, b.y, 0), "vec b", 10);
+      const pa = P(a.x * 1.13, a.y * 1.13, 0), pb = P(b.x * 1.13, b.y * 1.13, 0);
+      const ta = S("text", { x: pa[0].toFixed(1), y: (pa[1] + 5).toFixed(1), class: "lbl a", "text-anchor": "middle" }, g3); ta.textContent = "a";
+      const tb = S("text", { x: pb[0].toFixed(1), y: (pb[1] + 5).toFixed(1), class: "lbl b", "text-anchor": "middle" }, g3); tb.textContent = "b";
+    }
+    // the eye is always above the sheet, so anything pointing down is drawn first and shows through it
+    line(P(0, 0, -6 / C3.k), P(0, 0, 9.5 / C3.k), "zaxis");
+    if (m.cross < 0) { normal(); sheet(); } else { sheet(); normal(); }
+  }
+
+  // ------------------------------------------------------------ interaction
+
+  function render() {
+    const m = measure();
+    drawPlane(m);
+    drawNumbers(m);
+    drawSweep(m);
+    drawSolid(m);
+  }
+
+  function svgPoint(svg, e) {
+    const ctm = svg.getScreenCTM();
+    if (!ctm) return { x: 0, y: 0 };
+    const p = new DOMPoint(e.clientX, e.clientY).matrixTransform(ctm.inverse());
+    return { x: p.x, y: p.y };
+  }
+  const snapBox = $("snap");
+  function setTip(v, x, y, fine) {
+    if (snapBox.checked && !fine) { x = Math.round(x * 2) / 2; y = Math.round(y * 2) / 2; }
+    v.x = clamp(x, -XMAX, XMAX);
+    v.y = clamp(y, -YMAX, YMAX);
+    render();
+  }
+  function draggable(handle, v) {
+    let dragging = false;
+    handle.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      dragging = true;
+      handle.classList.add("grab");
+      try { handle.setPointerCapture(e.pointerId); } catch (_) { /* fine without capture */ }
+      handle.focus({ preventScroll: true });
+    });
+    handle.addEventListener("pointermove", (e) => {
+      if (!dragging) return;
+      const p = svgPoint(plane, e);
+      setTip(v, (p.x - OX) / U, (OY - p.y) / U, false);
+    });
+    const end = () => { dragging = false; handle.classList.remove("grab"); };
+    handle.addEventListener("pointerup", end);
+    handle.addEventListener("pointercancel", end);
+    handle.addEventListener("keydown", (e) => {
+      const step = e.shiftKey ? 0.1 : 0.5;
+      const move = { ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, step], ArrowDown: [0, -step] }[e.key];
+      if (!move) return;
+      e.preventDefault();
+      setTip(v, Math.round((v.x + move[0]) * 10) / 10, Math.round((v.y + move[1]) * 10) / 10, true);
+    });
+  }
+  draggable(el.ga, a);
+  draggable(el.gb, b);
+
+  // turn b to a given angle from a, keeping its length (shrunk only if it would leave the picture)
+  function turnTo(theta) {
+    const m = measure();
+    const la = m.la > 1e-9 ? m.la : 1, len = m.lb > 1e-9 ? m.lb : 3;
+    if (m.la <= 1e-9) { a.x = START.a.x; a.y = START.a.y; }
+    const ang = Math.atan2(a.y, a.x) + theta;
+    let x = len * Math.cos(ang), y = len * Math.sin(ang);
+    const k = Math.min(1, XMAX / Math.max(Math.abs(x), 1e-9), YMAX / Math.max(Math.abs(y), 1e-9));
+    b.x = x * k; b.y = y * k;
+    render();
+    return la;
+  }
+  thetaIn.addEventListener("input", () => turnTo(Number(thetaIn.value) / DEG));
+
+  let scrubbing = false;
+  function scrub(e) {
+    const p = svgPoint(sweep, e);
+    turnTo((clamp(((p.x - SW.x0) / (SW.x1 - SW.x0)) * 360 - 180, -180, 180)) / DEG);
+  }
+  sweep.addEventListener("pointerdown", (e) => { scrubbing = true; try { sweep.setPointerCapture(e.pointerId); } catch (_) { /* fine */ } scrub(e); });
+  sweep.addEventListener("pointermove", (e) => { if (scrubbing) scrub(e); });
+  sweep.addEventListener("pointerup", () => { scrubbing = false; });
+  sweep.addEventListener("pointercancel", () => { scrubbing = false; });
+
+  let orbit = null;
+  solid.addEventListener("pointerdown", (e) => { orbit = { x: e.clientX, y: e.clientY, az: cam.az, el: cam.el }; try { solid.setPointerCapture(e.pointerId); } catch (_) { /* fine */ } });
+  solid.addEventListener("pointermove", (e) => {
+    if (!orbit) return;
+    cam.az = orbit.az + (e.clientX - orbit.x) * 0.01;
+    cam.el = clamp(orbit.el + (e.clientY - orbit.y) * 0.008, 0.14, 1.4);
+    drawSolid(measure());
+  });
+  solid.addEventListener("pointerup", () => { orbit = null; });
+  solid.addEventListener("pointercancel", () => { orbit = null; });
+
+  document.querySelectorAll("[data-preset]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const kind = btn.dataset.preset;
+      if (kind === "reset") { a.x = START.a.x; a.y = START.a.y; b.x = START.b.x; b.y = START.b.y; render(); }
+      else if (kind === "swap") { const t = { x: a.x, y: a.y }; a.x = b.x; a.y = b.y; b.x = t.x; b.y = t.y; render(); }
+      else turnTo(kind === "perp" ? Math.PI / 2 : kind === "par" ? 0 : Math.PI);
+    });
+  });
+
+  $("theme").addEventListener("click", () => {
+    const root = document.documentElement;
+    const dark = root.dataset.theme ? root.dataset.theme === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+    root.dataset.theme = dark ? "light" : "dark";
+    try { localStorage.setItem("momentos-theme", root.dataset.theme); } catch (_) { /* switched, just not remembered */ }
+  });
+
+  render();
+
+  // for checking the numbers from the console
+  window.TOOL = { get: () => ({ a: { x: a.x, y: a.y }, b: { x: b.x, y: b.y }, m: measure() }), set: (ax, ay, bx, by) => { a.x = ax; a.y = ay; b.x = bx; b.y = by; render(); } };
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1415 @@
+<!doctype html>
+<!--
+  momentos knowledge map: the front door of the repo.
+
+  Every folder is a circle, every topic is a piece of text inside its folder's circle,
+  and every hairline is a connection between two topics.
+
+  THE ONLY PART YOU EDIT is the data block just below (the script tagged id="map-data").
+  Add to it every time a topic enters the repo. Then run:  python3 scripts/check-map.py
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>momentos · knowledge map</title>
+
+<!-- =====================================================================================
+  THE MAP DATA
+
+  topics   One entry per concept.
+             id       unique, kebab-case
+             title    the words drawn on the map (keep it short)
+             folder   where the topic lives in the repo. Every folder is drawn as a circle,
+                      and a subfolder as a circle inside its parent, so these paths ARE the tree.
+             essence  one or two sentences: the picture that should stay in your head
+             check    (optional) one question that tests whether you can picture it
+             tools    (optional) repo paths of the tools or notes that teach it.
+                      A topic with no tools is drawn in italics, as "planned".
+             courses  (optional) where it shows up
+
+  links    One entry per connection, pointing from the foundation to what it makes possible.
+             from, to  topic ids
+             why       one sentence saying what exactly carries over
+
+  This block is strict JSON: double quotes, no trailing commas, no comments inside.
+  Write e^(jθ) to get a superscript.
+====================================================================================== -->
+<script type="application/json" id="map-data">
+{
+  "topics": [
+    {
+      "id": "dot-product",
+      "title": "dot product",
+      "folder": "maths/linear-algebra",
+      "essence": "How much of one vector lies along another: |a||b|cos θ. Zero when they are perpendicular.",
+      "check": "a·b is negative. Without computing anything, what does the picture look like?",
+      "tools": ["maths/linear-algebra/vector-products.html"],
+      "courses": ["EECS 16A"]
+    },
+    {
+      "id": "projection",
+      "title": "projection",
+      "folder": "maths/linear-algebra",
+      "essence": "The shadow one vector casts on another. Any b splits into a part along a and a part across it.",
+      "check": "You double the length of a. What happens to the shadow of b on a, and what happens to a·b?",
+      "tools": ["maths/linear-algebra/vector-products.html"],
+      "courses": ["EECS 16A"]
+    },
+    {
+      "id": "cross-product",
+      "title": "cross product",
+      "folder": "maths/linear-algebra",
+      "essence": "How much of one vector lies across another: |a||b|sin θ, the signed area the two span. Zero when they are parallel.",
+      "check": "Swap a and b. What changes in the picture, and why does the sign flip?",
+      "tools": ["maths/linear-algebra/vector-products.html"],
+      "courses": ["Math 53", "Physics 7B"]
+    },
+    {
+      "id": "determinant",
+      "title": "determinant",
+      "folder": "maths/linear-algebra",
+      "essence": "The factor by which a matrix scales area. Zero means it flattens the plane onto a line."
+    },
+    {
+      "id": "linear-systems",
+      "title": "linear systems",
+      "folder": "maths/linear-algebra",
+      "essence": "Ax = b asks which mix of the columns of A lands on b.",
+      "courses": ["EECS 16A"]
+    },
+    {
+      "id": "eigenvectors",
+      "title": "eigenvectors",
+      "folder": "maths/linear-algebra",
+      "essence": "The directions a matrix only stretches and never turns.",
+      "courses": ["EECS 16A", "EECS 16B"]
+    },
+    {
+      "id": "complex-plane",
+      "title": "complex plane",
+      "folder": "maths/complex-numbers",
+      "essence": "A complex number is a point in a plane. Multiplying by j turns it a quarter turn; multiplying by any number on the unit circle turns it without stretching it.",
+      "check": "Where does a point end up after you multiply it by j twice? Why is that the same as multiplying by −1?",
+      "tools": ["signals/complex-periodicity.html"],
+      "courses": ["EECS 16B"]
+    },
+    {
+      "id": "eulers-formula",
+      "title": "Euler's formula",
+      "folder": "maths/complex-numbers",
+      "essence": "e^(jθ) = cos θ + j sin θ: the point at angle θ on the unit circle. Multiplying two of them adds their angles.",
+      "check": "What is e^(jπ/2) times e^(jπ/2), and where is it on the circle?",
+      "tools": ["signals/complex-periodicity.html"],
+      "courses": ["EECS 16B"]
+    },
+    {
+      "id": "complex-exponential",
+      "title": "complex exponential",
+      "folder": "signals",
+      "essence": "e^(jωt) is a point going round the unit circle, ω radians every second. Cosine and sine are its two shadows.",
+      "check": "The phasor turns clockwise instead. Which of its two shadows can tell the difference?",
+      "tools": ["signals/complex-periodicity.html"],
+      "courses": ["EE 120"]
+    },
+    {
+      "id": "periodicity",
+      "title": "periodicity",
+      "folder": "signals",
+      "essence": "A signal repeats when its phasor comes back to where it started. In continuous time it always does. In discrete time it does only if a whole number of steps makes a whole number of turns.",
+      "check": "Is e^(jn), one radian per step, periodic? What about e^(j2πn·3/8)?",
+      "tools": ["signals/complex-periodicity.html"],
+      "courses": ["EE 120"]
+    },
+    {
+      "id": "fourier-series",
+      "title": "Fourier series",
+      "folder": "signals",
+      "essence": "Any periodic signal is a sum of phasors spinning at whole multiples of one fundamental frequency.",
+      "courses": ["EE 120"]
+    },
+    {
+      "id": "frequency-response",
+      "title": "frequency response",
+      "folder": "systems",
+      "essence": "An LTI system can only scale a sinusoid and shift it in time. H(jω) says by how much at each frequency.",
+      "courses": ["EECS 16B", "EE 120"]
+    },
+    {
+      "id": "ohms-law",
+      "title": "Ohm's law",
+      "folder": "circuits",
+      "essence": "The current through a resistor is proportional to the voltage across it: v = iR. It flows from the higher voltage to the lower.",
+      "check": "The current through a resistor is zero. What can you say about the voltages at its two ends?",
+      "tools": ["circuits/kcl-kvl-resistors.html"],
+      "courses": ["EECS 16A"]
+    },
+    {
+      "id": "kcl",
+      "title": "KCL",
+      "folder": "circuits",
+      "essence": "Charge does not pile up at a node. Whatever current flows in must flow out.",
+      "check": "Three wires meet at a node. Two of them carry 2 mA and 5 mA in. What does the third carry, and which way?",
+      "tools": ["circuits/kcl-kvl-resistors.html"],
+      "courses": ["EECS 16A"]
+    },
+    {
+      "id": "kvl",
+      "title": "KVL",
+      "folder": "circuits",
+      "essence": "Voltage is a height. Walk around any closed loop and you come back to the height you started at, so the rises equal the drops.",
+      "check": "A 12 V source drives two resistors in series and one of them drops 9 V. What does the other drop, whatever its resistance?",
+      "tools": ["circuits/kcl-kvl-resistors.html"],
+      "courses": ["EECS 16A"]
+    },
+    {
+      "id": "dividers",
+      "title": "dividers",
+      "folder": "circuits",
+      "essence": "Series resistors share one current and split the voltage in proportion to R. Parallel resistors share one voltage and split the current in proportion to 1/R.",
+      "check": "In a two-resistor voltage divider you make the bottom resistor much larger than the top one. Where does the output voltage go?",
+      "tools": ["circuits/kcl-kvl-resistors.html"],
+      "courses": ["EECS 16A"]
+    },
+    {
+      "id": "nodal-analysis",
+      "title": "nodal analysis",
+      "folder": "circuits",
+      "essence": "Name every node voltage, write KCL at each unknown node using Ohm's law, and solve. KVL comes for free.",
+      "check": "A circuit has four nodes. One is ground and one is pinned by a voltage source. How many equations do you need?",
+      "tools": ["circuits/kcl-kvl-resistors.html"],
+      "courses": ["EECS 16A"]
+    },
+    {
+      "id": "phasors-impedance",
+      "title": "phasors & impedance",
+      "folder": "circuits",
+      "essence": "At one frequency a sinusoid is just an amplitude and a phase, and R, L and C all obey V = ZI.",
+      "courses": ["EECS 16B"]
+    },
+    {
+      "id": "ac-power",
+      "title": "AC power",
+      "folder": "circuits",
+      "essence": "Only the part of the current that is in phase with the voltage delivers power on average."
+    },
+    {
+      "id": "work",
+      "title": "work",
+      "folder": "physics",
+      "essence": "Force times the distance moved along it: W = F·d.",
+      "courses": ["Physics 7A"]
+    },
+    {
+      "id": "magnetic-force",
+      "title": "magnetic force",
+      "folder": "physics",
+      "essence": "A moving charge in a magnetic field is pushed sideways: F = qv × B.",
+      "courses": ["Physics 7B"]
+    }
+  ],
+
+  "links": [
+    { "from": "dot-product", "to": "projection", "why": "Divide a·b by |a| and what is left is the length of the shadow of b on a." },
+    { "from": "projection", "to": "cross-product", "why": "The part of b that projection leaves behind, the part across a, is exactly what the cross product measures." },
+    { "from": "cross-product", "to": "determinant", "why": "In two dimensions a × b is det[a b]: the signed area of the parallelogram on a and b." },
+    { "from": "determinant", "to": "linear-systems", "why": "A non-zero determinant means the columns still span the space, so Ax = b has exactly one answer." },
+    { "from": "determinant", "to": "eigenvectors", "why": "Eigenvalues are the λ that make det(A − λI) vanish." },
+    { "from": "dot-product", "to": "complex-plane", "why": "Multiply the conjugate of a by b as complex numbers: the real part is a·b and the imaginary part is a × b." },
+    { "from": "complex-plane", "to": "eulers-formula", "why": "Once numbers are points in a plane, e^(jθ) is simply the point at angle θ on the unit circle." },
+    { "from": "eulers-formula", "to": "complex-exponential", "why": "Let the angle grow with time, θ = ωt, and the point on the circle starts to turn." },
+    { "from": "complex-exponential", "to": "periodicity", "why": "The signal repeats each time the phasor completes a whole number of turns: ωT = 2π." },
+    { "from": "projection", "to": "fourier-series", "why": "A Fourier coefficient is a projection: how much of the signal lies along one harmonic." },
+    { "from": "complex-exponential", "to": "fourier-series", "why": "The harmonics are phasors e^(jkω₀t) that make k turns per period." },
+    { "from": "periodicity", "to": "fourier-series", "why": "Only a signal that repeats can be built from whole-number multiples of one frequency." },
+    { "from": "complex-exponential", "to": "frequency-response", "why": "Put e^(jωt) into an LTI system and the same phasor comes out, scaled and turned by H(jω)." },
+    { "from": "eigenvectors", "to": "frequency-response", "why": "e^(jωt) is to an LTI system what an eigenvector is to a matrix, and H(jω) is its eigenvalue." },
+    { "from": "linear-systems", "to": "nodal-analysis", "why": "KCL at every unknown node gives Gv = i. Solving the circuit is solving a linear system." },
+    { "from": "complex-exponential", "to": "phasors-impedance", "why": "Every voltage in the circuit turns at the same ω, so drop the e^(jωt) and keep the complex number in front." },
+    { "from": "dot-product", "to": "ac-power", "why": "Average power is ½|V||I|cos φ: half the dot product of the voltage and current phasors." },
+    { "from": "cross-product", "to": "ac-power", "why": "Reactive power is ½|V||I|sin φ: half their cross product, the part of the current that lies across the voltage." },
+    { "from": "kvl", "to": "dividers", "why": "One loop: the source voltage is shared out across series resistors in proportion to R." },
+    { "from": "kcl", "to": "dividers", "why": "One pair of nodes: the source current is shared out across parallel resistors in proportion to 1/R." },
+    { "from": "ohms-law", "to": "nodal-analysis", "why": "Ohm's law turns each branch current into a difference of node voltages over R." },
+    { "from": "kcl", "to": "nodal-analysis", "why": "One KCL equation for each unknown node voltage." },
+    { "from": "kvl", "to": "nodal-analysis", "why": "Describing the circuit by node voltages satisfies KVL automatically: every loop already closes." },
+    { "from": "ohms-law", "to": "phasors-impedance", "why": "Impedance is Ohm's law with complex numbers: V = ZI." },
+    { "from": "nodal-analysis", "to": "phasors-impedance", "why": "Swap each R for a Z and every resistor-circuit method works for R, L and C at one frequency." },
+    { "from": "phasors-impedance", "to": "frequency-response", "why": "Solve the circuit with impedances, sweep ω, and V_out/V_in traces out H(jω)." },
+    { "from": "phasors-impedance", "to": "ac-power", "why": "Power depends on the angle between the voltage phasor and the current phasor." },
+    { "from": "dot-product", "to": "work", "why": "W = F·d: only the part of the force along the motion does work." },
+    { "from": "cross-product", "to": "magnetic-force", "why": "F = qv × B: the push is at right angles to both the velocity and the field." },
+    { "from": "work", "to": "kvl", "why": "Voltage is work per unit charge. Around a closed loop the total work is zero." }
+  ]
+}
+</script>
+<!-- ============================== end of the map data ============================== -->
+
+<script>
+  // apply a saved light/dark choice before anything is painted
+  try {
+    var saved = localStorage.getItem("momentos-theme");
+    if (saved === "light" || saved === "dark") document.documentElement.dataset.theme = saved;
+  } catch (e) { /* storage is unavailable in some previews; the system setting is used instead */ }
+</script>
+
+<style>
+  /* Folders are hairline circles, topics are text, links are hairlines.
+     Colour is reserved for the one topic you are looking at. */
+
+  :root {
+    color-scheme: light dark;
+    --bg: light-dark(#f6f4ee, #131312);
+    --surface: light-dark(#fbfaf6, #1b1b19);
+    --ink: light-dark(#1d1c1a, #ebe8e1);
+    --ink-2: light-dark(#5f5c55, #b1ada3);
+    --ink-3: light-dark(#77736b, #8a867d);
+    --line: light-dark(rgba(29, 28, 26, 0.16), rgba(235, 232, 225, 0.18));
+    --accent: light-dark(#c2410c, #ff8f5a);
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+    --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  }
+  :root[data-theme="light"] { color-scheme: light; }
+  :root[data-theme="dark"] { color-scheme: dark; }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font: 15px/1.5 var(--serif);
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ---------- the map ---------- */
+
+  #map {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    touch-action: none;
+    cursor: grab;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  #map.dragging { cursor: grabbing; }
+
+  .folder {
+    fill: none;
+    stroke: var(--ink);
+    stroke-opacity: 0.3;
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
+  }
+  .folder.deep { stroke-opacity: 0.19; }
+
+  /* Folder names sit on the circle's line. Their size is set from the zoom level in applyView(),
+     so they stay readable when zoomed out. The halo that interrupts the line is a second copy
+     of the name drawn underneath: on a curved path a per-letter halo would eat the letter before it. */
+  .folder-label, .folder-halo {
+    font-family: var(--mono);
+    font-weight: 500;
+    letter-spacing: 0.14em;
+  }
+  .folder-halo {
+    fill: var(--bg);
+    stroke: var(--bg);
+    stroke-width: 0.9em;
+    stroke-linejoin: round;
+    pointer-events: none;
+  }
+  .folder-label {
+    fill: var(--ink-2);
+    cursor: pointer;
+    outline: none;
+  }
+  .folder-label:hover, .folder-label:focus-visible { fill: var(--accent); }
+
+  .link {
+    fill: none;
+    stroke: var(--ink);
+    stroke-opacity: 0.24;
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
+    transition: stroke-opacity 0.18s;
+  }
+  .link.on {
+    stroke: var(--accent);
+    stroke-opacity: 0.95;
+    marker-end: url(#arrow);
+  }
+  .arrowhead { fill: var(--accent); }
+
+  .topic { cursor: pointer; outline: none; }
+  .topic text {
+    font: 15px var(--serif);
+    fill: var(--ink);
+    paint-order: stroke;
+    stroke: var(--bg);
+    stroke-width: 5px;
+    stroke-linejoin: round;
+    transition: fill 0.15s, opacity 0.18s;
+  }
+  .topic.planned text { fill: var(--ink-3); font-style: italic; }
+  .topic .hit {
+    fill: transparent;
+    stroke: transparent;
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
+  }
+  .topic.selected .hit { stroke: var(--accent); }
+  .topic:focus-visible .hit { stroke: var(--ink); stroke-dasharray: 3 3; }
+  .topic.self text { fill: var(--accent); }
+
+  /* when one topic has the focus, everything unrelated steps back */
+  .focused .topic:not(.on) text { opacity: 0.3; }
+  .focused .link:not(.on) { stroke-opacity: 0.07; }
+  .searching .topic:not(.match) text { opacity: 0.22; }
+  .searching .link { stroke-opacity: 0.07; }
+
+  /* ---------- chrome ---------- */
+
+  .top, .foot {
+    background: color-mix(in srgb, var(--bg) 86%, transparent);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    border-radius: 4px;
+  }
+  .top {
+    position: fixed;
+    top: 8px;
+    left: 12px;
+    padding: 8px 10px;
+    display: flex;
+    align-items: baseline;
+    gap: 18px;
+    flex-wrap: wrap;
+    max-width: calc(100vw - 24px);
+  }
+  .mark { margin: 0; font: italic 400 24px/1 var(--serif); letter-spacing: -0.01em; }
+  .sub {
+    margin: 0;
+    font: 11px/1 var(--mono);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+
+  .search { position: relative; }
+  .search input {
+    width: 190px;
+    padding: 5px 2px;
+    border: 0;
+    border-bottom: 1px solid var(--line);
+    border-radius: 0;
+    background: transparent;
+    color: var(--ink);
+    font: 12px/1.3 var(--mono);
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  .search input::placeholder { color: var(--ink-3); }
+  .search input:focus { border-bottom-color: var(--ink); }
+  .search input::-webkit-search-cancel-button { -webkit-appearance: none; }
+
+  #results {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    width: 290px;
+    max-height: min(60vh, 420px);
+    overflow: auto;
+    margin: 0;
+    padding: 4px;
+    list-style: none;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    z-index: 5;
+  }
+  #results[hidden] { display: none; }
+  #results li {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    padding: 5px 8px;
+    border-radius: 3px;
+    cursor: pointer;
+  }
+  #results li .t { font: 15px/1.3 var(--serif); }
+  #results li.planned .t { font-style: italic; color: var(--ink-3); }
+  #results li .f { font: 10px/1.3 var(--mono); color: var(--ink-3); white-space: nowrap; }
+  #results li.active, #results li:hover { background: color-mix(in srgb, var(--ink) 8%, transparent); }
+  #results .none { color: var(--ink-3); font: 12px var(--mono); cursor: default; }
+
+  .foot {
+    position: fixed;
+    left: 12px;
+    bottom: 8px;
+    padding: 8px 10px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    max-width: calc(100vw - 24px);
+    font: 11px/1.4 var(--mono);
+    color: var(--ink-3);
+  }
+  .foot .zoom { display: flex; gap: 4px; }
+  .foot button {
+    min-width: 28px;
+    height: 26px;
+    padding: 0 8px;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    background: var(--bg);
+    color: var(--ink-2);
+    font: 12px/1 var(--mono);
+    cursor: pointer;
+  }
+  .foot button:hover { border-color: var(--ink-2); color: var(--ink); }
+  .foot .key i { font: italic 13px var(--serif); color: var(--ink-3); }
+  .foot .key b { font: 400 13px var(--serif); color: var(--ink); }
+  .foot .warn { color: var(--accent); }
+
+  button:focus-visible, a:focus-visible { outline: 1px dashed var(--ink); outline-offset: 2px; }
+
+  /* ---------- the panel for one topic ---------- */
+
+  #panel {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    bottom: 16px;
+    width: min(360px, calc(100vw - 32px));
+    padding: 26px 26px 30px;
+    overflow: auto;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+  }
+  #panel[hidden] { display: none; }
+  #panel .close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 28px;
+    height: 28px;
+    border: 0;
+    background: none;
+    color: var(--ink-3);
+    font: 20px/1 var(--serif);
+    cursor: pointer;
+  }
+  #panel .close:hover { color: var(--ink); }
+
+  .p-path { margin: 0 28px 10px 0; font: 11px/1.4 var(--mono); letter-spacing: 0.1em; color: var(--ink-3); }
+  #panel h2 { margin: 0 0 12px; font: 400 30px/1.12 var(--serif); letter-spacing: -0.01em; color: var(--accent); }
+  .p-essence { margin: 0 0 16px; font-size: 17px; line-height: 1.48; }
+  .p-tools { margin: 0 0 16px; display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
+  .p-tools a, .p-tools code {
+    font: 12px/1.3 var(--mono);
+    color: var(--ink);
+    text-decoration: none;
+    padding: 7px 11px;
+    border: 1px solid var(--ink);
+    border-radius: 3px;
+  }
+  .p-tools code { border-color: var(--line); word-break: break-all; }
+  .p-tools a:hover { background: var(--ink); color: var(--bg); }
+  .p-none { margin: 0 0 16px; font: 12px/1.5 var(--mono); color: var(--ink-3); }
+  .p-check { margin: 0 0 14px; padding-left: 12px; border-left: 1px solid var(--line); color: var(--ink-2); font-style: italic; }
+  .p-check span, #panel h3 {
+    display: block;
+    font: 500 10.5px/1.4 var(--mono);
+    font-style: normal;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  .p-courses { margin: 0 0 6px; font: 11px/1.4 var(--mono); color: var(--ink-3); }
+  #panel h3 { margin: 24px 0 8px; padding-top: 14px; border-top: 1px solid var(--line); }
+  #panel ul { margin: 0; padding: 0; list-style: none; }
+  #panel li { margin: 0 0 12px; }
+  #panel li button {
+    display: inline;
+    padding: 0;
+    border: 0;
+    border-bottom: 1px solid var(--line);
+    background: none;
+    color: var(--ink);
+    font: 16px/1.3 var(--serif);
+    cursor: pointer;
+    text-align: left;
+  }
+  #panel li button.planned { font-style: italic; color: var(--ink-2); }
+  #panel li button:hover { color: var(--accent); border-bottom-color: var(--accent); }
+  #panel li span { display: block; margin-top: 2px; color: var(--ink-2); font-size: 14.5px; line-height: 1.42; }
+  sup { font-size: 0.72em; line-height: 0; }
+
+  .fail {
+    position: fixed;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    margin: 0;
+    padding: 24px;
+    font: 13px/1.6 var(--mono);
+    color: var(--ink-2);
+    text-align: center;
+  }
+
+  @media (max-width: 760px) {
+    .top { top: 4px; left: 6px; gap: 12px; }
+    .mark { font-size: 21px; }
+    .search input { width: 150px; }
+    .foot { left: 6px; bottom: 4px; gap: 10px; }
+    .foot .key { display: none; }
+    #panel {
+      top: auto;
+      left: 8px;
+      right: 8px;
+      bottom: 8px;
+      width: auto;
+      max-height: 54vh;
+      padding: 20px 20px 24px;
+    }
+    body.panel-open .foot { display: none; }
+  }
+
+  @media (pointer: coarse) {
+    .search input { font-size: 16px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .link, .topic text { transition: none; }
+  }
+</style>
+</head>
+<body>
+
+<svg id="map" role="group" aria-label="Knowledge map: topics grouped by folder, with lines between connected topics"></svg>
+
+<header class="top">
+  <h1 class="mark">momentos</h1>
+  <p class="sub">knowledge map</p>
+  <div class="search">
+    <input id="q" type="search" placeholder="find a topic" title="Press / to search" autocomplete="off" spellcheck="false"
+           aria-label="Find a topic" aria-controls="results" aria-expanded="false" role="combobox">
+    <ul id="results" role="listbox" hidden></ul>
+  </div>
+</header>
+
+<aside id="panel" aria-label="Selected topic" hidden>
+  <button class="close" type="button" aria-label="Close">×</button>
+  <div id="panel-body" aria-live="polite"></div>
+</aside>
+
+<footer class="foot">
+  <span class="zoom">
+    <button type="button" id="zoom-out" aria-label="Zoom out">−</button>
+    <button type="button" id="zoom-in" aria-label="Zoom in">+</button>
+    <button type="button" id="zoom-fit" aria-label="Fit the whole map">fit</button>
+    <button type="button" id="theme" aria-label="Switch between light and dark">◐</button>
+  </span>
+  <span id="counts"></span>
+  <span class="key"><b>upright</b> has a tool · <i>italic</i> planned</span>
+</footer>
+
+<noscript><p class="fail">The map is drawn with JavaScript. The same information is in the data block at the top of this file.</p></noscript>
+
+<script>
+/*
+  Reads the data block above and draws it:
+
+    folders -> circles, nested for subfolders. The tree is built from each topic's `folder` path.
+    topics  -> text, placed inside the circle of the folder they live in
+    links   -> hairlines between topics
+
+  The layout is a small physics run with a fixed starting point, so the same data always
+  gives the same picture. Linked topics pull toward each other, folders stay compact, and
+  nothing is allowed to overlap.
+
+  No dependencies, no fetch, no modules: this has to work when the file is opened from disk.
+*/
+(function () {
+  "use strict";
+
+  const NS = "http://www.w3.org/2000/svg";
+  const XLINK = "http://www.w3.org/1999/xlink";
+  const TAU = Math.PI * 2;
+
+  const svg = document.getElementById("map");
+  const panel = document.getElementById("panel");
+  const panelBody = document.getElementById("panel-body");
+  const input = document.getElementById("q");
+  const results = document.getElementById("results");
+
+  function fail(message) {
+    const p = document.createElement("p");
+    p.className = "fail";
+    p.textContent = message;
+    document.body.appendChild(p);
+  }
+
+  let data;
+  try {
+    data = JSON.parse(document.getElementById("map-data").textContent);
+  } catch (err) {
+    fail("The map data at the top of index.html is not valid JSON: " + err.message);
+    return;
+  }
+  if (!data || !Array.isArray(data.topics)) {
+    fail("The map data at the top of index.html has no \"topics\" list.");
+    return;
+  }
+
+  // ---------------------------------------------------------------- helpers
+
+  function S(name, attrs, parent) {
+    const el = document.createElementNS(NS, name);
+    for (const k in attrs) el.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(el);
+    return el;
+  }
+  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  // e^(jθ) in the data becomes a real superscript on screen
+  const rich = (s) => esc(s).replace(/\^\(([^()]+)\)/g, "<sup>$1</sup>");
+  const plain = (s) => String(s).replace(/\^\(([^()]+)\)/g, "^$1");
+  const toolName = (p) => p.split("/").pop().replace(/\.[a-z0-9]+$/i, "").replace(/-/g, " ");
+  // some previews show this file as a snapshot with no address, where relative links cannot be followed
+  const canFollowLinks = /^(file|https?):$/.test(location.protocol);
+
+  // ---------------------------------------------------------------- data -> tree
+
+  const problems = [];
+  const topics = [];
+  const byId = new Map();
+
+  data.topics.forEach((t) => {
+    if (!t || !t.id || !t.title || !t.folder) { problems.push("topic without id, title or folder: " + JSON.stringify(t)); return; }
+    if (byId.has(t.id)) { problems.push("duplicate topic id: " + t.id); return; }
+    const leaf = { kind: "leaf", id: t.id, topic: t, built: Array.isArray(t.tools) && t.tools.length > 0, x: 0, y: 0, mass: 1, out: [], inn: [] };
+    byId.set(t.id, leaf);
+    topics.push(leaf);
+  });
+
+  const links = [];
+  (data.links || []).forEach((l) => {
+    const a = byId.get(l && l.from), b = byId.get(l && l.to);
+    if (!a || !b || a === b) { problems.push("link with an unknown or repeated end: " + (l && l.from) + " -> " + (l && l.to)); return; }
+    const link = { a, b, why: l.why || "" };
+    a.out.push(link);
+    b.inn.push(link);
+    links.push(link);
+  });
+
+  const root = { kind: "group", name: "", path: "", parent: null, depth: 0, children: [], x: 0, y: 0, R: 0 };
+  const groups = new Map([["", root]]);
+  function groupFor(path) {
+    if (groups.has(path)) return groups.get(path);
+    const cut = path.lastIndexOf("/");
+    const parent = groupFor(cut < 0 ? "" : path.slice(0, cut));
+    const g = { kind: "group", name: cut < 0 ? path : path.slice(cut + 1), path, parent, depth: parent.depth + 1, children: [], x: 0, y: 0, R: 0 };
+    parent.children.push(g);
+    groups.set(path, g);
+    return g;
+  }
+  topics.forEach((leaf) => {
+    const g = groupFor(leaf.topic.folder.replace(/^\/+|\/+$/g, ""));
+    leaf.parent = g;
+    g.children.push(leaf);
+  });
+  (function weigh(n) {
+    if (n.kind === "group") n.mass = n.children.reduce((s, c) => s + weigh(c), 0);
+    return n.mass;
+  })(root);
+
+  // For each link, the two branches that hang off the lowest folder both ends share.
+  function lineage(n) { const p = []; for (let k = n; k; k = k.parent) p.unshift(k); return p; }
+  links.forEach((l) => {
+    const pa = lineage(l.a), pb = lineage(l.b);
+    let i = 0;
+    while (pa[i + 1] === pb[i + 1]) i++;
+    l.ga = pa[i + 1];
+    l.gb = pb[i + 1];
+  });
+
+  // ---------------------------------------------------------------- svg scaffolding
+
+  const defs = S("defs", {}, svg);
+  const arrow = S("marker", { id: "arrow", viewBox: "0 0 10 10", refX: 9.5, refY: 5, markerWidth: 7, markerHeight: 7, orient: "auto", markerUnits: "userSpaceOnUse" }, defs);
+  S("path", { d: "M1 1.5 L9.5 5 L1 8.5 z", class: "arrowhead" }, arrow);
+
+  const world = S("g", {}, svg);
+  const layerFolders = S("g", {}, world);
+  const layerLinks = S("g", {}, world);
+  const layerHalos = S("g", { "aria-hidden": "true" }, world);
+  const layerNames = S("g", {}, world);
+  const layerTopics = S("g", {}, world);
+
+  const leafOf = new WeakMap();
+  const groupOf = new WeakMap();
+
+  topics.forEach((leaf) => {
+    const g = S("g", { class: "topic" + (leaf.built ? "" : " planned"), tabindex: 0, role: "button" }, layerTopics);
+    g.setAttribute("aria-label", plain(leaf.topic.title) + ", in " + leaf.topic.folder + (leaf.built ? ", has a tool" : ", planned"));
+    leaf.hit = S("rect", { class: "hit" }, g);
+    const text = S("text", { "text-anchor": "middle", dy: "0.34em" }, g);
+    text.textContent = plain(leaf.topic.title);
+    let box = { width: 0, height: 0 };
+    try { box = text.getBBox(); } catch (_) { /* not rendered yet: fall through to the estimate */ }
+    leaf.w = box.width || leaf.topic.title.length * 7.6;
+    leaf.h = box.height || 19;
+    // collision shape: a horizontal capsule around the words
+    leaf.r = leaf.h / 2 + 13;
+    leaf.hl = Math.max(0, leaf.w / 2 + 15 - leaf.r);
+    leaf.el = g;
+    leafOf.set(g, leaf);
+  });
+
+  let arcCount = 0;
+  groups.forEach((g) => {
+    if (g === root) return;
+    const id = "folder-arc-" + arcCount++;
+    g.circle = S("circle", { class: "folder" + (g.depth > 1 ? " deep" : "") }, layerFolders);
+    g.arc = S("path", { id: id, fill: "none" }, defs);
+    g.label = S("text", { class: "folder-label", dy: "0.33em", tabindex: 0, role: "button" }, layerNames);
+    g.label.setAttribute("aria-label", "folder " + g.path + ": zoom to it");
+    [S("text", { class: "folder-halo", dy: "0.33em" }, layerHalos), g.label].forEach((text) => {
+      const tp = S("textPath", { href: "#" + id, startOffset: "50%", "text-anchor": "middle" }, text);
+      tp.setAttributeNS(XLINK, "xlink:href", "#" + id);
+      tp.textContent = g.name;
+    });
+    groupOf.set(g.label, g);
+  });
+
+  links.forEach((l) => { l.el = S("line", { class: "link" }, layerLinks); });
+
+  // ---------------------------------------------------------------- geometry
+  // Smallest circle that contains a set of discs {x, y, r}. It is pinned down by at most
+  // three of them, so keep a "basis" of up to three and grow it whenever a disc sticks out
+  // (Welzl's idea, in the form Matousek, Sharir and Welzl gave it; d3-hierarchy packs circles the same way).
+
+  function holds(c, d) {
+    return Math.hypot(d.x - c.x, d.y - c.y) + d.r <= c.r + 1e-7 * Math.max(1, c.r);
+  }
+  function pairCircle(a, b) {
+    if (holds(a, b)) return { x: a.x, y: a.y, r: a.r };
+    if (holds(b, a)) return { x: b.x, y: b.y, r: b.r };
+    const dx = b.x - a.x, dy = b.y - a.y, l = Math.hypot(dx, dy);
+    const r = (l + a.r + b.r) / 2, t = (r - a.r) / l;
+    return { x: a.x + dx * t, y: a.y + dy * t, r: r };
+  }
+  function tangentCircle(d1, d2, d3) {
+    // Solve |c - ci| = R - ri for i = 1..3. Subtracting pairs leaves two equations that are
+    // linear in the centre, which gives the centre as (X0 + X1 R, Y0 + Y1 R); one quadratic in R remains.
+    const a2 = d2.x - d1.x, b2 = d2.y - d1.y, a3 = d3.x - d1.x, b3 = d3.y - d1.y;
+    const det = a2 * b3 - a3 * b2;
+    if (Math.abs(det) < 1e-9) return null;
+    const p2 = (a2 * a2 + b2 * b2 - d2.r * d2.r + d1.r * d1.r) / 2, q2 = d2.r - d1.r;
+    const p3 = (a3 * a3 + b3 * b3 - d3.r * d3.r + d1.r * d1.r) / 2, q3 = d3.r - d1.r;
+    const X0 = (p2 * b3 - p3 * b2) / det, X1 = (q2 * b3 - q3 * b2) / det;
+    const Y0 = (a2 * p3 - a3 * p2) / det, Y1 = (a2 * q3 - a3 * q2) / det;
+    const A = X1 * X1 + Y1 * Y1 - 1;
+    const B = 2 * (X0 * X1 + Y0 * Y1 + d1.r);
+    const C = X0 * X0 + Y0 * Y0 - d1.r * d1.r;
+    const need = Math.max(d1.r, d2.r, d3.r) - 1e-9;
+    let R = NaN;
+    if (Math.abs(A) < 1e-12) {
+      R = -C / B;
+    } else {
+      const disc = B * B - 4 * A * C;
+      if (disc < 0) return null;
+      const s = Math.sqrt(disc), r1 = (-B - s) / (2 * A), r2 = (-B + s) / (2 * A);
+      const lo = Math.min(r1, r2), hi = Math.max(r1, r2);
+      R = lo >= need ? lo : hi;
+    }
+    if (!(R >= need) || !isFinite(R)) return null;
+    return { x: d1.x + X0 + X1 * R, y: d1.y + Y0 + Y1 * R, r: R };
+  }
+  function looseCircle(discs) {
+    let x = 0, y = 0, r = 0;
+    for (const d of discs) { x += d.x; y += d.y; }
+    x /= discs.length; y /= discs.length;
+    for (const d of discs) r = Math.max(r, Math.hypot(d.x - x, d.y - y) + d.r);
+    return { x: x, y: y, r: r };
+  }
+  function smallCircle(s) {
+    if (s.length === 1) return { x: s[0].x, y: s[0].y, r: s[0].r };
+    if (s.length === 2) return pairCircle(s[0], s[1]);
+    const trios = [[s[0], s[1], s[2]], [s[0], s[2], s[1]], [s[1], s[2], s[0]]];
+    for (const t of trios) {
+      const c = pairCircle(t[0], t[1]);
+      if (holds(c, t[2])) return c;
+    }
+    return tangentCircle(s[0], s[1], s[2]) || looseCircle(s);
+  }
+  function enclose(discs) {
+    const n = discs.length;
+    if (!n) return { x: 0, y: 0, r: 0 };
+    let basis = [discs[0]], c = smallCircle(basis), i = 1, guard = 0;
+    while (i < n) {
+      const d = discs[i];
+      if (holds(c, d)) { i++; continue; }
+      if (++guard > 60 * n + 200) return looseCircle(discs);
+      // d sticks out, so it must touch the new circle: try it alone, with one, then with two of the old basis
+      const tries = [[d]];
+      for (const b of basis) tries.push([b, d]);
+      for (let p = 0; p < basis.length; p++) for (let q = p + 1; q < basis.length; q++) tries.push([basis[p], basis[q], d]);
+      let next = null;
+      for (const t of tries) {
+        const k = smallCircle(t);
+        if (holds(k, d) && basis.every((b) => holds(k, b))) { next = t; c = k; break; }
+      }
+      if (!next) return looseCircle(discs);
+      basis = next;
+      i = 0;
+    }
+    return c;
+  }
+
+  // ---------------------------------------------------------------- layout
+
+  const PAD = 18;            // room between a folder's circle and what is inside it
+  const GAP_FOLDERS = 12;    // room between two sibling folders
+  const GAP_TOPIC_FOLDER = 6;
+  const REST = 60;           // a link only pulls while its ends are further apart than this...
+  const REACH = 140;         // ...and never harder than if they were this much further
+  const K_BRANCH = 0.1;      // how hard a link pulls whole folders toward each other
+  const LEAN = 1.5;          // how far, per round, it nudges a topic toward that side of its own folder
+  const K_GATHER = 0.09;     // how hard everything leans toward the middle of its folder
+  const ROUNDS = 420;
+
+  function discsOf(n) {
+    if (n.kind === "group") return [{ x: n.x, y: n.y, r: n.R }];
+    if (n.hl <= 0) return [{ x: n.x, y: n.y, r: n.r }];
+    return [{ x: n.x - n.hl, y: n.y, r: n.r }, { x: n.x + n.hl, y: n.y, r: n.r }];
+  }
+  function shift(n, dx, dy) {
+    n.x += dx; n.y += dy;
+    if (n.kind === "group") for (const c of n.children) shift(c, dx, dy);
+  }
+  // How far b has to move away from a for the two to clear each other (null if they already do).
+  function overlap(a, b) {
+    let dx, dy, need;
+    if (a.kind === "leaf" && b.kind === "leaf") {
+      const gap = Math.abs(b.x - a.x) - (a.hl + b.hl);
+      dx = gap > 0 ? Math.sign(b.x - a.x) * gap : 0;
+      dy = b.y - a.y;
+      need = a.r + b.r;
+    } else if (a.kind === "group" && b.kind === "group") {
+      dx = b.x - a.x; dy = b.y - a.y;
+      need = a.R + b.R + GAP_FOLDERS;
+    } else {
+      const leaf = a.kind === "leaf" ? a : b, grp = a.kind === "leaf" ? b : a;
+      const px = clamp(grp.x, leaf.x - leaf.hl, leaf.x + leaf.hl);
+      dx = grp.x - px; dy = grp.y - leaf.y;
+      if (leaf !== a) { dx = -dx; dy = -dy; }
+      need = leaf.r + grp.R + GAP_TOPIC_FOLDER;
+    }
+    let d = Math.hypot(dx, dy);
+    if (d >= need) return null;
+    if (d < 1e-6) { dx = 0; dy = 1; d = 1; }   // dead centre: labels are wide, so the short way out is vertical
+    const k = (need - d) / d;
+    return { x: dx * k, y: dy * k };
+  }
+  // Bottom-up: push siblings apart, then wrap their folder around them.
+  function settle(node, passes) {
+    if (node.kind === "leaf") return;
+    const cs = node.children;
+    for (const c of cs) settle(c, passes);
+    for (let p = 0; p < passes; p++) {
+      let moved = false;
+      for (let i = 0; i < cs.length; i++) {
+        for (let j = i + 1; j < cs.length; j++) {
+          const v = overlap(cs[i], cs[j]);
+          if (!v) continue;
+          const wi = cs[j].mass / (cs[i].mass + cs[j].mass), wj = 1 - wi;
+          shift(cs[i], -v.x * wi, -v.y * wi);
+          shift(cs[j], v.x * wj, v.y * wj);
+          moved = true;
+        }
+      }
+      if (!moved) break;
+    }
+    const e = enclose(cs.reduce((all, c) => all.concat(discsOf(c)), []));
+    node.x = e.x; node.y = e.y;
+    node.R = e.r + (node === root ? 0 : PAD);
+  }
+
+  // `shape` is "wide", "tall" or "square": the top-level folders are gathered harder along
+  // the short side of the window, so the map spreads along the long side.
+  function layout(shape) {
+    const gx = shape === "wide" ? 0.5 : shape === "tall" ? 1.7 : 1;
+    const gy = shape === "wide" ? 1.7 : shape === "tall" ? 0.5 : 1;
+
+    // a fixed starting point: children fanned around their folder, in the order they appear in the data
+    (function seed(node, x, y) {
+      node.x = x; node.y = y;
+      if (node.kind === "leaf") return;
+      const n = node.children.length, spread = 40 * Math.sqrt(node.mass), top = node === root;
+      node.children.forEach((c, i) => {
+        const ang = TAU * (i / n) - Math.PI / 2 + node.depth * 0.7;
+        const rad = n > 1 ? spread * (0.5 + 0.14 * ((i * 7) % 3)) : 0;
+        seed(c, x + (Math.cos(ang) * rad) / (top ? Math.sqrt(gx) : 1), y + (Math.sin(ang) * rad * 0.82) / (top ? Math.sqrt(gy) : 1));
+      });
+    })(root, 0, 0);
+    settle(root, 4);
+
+    function gather(node, k) {
+      const top = node === root;
+      for (const c of node.children) {
+        shift(c, (node.x - c.x) * k * (top ? gx : 1), (node.y - c.y) * k * (top ? gy : 1));
+        if (c.kind === "group") gather(c, k);
+      }
+    }
+
+    // A label that sits on somebody else's link looks connected to it, so labels step aside.
+    function clearLinks(strength) {
+      for (const l of links) {
+        const ax = l.a.x, ay = l.a.y, vx = l.b.x - ax, vy = l.b.y - ay, len2 = vx * vx + vy * vy;
+        if (len2 < 1) continue;
+        for (const t of topics) {
+          if (t === l.a || t === l.b) continue;
+          let best = Infinity, nx = 0, ny = 0;
+          for (let e = -1; e <= 1; e++) {          // left end, middle and right end of the label
+            const sx = t.x + e * t.hl;
+            const u = clamp(((sx - ax) * vx + (t.y - ay) * vy) / len2, 0, 1);
+            const ox = sx - (ax + vx * u), oy = t.y - (ay + vy * u), d = Math.hypot(ox, oy);
+            if (d < best) { best = d; nx = ox; ny = oy; }
+          }
+          const need = t.h / 2 + 9;
+          if (best >= need) continue;
+          if (best < 1e-6) { nx = -vy; ny = vx; best = Math.hypot(nx, ny); }
+          const push = ((need - best) * strength) / best;
+          t.x += nx * push; t.y += ny * push;
+        }
+      }
+    }
+
+    for (let round = 0; round < ROUNDS; round++) {
+      const heat = Math.pow(1 - round / ROUNDS, 1.2);
+
+      for (const l of links) {
+        const dx = l.b.x - l.a.x, dy = l.b.y - l.a.y, d = Math.hypot(dx, dy);
+        if (d <= REST) continue;
+        const ux = dx / d, uy = dy / d, pull = Math.min(d - REST, REACH) * heat;
+        // the two branches under the folder both ends share move as rigid bodies...
+        const ka = (pull * K_BRANCH) / Math.sqrt(l.ga.mass), kb = (pull * K_BRANCH) / Math.sqrt(l.gb.mass);
+        shift(l.ga, ux * ka, uy * ka);
+        shift(l.gb, -ux * kb, -uy * kb);
+        // ...and each topic also leans a little toward its partner inside its own folder
+        if (l.ga !== l.a) { l.a.x += ux * LEAN * heat; l.a.y += uy * LEAN * heat; }
+        if (l.gb !== l.b) { l.b.x -= ux * LEAN * heat; l.b.y -= uy * LEAN * heat; }
+      }
+
+      clearLinks(0.3);
+      gather(root, K_GATHER * (0.35 + 0.65 * heat));
+      settle(root, 3);
+    }
+    // squeeze out the slack that is left, then make sure nothing overlaps
+    for (let i = 0; i < 90; i++) { clearLinks(0.3); gather(root, 0.03); settle(root, 4); }
+    for (let i = 0; i < 6; i++) settle(root, 80);
+  }
+
+  // ---------------------------------------------------------------- drawing
+
+  // How far along the way to (tx, ty) the centre line leaves the label's own box.
+  function exit(leaf, tx, ty) {
+    const dx = Math.abs(tx - leaf.x), dy = Math.abs(ty - leaf.y);
+    const hw = leaf.w / 2 + 7, hh = leaf.h / 2 + 1;
+    return Math.min(dx > 0 ? hw / dx : Infinity, dy > 0 ? hh / dy : Infinity);
+  }
+
+  function draw() {
+    topics.forEach((t) => {
+      t.el.setAttribute("transform", "translate(" + t.x.toFixed(2) + " " + t.y.toFixed(2) + ")");
+      const w = t.w + 18, h = t.h + 8;
+      t.hit.setAttribute("x", (-w / 2).toFixed(2));
+      t.hit.setAttribute("y", (-h / 2).toFixed(2));
+      t.hit.setAttribute("width", w.toFixed(2));
+      t.hit.setAttribute("height", h.toFixed(2));
+      t.hit.setAttribute("rx", (h / 2).toFixed(2));
+    });
+    groups.forEach((g) => {
+      if (g === root) return;
+      g.circle.setAttribute("cx", g.x.toFixed(2));
+      g.circle.setAttribute("cy", g.y.toFixed(2));
+      g.circle.setAttribute("r", g.R.toFixed(2));
+      // upper half of the circle, left to right, so the folder name sits on the line at the top
+      g.arc.setAttribute("d", "M" + (g.x - g.R).toFixed(2) + " " + g.y.toFixed(2) + " A" + g.R.toFixed(2) + " " + g.R.toFixed(2) + " 0 0 1 " + (g.x + g.R).toFixed(2) + " " + g.y.toFixed(2));
+    });
+    links.forEach((l) => {
+      const ta = exit(l.a, l.b.x, l.b.y), tb = exit(l.b, l.a.x, l.a.y);
+      if (ta + tb >= 0.98) { l.el.setAttribute("visibility", "hidden"); return; }
+      const dx = l.b.x - l.a.x, dy = l.b.y - l.a.y;
+      l.el.removeAttribute("visibility");
+      l.el.setAttribute("x1", (l.a.x + dx * ta).toFixed(2));
+      l.el.setAttribute("y1", (l.a.y + dy * ta).toFixed(2));
+      l.el.setAttribute("x2", (l.b.x - dx * tb).toFixed(2));
+      l.el.setAttribute("y2", (l.b.y - dy * tb).toFixed(2));
+    });
+  }
+
+  // ---------------------------------------------------------------- view (pan and zoom)
+
+  const K_MIN = 0.25, K_MAX = 6;
+  const view = { x: 0, y: 0, k: 1 };
+  const still = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let anim = 0;
+  let touched = false;   // has the reader moved the view themselves?
+
+  function applyView() {
+    world.setAttribute("transform", "translate(" + view.x.toFixed(2) + " " + view.y.toFixed(2) + ") scale(" + view.k.toFixed(4) + ")");
+    // folder names never get smaller than 10.5px on screen
+    layerNames.style.fontSize = layerHalos.style.fontSize = (10.5 / Math.min(1, view.k)).toFixed(2) + "px";
+  }
+  function size() {
+    const r = svg.getBoundingClientRect();
+    return { w: r.width, h: r.height, left: r.left, top: r.top };
+  }
+  // the part of the window that is not covered by the header, the footer or the open panel
+  function free() {
+    const s = size(), wide = s.w > 760, open = !panel.hidden;
+    const left = 20, top = 62;
+    const right = open && wide ? panel.offsetWidth + 36 : 20;
+    const bottom = open && !wide ? panel.offsetHeight + 20 : 54;
+    return { x: left, y: top, w: Math.max(120, s.w - left - right), h: Math.max(120, s.h - top - bottom) };
+  }
+  function frame(cx, cy, r, kMax) {
+    const f = free();
+    const k = clamp(Math.min(f.w, f.h) / (2 * r), K_MIN, kMax);
+    return { k: k, x: f.x + f.w / 2 - cx * k, y: f.y + f.h / 2 - cy * k };
+  }
+  function stop() { if (anim) cancelAnimationFrame(anim); anim = 0; }
+  function go(to, instant) {
+    stop();
+    if (instant || still) { view.x = to.x; view.y = to.y; view.k = to.k; applyView(); return; }
+    const from = { x: view.x, y: view.y, k: view.k }, t0 = performance.now();
+    (function step(now) {
+      const u = clamp((now - t0) / 420, 0, 1);
+      const e = u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2;
+      view.x = from.x + (to.x - from.x) * e;
+      view.y = from.y + (to.y - from.y) * e;
+      view.k = from.k + (to.k - from.k) * e;
+      applyView();
+      anim = u < 1 ? requestAnimationFrame(step) : 0;
+    })(t0);
+  }
+  function zoomAt(px, py, factor) {
+    const k = clamp(view.k * factor, K_MIN, K_MAX), f = k / view.k;
+    view.x = px - (px - view.x) * f;
+    view.y = py - (py - view.y) * f;
+    view.k = k;
+    applyView();
+  }
+  function zoomBy(factor) {
+    const f = free(), px = f.x + f.w / 2, py = f.y + f.h / 2;
+    const k = clamp(view.k * factor, K_MIN, K_MAX), r = k / view.k;
+    touched = true;
+    go({ k: k, x: px - (px - view.x) * r, y: py - (py - view.y) * r });
+  }
+  function fitAll(instant) {
+    touched = false;
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    for (const c of root.children) {
+      const rx = c.kind === "group" ? c.R : c.hl + c.r, ry = c.kind === "group" ? c.R : c.r;
+      x0 = Math.min(x0, c.x - rx); x1 = Math.max(x1, c.x + rx);
+      y0 = Math.min(y0, c.y - ry); y1 = Math.max(y1, c.y + ry);
+    }
+    const f = free(), m = 16;
+    const k = clamp(Math.min(f.w / (x1 - x0 + 2 * m), f.h / (y1 - y0 + 2 * m)), K_MIN, 1.8);
+    go({ k: k, x: f.x + f.w / 2 - ((x0 + x1) / 2) * k, y: f.y + f.h / 2 - ((y0 + y1) / 2) * k }, instant);
+  }
+  function fitFolder(g) {
+    touched = true;
+    go(frame(g.x, g.y, g.R + 14, 2.6));
+  }
+
+  // ---------------------------------------------------------------- selection
+
+  let selected = null, hovered = null;
+
+  function paint() {
+    const focus = hovered || selected;
+    svg.classList.toggle("focused", !!focus);
+    topics.forEach((t) => {
+      t.el.classList.remove("on", "self");
+      t.el.classList.toggle("selected", t === selected);
+    });
+    links.forEach((l) => l.el.classList.remove("on"));
+    if (!focus) return;
+    focus.el.classList.add("on", "self");
+    focus.out.forEach((l) => { l.el.classList.add("on"); l.b.el.classList.add("on"); });
+    focus.inn.forEach((l) => { l.el.classList.add("on"); l.a.el.classList.add("on"); });
+  }
+
+  function linkList(title, list, other) {
+    if (!list.length) return "";
+    return "<h3>" + title + "</h3><ul>" + list.map((l) => {
+      const o = other(l);
+      return '<li><button type="button" data-go="' + esc(o.id) + '"' + (o.built ? "" : ' class="planned"') + ">" + rich(o.topic.title) + "</button><span>" + rich(l.why) + "</span></li>";
+    }).join("") + "</ul>";
+  }
+
+  function fillPanel(leaf) {
+    const t = leaf.topic, html = [];
+    html.push('<p class="p-path">' + esc(t.folder).replace(/\//g, " / ") + "</p>");
+    html.push("<h2>" + rich(t.title) + "</h2>");
+    if (t.essence) html.push('<p class="p-essence">' + rich(t.essence) + "</p>");
+    if (leaf.built && canFollowLinks) {
+      html.push('<p class="p-tools">' + t.tools.map((p) => '<a href="' + esc(encodeURI(p)) + '">open the tool: ' + esc(toolName(p)) + ' <span aria-hidden="true">→</span></a>').join("") + "</p>");
+    } else if (leaf.built) {
+      html.push('<p class="p-tools">' + t.tools.map((p) => "<code>" + esc(p) + "</code>").join("") + "</p>");
+      html.push('<p class="p-none">This preview cannot follow links. Open that file directly, or open index.html in a browser.</p>');
+    } else {
+      html.push('<p class="p-none">Planned. Nothing in the repo teaches this yet.</p>');
+    }
+    if (t.check) html.push('<p class="p-check"><span>check yourself</span>' + rich(t.check) + "</p>");
+    if (Array.isArray(t.courses) && t.courses.length) html.push('<p class="p-courses">' + t.courses.map(esc).join(" · ") + "</p>");
+    html.push(linkList("builds on", leaf.inn, (l) => l.a));
+    html.push(linkList("leads to", leaf.out, (l) => l.b));
+    panelBody.innerHTML = html.join("");
+    panel.scrollTop = 0;
+  }
+
+  function setHash(id) {
+    try { history.replaceState(null, "", "#" + (id || "")); } catch (_) { /* previews without an address */ }
+  }
+
+  // bring a topic into the part of the window that is not covered
+  function reveal(leaf, always) {
+    const f = free();
+    const sx = view.x + leaf.x * view.k, sy = view.y + leaf.y * view.k;
+    const mx = 30 + (leaf.w * view.k) / 2;
+    const seen = sx > f.x + mx && sx < f.x + f.w - mx && sy > f.y + 24 && sy < f.y + f.h - 24;
+    if (seen && !always) return;
+    const k = always ? Math.max(view.k, 1.15) : view.k;
+    go({ k: k, x: f.x + f.w / 2 - leaf.x * k, y: f.y + f.h / 2 - leaf.y * k });
+  }
+
+  function select(leaf, centre) {
+    const wasOpen = !panel.hidden;
+    selected = leaf || null;
+    hovered = null;
+    if (selected) fillPanel(selected);
+    panel.hidden = !selected;
+    document.body.classList.toggle("panel-open", !!selected);
+    paint();
+    setHash(selected ? selected.id : "");
+    // If the reader has not moved the view, the whole map makes room for the panel (or takes
+    // the room back). Otherwise leave their view alone and only bring the topic out from under it.
+    if (!touched) { if (wasOpen !== !panel.hidden) fitAll(); }
+    else if (selected) reveal(selected, !!centre);
+  }
+
+  // ---------------------------------------------------------------- pointer, wheel, keys
+
+  const pointers = new Map();
+  let press = null, pinch = null;
+
+  function pinchNow() {
+    const p = Array.from(pointers.values());
+    return { d: Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y) || 1, cx: (p[0].x + p[1].x) / 2, cy: (p[0].y + p[1].y) / 2 };
+  }
+  function clicked(target) {
+    const el = target && target.closest ? target : null;
+    const topic = el && el.closest(".topic");
+    if (topic) { select(leafOf.get(topic)); return; }
+    const label = el && el.closest(".folder-label");
+    if (label) { fitFolder(groupOf.get(label)); return; }
+    select(null);
+  }
+
+  svg.addEventListener("pointerdown", (e) => {
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    stop();
+    pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    try { svg.setPointerCapture(e.pointerId); } catch (_) { /* fine without capture */ }
+    if (pointers.size === 1) {
+      press = { x: e.clientX, y: e.clientY, vx: view.x, vy: view.y, moved: false, target: e.target };
+    } else if (pointers.size === 2) {
+      press = null;
+      pinch = pinchNow();
+    }
+  });
+  svg.addEventListener("pointermove", (e) => {
+    const p = pointers.get(e.pointerId);
+    if (!p) return;
+    p.x = e.clientX; p.y = e.clientY;
+    if (pinch && pointers.size === 2) {
+      const now = pinchNow(), s = size();
+      view.x += now.cx - pinch.cx;
+      view.y += now.cy - pinch.cy;
+      zoomAt(now.cx - s.left, now.cy - s.top, now.d / pinch.d);
+      pinch = now;
+      touched = true;
+    } else if (press) {
+      const dx = e.clientX - press.x, dy = e.clientY - press.y;
+      if (!press.moved && Math.hypot(dx, dy) < 5) return;
+      press.moved = true;
+      touched = true;
+      svg.classList.add("dragging");
+      view.x = press.vx + dx;
+      view.y = press.vy + dy;
+      applyView();
+    }
+  });
+  function release(e) {
+    if (!pointers.has(e.pointerId)) return;
+    pointers.delete(e.pointerId);
+    svg.classList.remove("dragging");
+    if (pinch) { pinch = null; press = null; return; }
+    if (!press) return;
+    const wasClick = !press.moved && e.type === "pointerup", target = press.target;
+    press = null;
+    if (wasClick) clicked(target);
+  }
+  svg.addEventListener("pointerup", release);
+  svg.addEventListener("pointercancel", release);
+
+  svg.addEventListener("wheel", (e) => {
+    e.preventDefault();
+    stop();
+    const s = size();
+    const dy = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaY;
+    touched = true;
+    zoomAt(e.clientX - s.left, e.clientY - s.top, Math.exp(-dy * (e.ctrlKey ? 0.012 : 0.0022)));
+  }, { passive: false });
+
+  topics.forEach((t) => {
+    t.el.addEventListener("pointerenter", (e) => { if (e.pointerType === "mouse" && !press) { hovered = t; paint(); } });
+    t.el.addEventListener("pointerleave", () => { if (hovered === t) { hovered = null; paint(); } });
+    t.el.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); select(t); }
+    });
+  });
+  groups.forEach((g) => {
+    if (g === root) return;
+    g.label.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); fitFolder(g); }
+    });
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.target === input || e.metaKey || e.ctrlKey || e.altKey) return;
+    if (e.key === "/") { e.preventDefault(); input.focus(); }
+    else if (e.key === "Escape") select(null);
+    else if (e.key === "+" || e.key === "=") zoomBy(1.3);
+    else if (e.key === "-" || e.key === "_") zoomBy(1 / 1.3);
+    else if (e.key === "0") fitAll();
+  });
+
+  document.getElementById("zoom-in").addEventListener("click", () => zoomBy(1.3));
+  document.getElementById("zoom-out").addEventListener("click", () => zoomBy(1 / 1.3));
+  document.getElementById("zoom-fit").addEventListener("click", () => fitAll());
+  document.getElementById("theme").addEventListener("click", () => {
+    const el = document.documentElement;
+    const dark = el.dataset.theme ? el.dataset.theme === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+    el.dataset.theme = dark ? "light" : "dark";
+    try { localStorage.setItem("momentos-theme", el.dataset.theme); } catch (_) { /* not saved, still switched */ }
+  });
+  panel.querySelector(".close").addEventListener("click", () => select(null));
+  panelBody.addEventListener("click", (e) => {
+    const b = e.target.closest("button[data-go]");
+    if (b && byId.has(b.dataset.go)) select(byId.get(b.dataset.go));
+  });
+
+  // ---------------------------------------------------------------- search
+
+  let found = [], active = 0;
+
+  function search() {
+    const s = input.value.trim().toLowerCase();
+    found = topics.filter((t) => !s || (t.topic.title + " " + t.topic.folder + " " + (t.topic.essence || "")).toLowerCase().indexOf(s) >= 0);
+    if (s) found.sort((a, b) => (a.topic.title.toLowerCase().indexOf(s) < 0) - (b.topic.title.toLowerCase().indexOf(s) < 0));
+    active = clamp(active, 0, Math.max(0, found.length - 1));
+    results.innerHTML = found.length
+      ? found.map((t, i) => '<li role="option" data-id="' + esc(t.id) + '" class="' + (t.built ? "" : "planned") + (i === active ? " active" : "") + '"><span class="t">' + rich(t.topic.title) + '</span><span class="f">' + esc(t.topic.folder) + "</span></li>").join("")
+      : '<li class="none">nothing by that name yet</li>';
+    results.hidden = false;
+    input.setAttribute("aria-expanded", "true");
+    svg.classList.toggle("searching", !!s);
+    topics.forEach((t) => t.el.classList.toggle("match", !!s && found.indexOf(t) >= 0));
+    const li = results.querySelector("li.active");
+    if (li && li.scrollIntoView) li.scrollIntoView({ block: "nearest" });
+  }
+  function closeSearch() {
+    results.hidden = true;
+    input.setAttribute("aria-expanded", "false");
+    svg.classList.remove("searching");
+  }
+  function pick(leaf) {
+    input.value = "";
+    closeSearch();
+    input.blur();
+    select(leaf, true);
+  }
+  input.addEventListener("focus", () => { active = 0; search(); });
+  input.addEventListener("input", () => { active = 0; search(); });
+  input.addEventListener("blur", () => setTimeout(closeSearch, 140));
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowDown") { e.preventDefault(); active++; search(); }
+    else if (e.key === "ArrowUp") { e.preventDefault(); active--; search(); }
+    else if (e.key === "Enter") { e.preventDefault(); if (found[active]) pick(found[active]); }
+    else if (e.key === "Escape") { input.value = ""; closeSearch(); input.blur(); }
+  });
+  results.addEventListener("pointerdown", (e) => {
+    const li = e.target.closest("li[data-id]");
+    if (!li) return;
+    e.preventDefault();
+    pick(byId.get(li.dataset.id));
+  });
+
+  // ---------------------------------------------------------------- go
+
+  function windowShape() {
+    const f = free(), a = f.w / f.h;
+    return a > 1.25 ? "wide" : a < 0.8 ? "tall" : "square";
+  }
+  let shape = windowShape();
+  layout(shape);
+  draw();
+  fitAll(true);
+
+  const built = topics.filter((t) => t.built).length;
+  const counts = document.getElementById("counts");
+  counts.textContent = topics.length + " topics · " + built + " with a tool · " + links.length + " links";
+  if (problems.length) {
+    problems.forEach((p) => console.warn("[momentos map] " + p));
+    const w = document.createElement("span");
+    w.className = "warn";
+    w.textContent = problems.length + " problem" + (problems.length > 1 ? "s" : "") + " in the map data (see the console)";
+    counts.parentNode.appendChild(w);
+  }
+
+  function fromHash() {
+    let id = "";
+    try { id = decodeURIComponent(location.hash.slice(1)); } catch (_) { /* odd hash: ignore */ }
+    if (id && byId.has(id) && selected !== byId.get(id)) select(byId.get(id), true);
+  }
+  window.addEventListener("hashchange", fromHash);
+  let resizing = 0;
+  window.addEventListener("resize", () => {
+    clearTimeout(resizing);
+    resizing = setTimeout(() => {
+      const now = windowShape();
+      if (now !== shape) { shape = now; layout(shape); draw(); fitAll(true); }
+      else if (!touched) fitAll(true);
+    }, 120);
+  });
+  fromHash();
+
+  // handy when poking at the layout from the console
+  window.MOMENTOS = { topics: topics, links: links, groups: groups, root: root, view: view, problems: problems };
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,745 @@
+<!doctype html>
+<!--
+  Concept:      Multiplying by e^(jΩ) is a turn by the angle Ω, so e^(jΩn) is a walk round the unit circle in equal steps.
+                A signal is periodic exactly when that walk comes back to where it started.
+  Course:       EE 120 (complex exponentials, periodicity of discrete-time signals); EECS 16B (complex numbers)
+  Play with:    Choose the turn per step as a fraction of a full turn, or in radians, or let it turn smoothly
+  Should click: Continuous time always closes the loop (T = 2π/ω). Discrete time closes it only if a whole number of
+                steps makes a whole number of turns, and a whole extra turn per step changes nothing you can see.
+  Checked:      1/4 turn per step gives 1, j, −1, −j with N = 4. 3/8 gives N = 8 after 3 turns. 9/8 lands on the same
+                points as 1/8, and 7/8 on the same points as −1/8 (compared over 40 steps). One radian per step: no
+                exact return in 100 000 steps; nearest approaches at n = 44 (off by 1.01°), n = 333 (0.51°) and
+                n = 710 (0.003°). Smooth: T = 1/f.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>periodicity with complex exponentials · momentos</title>
+<script>
+  try {
+    var saved = localStorage.getItem("momentos-theme");
+    if (saved === "light" || saved === "dark") document.documentElement.dataset.theme = saved;
+  } catch (e) { /* no storage in this preview: follow the system setting */ }
+</script>
+<style>
+  /* ---- momentos house style (same block in every tool; see templates/tool-template.html) ---- */
+  :root {
+    color-scheme: light dark;
+    --bg: light-dark(#f6f4ee, #131312);
+    --surface: light-dark(#fbfaf6, #1b1b19);
+    --ink: light-dark(#1d1c1a, #ebe8e1);
+    --ink-2: light-dark(#5f5c55, #b1ada3);
+    --ink-3: light-dark(#77736b, #8a867d);
+    --line: light-dark(rgba(29, 28, 26, 0.16), rgba(235, 232, 225, 0.18));
+    --grid: light-dark(rgba(29, 28, 26, 0.07), rgba(235, 232, 225, 0.08));
+    --accent: light-dark(#c2410c, #ff8f5a);
+    --c1: light-dark(#2458c4, #7aa7ff);
+    --c2: light-dark(#c2410c, #ff9a62);
+    --c3: light-dark(#0f7f6b, #4fd3b4);
+    --c4: light-dark(#9d3fb0, #d78be6);
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+    --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  }
+  :root[data-theme="light"] { color-scheme: light; }
+  :root[data-theme="dark"] { color-scheme: dark; }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 17px/1.55 var(--serif);
+    -webkit-font-smoothing: antialiased;
+  }
+  .bar {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 22px;
+    font: 12px/1 var(--mono);
+    letter-spacing: 0.06em;
+    color: var(--ink-3);
+  }
+  .bar a { color: var(--ink-2); text-decoration: none; border-bottom: 1px solid var(--line); padding-bottom: 2px; }
+  .bar a:hover { color: var(--accent); border-color: var(--accent); }
+  .bar .grow { flex: 1; }
+  button {
+    font: 12px/1 var(--mono);
+    color: var(--ink-2);
+    background: transparent;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 7px 10px;
+    cursor: pointer;
+  }
+  button:hover { color: var(--ink); border-color: var(--ink-2); }
+  button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  button:disabled { opacity: 0.4; cursor: default; }
+  :focus-visible { outline: 1px dashed var(--ink); outline-offset: 2px; }
+
+  main { max-width: 1120px; margin: 0 auto; padding: 4px 22px 72px; }
+  h1 { font: 400 clamp(30px, 4.6vw, 44px)/1.08 var(--serif); letter-spacing: -0.015em; margin: 14px 0 10px; }
+  .lede { max-width: 62ch; margin: 0 0 26px; color: var(--ink-2); font-size: 18px; }
+  h2 {
+    font: 500 10.5px/1.4 var(--mono);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin: 0 0 10px;
+  }
+  .bench { display: grid; grid-template-columns: minmax(0, 1.75fr) minmax(280px, 1fr); gap: 28px; align-items: start; }
+  figure { margin: 0; }
+  .stage { border: 1px solid var(--line); border-radius: 4px; background: var(--surface); overflow: hidden; }
+  .stage svg { display: block; width: 100%; height: auto; user-select: none; -webkit-user-select: none; }
+  figcaption { padding: 9px 12px; border-top: 1px solid var(--line); font: 11.5px/1.5 var(--mono); color: var(--ink-3); }
+  .controls { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 12px; }
+  .controls label { font: 12px/1 var(--mono); color: var(--ink-2); display: inline-flex; align-items: center; gap: 6px; margin-left: 6px; }
+  input[type="range"] { accent-color: var(--ink); }
+  input[type="checkbox"] { accent-color: var(--ink); }
+
+  .notes { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 44px; margin-top: 46px; padding-top: 28px; border-top: 1px solid var(--line); }
+  .notes p { margin: 0 0 14px; max-width: 62ch; }
+  .notes p b { font-weight: 600; }
+  .notes ul { margin: 0 0 26px; padding: 0; list-style: none; }
+  .notes li { margin: 0 0 12px; padding-left: 14px; border-left: 1px solid var(--line); font-size: 16px; line-height: 1.45; }
+  .notes li a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--line); }
+  .notes li a:hover { color: var(--accent); border-color: var(--accent); }
+  details { margin-top: 4px; }
+  summary { font: 11.5px/1.4 var(--mono); color: var(--ink-3); cursor: pointer; }
+  details span { color: var(--ink-2); font-size: 15px; }
+  sup { font-size: 0.72em; line-height: 0; }
+
+  @media (max-width: 860px) {
+    .bench, .notes { grid-template-columns: 1fr; }
+    .notes { gap: 28px; }
+  }
+
+  /* ---- this tool ---- */
+  .re { color: var(--c1); } .im { color: var(--c2); }
+  var { font-style: italic; font-family: var(--serif); }
+
+  .axis { stroke: var(--line); stroke-width: 1; }
+  .unit { fill: none; stroke: var(--ink-2); stroke-width: 1.2; }
+  .rail { stroke: var(--grid); stroke-width: 1; }
+  .tick { font: 9.5px var(--mono); fill: var(--ink-3); }
+  .name { font: italic 14px var(--serif); fill: var(--ink-2); }
+  .legend { font: 10.5px var(--mono); letter-spacing: 0.04em; }
+  .phasor { stroke: var(--ink); stroke-width: 2.2; stroke-linecap: round; }
+  .tip { fill: var(--ink); }
+  .drop { stroke: var(--ink-3); stroke-width: 1; stroke-dasharray: 2 4; fill: none; }
+  .sh-re { stroke: var(--c1); stroke-width: 4; stroke-linecap: round; }
+  .sh-im { stroke: var(--c2); stroke-width: 4; stroke-linecap: round; }
+  .visited { stroke: var(--ink); stroke-width: 6.5; stroke-linecap: round; fill: none; }
+  .chords { stroke: var(--c3); stroke-width: 1; fill: none; stroke-opacity: 0.8; stroke-linejoin: round; }
+  .hop { stroke: var(--c3); stroke-width: 1.6; fill: none; stroke-linecap: round; }
+  .hop-head { fill: var(--c3); }
+  .start { fill: none; stroke: var(--ink-2); stroke-width: 1; }
+  .pulse { fill: none; stroke: var(--accent); stroke-width: 2; opacity: 0; transform-box: fill-box; transform-origin: center; }
+  .pulse.go { animation: pulse 0.7s ease-out; }
+  @keyframes pulse { from { opacity: 0.9; transform: scale(0.5); } to { opacity: 0; transform: scale(2.6); } }
+  .bands { fill: var(--ink); fill-opacity: 0.045; }
+  .stem-re { stroke: var(--c1); stroke-width: 1.4; fill: none; }
+  .stem-im { stroke: var(--c2); stroke-width: 1.4; fill: none; }
+  .bead-re { stroke: var(--c1); stroke-width: 5.5; stroke-linecap: round; fill: none; }
+  .bead-im { stroke: var(--c2); stroke-width: 5.5; stroke-linecap: round; fill: none; }
+  .wave-re { stroke: var(--c1); fill: none; }
+  .wave-im { stroke: var(--c2); fill: none; }
+  .faint { stroke-width: 1; stroke-opacity: 0.4; }
+  .solid { stroke-width: 2; }
+  .playhead { stroke: var(--ink-3); stroke-width: 1; }
+  .bracket { stroke: var(--ink-2); stroke-width: 1; fill: none; }
+  .bracket-text { font: 10.5px var(--mono); fill: var(--ink-2); letter-spacing: 0.04em; }
+
+  .panel { font: 13px/1.5 var(--mono); }
+  .panel section { padding: 0 0 18px; margin: 0 0 16px; border-bottom: 1px solid var(--line); }
+  .panel section:last-child { border-bottom: 0; margin-bottom: 0; }
+  .seg { display: flex; gap: 0; margin-bottom: 12px; }
+  .seg button { flex: 1; border-radius: 0; margin-left: -1px; }
+  .seg button:first-child { border-radius: 3px 0 0 3px; margin-left: 0; }
+  .seg button:last-child { border-radius: 0 3px 3px 0; }
+  .frac { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; color: var(--ink-2); }
+  .stepper { display: inline-flex; align-items: center; border: 1px solid var(--line); border-radius: 3px; }
+  .stepper button { border: 0; padding: 7px 9px; }
+  .stepper output { min-width: 30px; text-align: center; font: 400 19px/1 var(--serif); color: var(--ink); font-variant-numeric: tabular-nums; }
+  .slash { font: 400 24px/1 var(--serif); color: var(--ink-3); }
+  .row { display: flex; align-items: center; gap: 10px; color: var(--ink-2); }
+  .row input[type="range"] { flex: 1; min-width: 0; }
+  .row output { min-width: 86px; text-align: right; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .explain { margin: 10px 0 0; color: var(--ink-3); }
+  dl { display: grid; grid-template-columns: auto 1fr; gap: 3px 14px; margin: 0; font-variant-numeric: tabular-nums; }
+  dt { color: var(--ink-3); white-space: nowrap; }
+  dd { margin: 0; text-align: right; }
+  .value { font: 400 26px/1.15 var(--serif); margin: 10px 0 0; text-align: right; font-variant-numeric: tabular-nums; }
+  .verdict { margin: 0; font: 17px/1.45 var(--serif); color: var(--ink); }
+  .verdict b { font-weight: 600; }
+  .verdict-why { margin: 8px 0 0; color: var(--ink-2); }
+  .alias { margin: 10px 0 0; padding-left: 12px; border-left: 2px solid var(--c3); color: var(--ink-2); font: 15px/1.45 var(--serif); }
+  .alias:empty { display: none; }
+  .try { font: 12px/1 var(--mono); margin: 0 6px 6px 0; }
+</style>
+</head>
+<body>
+
+<header class="bar">
+  <a href="../index.html#periodicity">← map</a>
+  <span>signals</span>
+  <span class="grow"></span>
+  <button type="button" id="theme" aria-label="Switch between light and dark">◐</button>
+</header>
+
+<main>
+  <h1>Periodicity, by going round in circles</h1>
+  <p class="lede">Multiplying by <var>j</var> turns a point a quarter of the way round the origin. Multiplying by <var>e</var><sup><var>j</var>Ω</sup> turns it by the angle Ω. Keep multiplying and the point walks round the unit circle in equal steps. The signal repeats exactly when that walk comes back to where it began.</p>
+
+  <div class="bench">
+    <div>
+      <figure class="stage">
+        <svg id="stage" viewBox="0 0 760 376" role="img" aria-label="A point moving round the unit circle, with its real and imaginary parts plotted against time"></svg>
+        <figcaption>Left: the point on the unit circle. Right: its two shadows against time, the <span class="re">real part (a cosine)</span> and the <span class="im">imaginary part (a sine)</span>.</figcaption>
+      </figure>
+      <div class="controls">
+        <button type="button" id="play"></button>
+        <button type="button" id="step">one step</button>
+        <button type="button" id="restart">start again</button>
+        <label id="between-wrap"><input type="checkbox" id="between" checked> show the path between steps</label>
+      </div>
+    </div>
+
+    <aside class="panel">
+      <section>
+        <h2>How it turns</h2>
+        <div class="seg" role="group" aria-label="Kind of motion">
+          <button type="button" data-mode="steps">in steps</button>
+          <button type="button" data-mode="smooth">smoothly</button>
+        </div>
+        <div id="ctl-steps">
+          <div class="seg" role="group" aria-label="How the step is given">
+            <button type="button" data-unit="turn">a fraction of a turn</button>
+            <button type="button" data-unit="rad">in radians</button>
+          </div>
+          <div id="ctl-turn" class="frac">
+            <span>each step turns</span>
+            <span class="stepper"><button type="button" data-nudge="p-" aria-label="Smaller numerator">−</button><output id="out-p"></output><button type="button" data-nudge="p+" aria-label="Larger numerator">+</button></span>
+            <span class="slash">/</span>
+            <span class="stepper"><button type="button" data-nudge="q-" aria-label="Smaller denominator">−</button><output id="out-q"></output><button type="button" data-nudge="q+" aria-label="Larger denominator">+</button></span>
+            <span>of a full turn</span>
+          </div>
+          <div id="ctl-rad" class="row">
+            <span>each step turns</span>
+            <input type="range" id="rad" min="0.1" max="3.1" step="0.1" aria-label="Turn per step, in radians">
+            <output id="out-rad"></output>
+          </div>
+        </div>
+        <div id="ctl-smooth" class="row">
+          <span>speed</span>
+          <input type="range" id="freq" min="-2" max="2" step="0.05" aria-label="Turns per second">
+          <output id="out-freq"></output>
+        </div>
+        <p class="explain" id="explain"></p>
+      </section>
+
+      <section>
+        <h2>Right now</h2>
+        <dl>
+          <dt id="k-when"></dt><dd id="v-when"></dd>
+          <dt>angle so far</dt><dd id="v-angle"></dd>
+          <dt>on the circle</dt><dd id="v-wrapped"></dd>
+        </dl>
+        <p class="value" id="v-z"></p>
+      </section>
+
+      <section>
+        <h2>Does it repeat?</h2>
+        <p class="verdict" id="verdict"></p>
+        <p class="verdict-why" id="verdict-why"></p>
+        <p class="alias" id="alias"></p>
+      </section>
+    </aside>
+  </div>
+
+  <section class="notes">
+    <div>
+      <h2>What should click</h2>
+      <p><b>Multiplying is turning.</b> Every number on the unit circle is <var>e</var><sup><var>j</var>Ω</sup> = cos Ω + <var>j</var> sin Ω for some angle Ω, and multiplying by it turns a point through that angle without changing its distance from the origin. So <var>e</var><sup><var>j</var>Ω<var>n</var></sup> is simply where you are after <var>n</var> equal turns. With Ω a quarter turn the multiplier is <var>j</var> itself, and <var>j</var><sup>4</sup> = 1 is the smallest example of something that repeats.</p>
+      <p><b>Periodic means the walk closes.</b> The sequence repeats when some whole number of steps <var>N</var> lands exactly on the starting point: <var>N</var>Ω = 2π<var>k</var> for whole numbers <var>N</var> and <var>k</var>. That is only possible when Ω is a fraction <var>k</var>/<var>N</var> of a full turn. Then the period is the denominator <var>N</var>, and <var>k</var> counts how many times the point goes round before it repeats. One radian per step is not such a fraction, because π is irrational, so that walk never closes.</p>
+      <p><b>A whole turn is invisible.</b> Step by 9/8 of a turn and you land exactly where 1/8 of a turn would have put you. Looking only at the landing points you cannot tell Ω from Ω + 2π, and 7/8 of a turn forwards is indistinguishable from 1/8 of a turn backwards. That is all aliasing is.</p>
+      <p><b>Turning smoothly always closes.</b> Let the angle grow continuously, <var>e</var><sup><var>j</var>ω<var>t</var></sup>, and it passes through every value on the way, so it always completes a turn: after <var>T</var> = 2π/ω. Cosine and sine are the two shadows of that one turning point, which is why they repeat together, a quarter turn apart.</p>
+      <p><b>Why carry the imaginary part at all.</b> A cosine on its own cannot say which way the point is turning. The pair of shadows, kept together as one complex number, can. And moving forward in time becomes one more multiplication, which is far easier to work with than trigonometric identities.</p>
+    </div>
+    <div>
+      <h2>Predict, then try</h2>
+      <ul>
+        <li><button type="button" class="try" data-try="1/4">multiply by j each step</button><br>How many steps until the point is back at 1?
+          <details><summary>why</summary><span>Four. Each step is a quarter turn: 1, <var>j</var>, −1, −<var>j</var>, and then 1 again.</span></details></li>
+        <li><button type="button" class="try" data-try="3/8">3/8 of a turn</button><br>It can only ever land on eight points. How many times does it go round before it repeats?
+          <details><summary>why</summary><span>Three. Eight steps of 3/8 of a turn make exactly 3 turns, and no smaller number of steps makes a whole number.</span></details></li>
+        <li><button type="button" class="try" data-try="9/8">9/8 of a turn</button> <button type="button" class="try" data-try="1/8">1/8 of a turn</button><br>More than a full turn per step. How will the samples differ from 1/8?
+          <details><summary>why</summary><span>They do not differ at all. Only the faint path between the steps shows the extra turn.</span></details></li>
+        <li><button type="button" class="try" data-try="7/8">7/8 of a turn</button><br>Which way does the point seem to be going?
+          <details><summary>why</summary><span>Backwards, an eighth of a turn at a time. The cosine samples match those of 1/8 and the sine samples are flipped.</span></details></li>
+        <li><button type="button" class="try" data-try="rad">one radian</button><br>Will it ever land exactly on 1 again?
+          <details><summary>why</summary><span>No. It comes close at step 44, because 44 radians is nearly 7 full turns (22/7 ≈ π), and closer still at step 333. Close is not the same as closed.</span></details></li>
+        <li><button type="button" class="try" data-try="smooth">smoothly</button><br>Is there any speed at which this does not repeat?
+          <details><summary>why</summary><span>Only zero. Anything else completes a turn after 1/<var>f</var> seconds.</span></details></li>
+      </ul>
+      <h2>Where this shows up</h2>
+      <ul>
+        <li><a href="../index.html#phasors-impedance">Phasors</a>: every voltage in a circuit driven at one frequency turns at the same rate, so you keep only where each one starts.</li>
+        <li><a href="../index.html#fourier-series">Fourier series</a>: a periodic signal is a sum of these turning points, making 1, 2, 3, … turns per period.</li>
+        <li><a href="../index.html#frequency-response">Frequency response</a>: put <var>e</var><sup><var>j</var>ω<var>t</var></sup> into a linear time-invariant system and the same turning point comes out, scaled and shifted.</li>
+        <li><a href="../index.html#eulers-formula">Euler's formula</a> is the statement that the two shadows are cosine and sine.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+
+  const NS = "http://www.w3.org/2000/svg";
+  function S(name, attrs, parent) {
+    const el = document.createElementNS(NS, name);
+    for (const k in attrs) el.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(el);
+    return el;
+  }
+  const $ = (id) => document.getElementById(id);
+  const TAU = Math.PI * 2, DEG = 360 / TAU;
+  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+  const mod = (a, m) => ((a % m) + m) % m;
+  function gcd(a, b) { a = Math.abs(a); b = Math.abs(b); while (b) { const t = a % b; a = b; b = t; } return a; }
+  function fmt(v, d) {
+    if (d === undefined) d = 2;
+    let s = (Math.round(v * Math.pow(10, d)) / Math.pow(10, d)).toFixed(d);
+    if (s.indexOf(".") >= 0) s = s.replace(/0+$/, "").replace(/\.$/, "");
+    if (s === "-0") s = "0";
+    return s.replace("-", "−");
+  }
+  // a complex number the way you would write it: 1, −j, 0.71 − 0.71j
+  function fmtComplex(re, im) {
+    const zr = Math.abs(re) < 5e-4, zi = Math.abs(im) < 5e-4;
+    const imag = (v) => (Math.abs(Math.abs(v) - 1) < 5e-4 ? "" : fmt(Math.abs(v), 3)) + "j";
+    if (zi) return fmt(re, 3);
+    if (zr) return (im < 0 ? "−" : "") + imag(im);
+    return fmt(re, 3) + (im < 0 ? " − " : " + ") + imag(im);
+  }
+  const frac = (p, q) => { const g = gcd(p, q) || 1; return { p: p / g, q: q / g }; };
+  const fracText = (p, q) => (q === 1 ? fmt(p) : fmt(p) + "/" + q);
+
+  const still = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // ------------------------------------------------------------ state
+
+  const st = {
+    mode: "steps",    // "steps": multiply once per step.  "smooth": the angle grows continuously.
+    unit: "turn",     // in steps, how the turn per step is given: "turn" = p/q of a full turn, "rad" = radians
+    p: 1, q: 4,
+    rad: 1,
+    f: 0.5,           // smooth: turns per second
+    n: 0,             // steps taken
+    hop: 1,           // how far through the current step's animation (1 = landed)
+    t: 0,             // smooth: seconds
+    playing: !still,
+    between: true
+  };
+  const HOP = 0.42, PAUSE = 0.24;    // seconds spent moving and resting, per step
+  // stop stepping here; by then the point has been made
+  const limit = () => (st.unit === "turn" ? 96 : 400);
+  // the radian walk never closes, so after the first 40 steps it speeds up to get further
+  const tempo = () => (st.unit === "rad" && st.n > 40 ? Math.max(0.12, 40 / st.n) : 1);
+
+  const stepAngle = () => (st.unit === "turn" ? (TAU * st.p) / st.q : st.rad);
+  // the angle after x steps (x may be a fraction while a step is in flight)
+  const angleAt = (x) => (st.unit === "turn" ? (TAU * st.p * x) / st.q : st.rad * x);
+  // exact landing angle for a whole number of steps: no rounding error builds up, so repeats are exact
+  const landing = (n) => (st.unit === "turn" ? (TAU * mod(st.p * n, st.q)) / st.q : mod(st.rad * n, TAU));
+  // a p/q turn per step repeats after N steps, having gone round k times
+  function period() {
+    if (st.unit !== "turn") return null;
+    const g = gcd(st.p, st.q) || st.q;
+    return { N: st.q / g, k: st.p / g };
+  }
+
+  // ------------------------------------------------------------ drawing: the parts that never change
+
+  const svg = $("stage");
+  const CX = 158, CY = 204, R = 110;
+  const PX0 = 332, PX1 = 744, PAD = 8;
+  const DX = (PX1 - PX0 - 2 * PAD) / 32;     // steps: 32 across
+  const PPS = (PX1 - PX0 - 2 * PAD) / 4;     // smooth: 4 seconds across
+
+  const bands = S("path", { class: "bands" }, svg);
+  S("line", { x1: CX - R - 26, y1: CY, x2: CX + R + 26, y2: CY, class: "axis" }, svg);
+  S("line", { x1: CX, y1: CY - R - 26, x2: CX, y2: CY + R + 26, class: "axis" }, svg);
+  S("circle", { cx: CX, cy: CY, r: R, class: "unit" }, svg);
+  [["1", R + 27], ["−1", -R - 27]].forEach((a) => {
+    S("text", { x: CX + a[1], y: CY + 18, "text-anchor": "middle", class: "name" }, svg).textContent = a[0];
+  });
+  S("text", { x: CX + 9, y: CY - R - 29, class: "name" }, svg).textContent = "j";
+  S("text", { x: CX + 9, y: CY + R + 38, class: "name" }, svg).textContent = "−j";
+  S("text", { x: CX + R + 28, y: CY - 7, "text-anchor": "end", class: "tick" }, svg).textContent = "Re";
+  S("text", { x: CX - 7, y: CY - R - 18, "text-anchor": "end", class: "tick" }, svg).textContent = "Im";
+
+  S("line", { x1: PX0, y1: CY, x2: PX1, y2: CY, class: "axis" }, svg);
+  S("line", { x1: PX0, y1: CY - R, x2: PX1, y2: CY - R, class: "rail" }, svg);
+  S("line", { x1: PX0, y1: CY + R, x2: PX1, y2: CY + R, class: "rail" }, svg);
+  S("text", { x: PX0 - 6, y: CY - R + 3, "text-anchor": "end", class: "tick" }, svg).textContent = "1";
+  S("text", { x: PX0 - 6, y: CY + R + 3, "text-anchor": "end", class: "tick" }, svg).textContent = "−1";
+  S("text", { x: PX1, y: 30, "text-anchor": "end", class: "legend", fill: "var(--c2)" }, svg).textContent = "Im: the vertical shadow";
+  S("text", { x: PX1, y: 16, "text-anchor": "end", class: "legend", fill: "var(--c1)" }, svg).textContent = "Re: the horizontal shadow";
+  const axisName = S("text", { x: PX1, y: CY + R + 34, "text-anchor": "end", class: "tick" }, svg);
+  const ticks = [];
+  for (let i = 0; i < 10; i++) ticks.push(S("text", { y: CY + R + 18, "text-anchor": "middle", class: "tick" }, svg));
+
+  const el = {
+    waveRe: S("path", { class: "wave-re" }, svg),
+    waveIm: S("path", { class: "wave-im" }, svg),
+    stemRe: S("path", { class: "stem-re" }, svg),
+    stemIm: S("path", { class: "stem-im" }, svg),
+    beadRe: S("path", { class: "bead-re" }, svg),
+    beadIm: S("path", { class: "bead-im" }, svg),
+    playhead: S("line", { class: "playhead", y1: CY - R - 8, y2: CY + R + 8 }, svg),
+    bracket: S("path", { class: "bracket" }, svg),
+    bracketText: S("text", { class: "bracket-text", "text-anchor": "middle" }, svg),
+    chords: S("path", { class: "chords" }, svg),
+    hop: S("path", { class: "hop" }, svg),
+    hopHead: S("polygon", { class: "hop-head" }, svg),
+    dropX: S("line", { class: "drop" }, svg),
+    dropY: S("line", { class: "drop" }, svg),
+    link: S("line", { class: "drop" }, svg),
+    shRe: S("line", { class: "sh-re", y1: CY, y2: CY, x1: CX }, svg),
+    shIm: S("line", { class: "sh-im", x1: CX, x2: CX, y1: CY }, svg),
+    visited: S("path", { class: "visited" }, svg),
+    start: S("circle", { class: "start", cx: CX + R, cy: CY, r: 7 }, svg),
+    pulse: S("circle", { class: "pulse", cx: CX + R, cy: CY, r: 9 }, svg),
+    phasor: S("line", { class: "phasor", x1: CX, y1: CY }, svg),
+    tip: S("circle", { class: "tip", r: 4.5 }, svg)
+  };
+
+  const ease = (u) => (u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2);
+  const f1 = (v) => v.toFixed(1);
+
+  // ------------------------------------------------------------ drawing: one frame
+
+  function draw() {
+    const steps = st.mode === "steps";
+    const per = steps ? period() : null;
+    // where we are, as a number of steps (or seconds), and how many steps have landed
+    const pos = steps ? (st.hop < 1 ? st.n - 1 + ease(st.hop) : st.n) : st.t;
+    const landed = steps ? (st.hop < 1 ? st.n - 1 : st.n) : 0;
+    const theta = steps ? (st.hop < 1 ? angleAt(pos) : landing(st.n)) : TAU * st.f * st.t;
+    const c = Math.cos(theta), s = Math.sin(theta);
+    const tx = CX + R * c, ty = CY - R * s;
+
+    // the point, and its two shadows
+    el.phasor.setAttribute("x2", f1(tx)); el.phasor.setAttribute("y2", f1(ty));
+    el.tip.setAttribute("cx", f1(tx)); el.tip.setAttribute("cy", f1(ty));
+    el.shRe.setAttribute("x2", f1(tx));
+    el.shIm.setAttribute("y2", f1(ty));
+    el.dropX.setAttribute("x1", f1(tx)); el.dropX.setAttribute("y1", f1(ty)); el.dropX.setAttribute("x2", f1(tx)); el.dropX.setAttribute("y2", CY);
+    el.dropY.setAttribute("x1", f1(tx)); el.dropY.setAttribute("y1", f1(ty)); el.dropY.setAttribute("x2", CX); el.dropY.setAttribute("y2", f1(ty));
+
+    // ---- on the circle: where it has landed so far
+    let dots = "", chords = "", hop = "", head = "";
+    if (steps) {
+      const distinct = per ? Math.min(landed, per.N - 1) : landed;
+      for (let n = 0; n <= distinct; n++) {
+        const a = landing(n);
+        dots += "M" + f1(CX + R * Math.cos(a)) + " " + f1(CY - R * Math.sin(a)) + "h0.01";
+      }
+      const lastChord = per ? Math.min(landed, per.N) : landed;
+      const firstChord = per ? 1 : Math.max(1, landed - 23);
+      for (let n = firstChord; n <= lastChord; n++) {
+        const a0 = landing(n - 1), a1 = landing(n);
+        chords += "M" + f1(CX + R * Math.cos(a0)) + " " + f1(CY - R * Math.sin(a0)) + "L" + f1(CX + R * Math.cos(a1)) + " " + f1(CY - R * Math.sin(a1));
+      }
+      // the latest step, drawn as an arc just outside the circle (a spiral if it is more than one turn)
+      if (st.n >= 1) {
+        const from = landing(st.n - 1), sweep = stepAngle() * (st.hop < 1 ? ease(st.hop) : 1);
+        const pieces = Math.max(2, Math.ceil(Math.abs(sweep) / 0.08));
+        let ex = 0, ey = 0, ea = from;
+        for (let i = 0; i <= pieces; i++) {
+          const u = i / pieces, a = from + sweep * u, rr = R + 9 + (5 * Math.abs(sweep) * u) / TAU;
+          ex = CX + rr * Math.cos(a); ey = CY - rr * Math.sin(a); ea = a;
+          hop += (i ? "L" : "M") + f1(ex) + " " + f1(ey);
+        }
+        if (Math.abs(sweep) > 0.12) {
+          // arrowhead pointing along the direction of travel
+          const dir = sweep >= 0 ? 1 : -1, tx2 = -Math.sin(ea) * dir, ty2 = -Math.cos(ea) * dir, h = 7;
+          head = [ex + tx2 * 2, ey + ty2 * 2, ex - tx2 * h - ty2 * 3.4, ey - ty2 * h + tx2 * 3.4, ex - tx2 * h + ty2 * 3.4, ey - ty2 * h - tx2 * 3.4].map(f1).join(" ");
+        }
+      }
+    }
+    el.visited.setAttribute("d", dots);
+    el.chords.setAttribute("d", chords);
+    el.hop.setAttribute("d", hop);
+    el.hopHead.setAttribute("points", head);
+
+    // ---- against time
+    const span = steps ? 32 : 4, scale = steps ? DX : PPS;
+    const w0 = Math.max(0, pos - (steps ? 26 : 3.3));          // the window slides once the point nears its right edge
+    const X = (v) => PX0 + PAD + (v - w0) * scale;
+    const Yv = (v) => CY - R * v;
+
+    let re = "", im = "", sRe = "", sIm = "", bRe = "", bIm = "";
+    if (steps) {
+      if (st.between && pos > w0) {
+        const each = clamp(Math.ceil(Math.abs(stepAngle()) / (TAU / 28)), 8, 64);    // samples per step
+        const count = Math.max(1, Math.ceil((pos - w0) * each));
+        for (let i = 0; i <= count; i++) {
+          const x = w0 + ((pos - w0) * i) / count, a = angleAt(x);
+          re += (i ? "L" : "M") + f1(X(x) - 2.5) + " " + f1(Yv(Math.cos(a)));
+          im += (i ? "L" : "M") + f1(X(x) + 2.5) + " " + f1(Yv(Math.sin(a)));
+        }
+      }
+      for (let n = Math.ceil(w0 - 1e-9); n <= landed; n++) {
+        const a = landing(n), x = X(n), yr = f1(Yv(Math.cos(a))), yi = f1(Yv(Math.sin(a)));
+        sRe += "M" + f1(x - 2.5) + " " + CY + "V" + yr; bRe += "M" + f1(x - 2.5) + " " + yr + "h0.01";
+        sIm += "M" + f1(x + 2.5) + " " + CY + "V" + yi; bIm += "M" + f1(x + 2.5) + " " + yi + "h0.01";
+      }
+    } else {
+      const count = Math.max(1, Math.ceil((pos - w0) * PPS / 1.5));
+      for (let i = 0; i <= count; i++) {
+        const x = w0 + ((pos - w0) * i) / count, a = TAU * st.f * x;
+        re += (i ? "L" : "M") + f1(X(x)) + " " + f1(Yv(Math.cos(a)));
+        im += (i ? "L" : "M") + f1(X(x)) + " " + f1(Yv(Math.sin(a)));
+      }
+    }
+    el.waveRe.setAttribute("d", re); el.waveIm.setAttribute("d", im);
+    el.waveRe.setAttribute("class", "wave-re " + (steps ? "faint" : "solid"));
+    el.waveIm.setAttribute("class", "wave-im " + (steps ? "faint" : "solid"));
+    el.stemRe.setAttribute("d", sRe); el.stemIm.setAttribute("d", sIm);
+    el.beadRe.setAttribute("d", bRe); el.beadIm.setAttribute("d", bIm);
+
+    const px = X(pos);
+    el.playhead.setAttribute("x1", f1(px)); el.playhead.setAttribute("x2", f1(px));
+    // the sine is literally the height of the point, carried across
+    el.link.setAttribute("x1", f1(tx)); el.link.setAttribute("y1", f1(ty));
+    el.link.setAttribute("x2", f1(px + (steps ? 2.5 : 0))); el.link.setAttribute("y2", f1(ty));
+
+    // time axis numbers
+    const every = steps ? 4 : 1;
+    let k = 0;
+    for (let v = Math.ceil(w0 / every) * every; v <= w0 + span + 1e-9 && k < ticks.length; v += every, k++) {
+      ticks[k].setAttribute("x", f1(X(v)));
+      ticks[k].textContent = fmt(v);
+    }
+    for (; k < ticks.length; k++) ticks[k].textContent = "";
+    axisName.textContent = steps ? "step n" : "seconds";
+
+    // one period, marked once the walk has actually closed
+    const len = steps ? (per ? per.N : 0) : (st.f !== 0 ? 1 / Math.abs(st.f) : 0);
+    let band = "", br = "", brText = "";
+    if (len > 0 && pos >= len - 1e-9 && (!steps || per.N > 1)) {
+      const first = Math.floor(w0 / len), lastB = Math.floor((w0 + span) / len);
+      for (let m = first; m <= lastB; m++) {
+        if (m % 2 === 0) continue;
+        const a = Math.max(m * len, w0), b = Math.min((m + 1) * len, w0 + span);
+        if (b > a) band += "M" + f1(X(a)) + " " + (CY - R - 8) + "H" + f1(X(b)) + "V" + (CY + R + 8) + "H" + f1(X(a)) + "Z";
+      }
+      const m0 = Math.ceil(w0 / len - 1e-9);
+      if ((m0 + 1) * len <= w0 + span + 1e-9) {
+        const a = X(m0 * len), b = X((m0 + 1) * len), y = CY - R - 22;
+        br = "M" + f1(a) + " " + (y + 5) + "V" + y + "H" + f1(b) + "V" + (y + 5);
+        brText = steps ? "one period: N = " + per.N + " step" + (per.N > 1 ? "s" : "") : "one period: T = " + fmt(len) + " s";
+        el.bracketText.setAttribute("x", f1((a + b) / 2));
+        el.bracketText.setAttribute("y", y - 7);
+      }
+    }
+    bands.setAttribute("d", band);
+    el.bracket.setAttribute("d", br);
+    el.bracketText.textContent = brText;
+
+    readout(pos, landed, theta, c, s, per);
+  }
+
+  // ------------------------------------------------------------ the words and numbers
+
+  const cache = {};
+  function put(id, text, html) {
+    if (cache[id] === text) return;
+    cache[id] = text;
+    if (html) $(id).innerHTML = text; else $(id).textContent = text;
+  }
+  let closest = { n: 0, off: Infinity };     // radians mode: the nearest the walk has come to closing
+
+  function readout(pos, landed, theta, c, s, per) {
+    const steps = st.mode === "steps";
+    if (steps) {
+      const total = stepAngle() * landed;
+      put("k-when", "steps taken");
+      put("v-when", "n = " + landed);
+      put("v-angle", landed + " × " + fmt(stepAngle() * DEG, 1) + "° = " + fmt(total * DEG, 1) + "°");
+      put("v-wrapped", fmt(mod(landing(landed) * DEG, 360), 1) + "°");
+      const a = landing(landed);
+      put("v-z", "e<sup>jΩn</sup> = " + fmtComplex(Math.cos(a), Math.sin(a)), true);
+    } else {
+      put("k-when", "time");
+      put("v-when", "t = " + st.t.toFixed(2) + " s");
+      put("v-angle", fmt(st.f * st.t * 360, 0) + "°");
+      put("v-wrapped", fmt(mod(st.f * st.t * 360, 360), 0) + "°");
+      put("v-z", "e<sup>jωt</sup> = " + c.toFixed(2).replace("-", "−") + (s < 0 ? " − " : " + ") + Math.abs(s).toFixed(2) + "j", true);
+    }
+
+    if (steps && per) {
+      const deg = fmt((360 * st.p) / st.q, 2);
+      put("explain", "Ω = 2π · " + fracText(st.p, st.q) + (gcd(st.p, st.q) > 1 && st.p !== 0 ? " = 2π · " + fracText(per.k, per.N) : "") + " = " + deg + "° per step");
+      if (st.p === 0) {
+        put("verdict", "It does not move, so every step is a repeat: <b>N = 1</b>.", true);
+        put("verdict-why", "");
+      } else {
+        const turns = Math.abs(per.k);
+        put("verdict", "Yes. It repeats every <b>N = " + per.N + "</b> step" + (per.N > 1 ? "s" : "") + ", after going round <b>" + turns + "</b> time" + (turns > 1 ? "s" : "") + (per.k < 0 ? " clockwise" : "") + ".", true);
+        put("verdict-why", per.N + " × " + deg + "° = " + fmt(Math.abs(per.k) * 360) + "° = " + turns + " × 360°, and no smaller number of steps gives a whole number of turns.");
+      }
+      // the same landing points come from a step between −1/2 and 1/2 of a turn
+      const whole = Math.ceil((2 * st.p - st.q) / (2 * st.q));
+      const twin = frac(st.p - st.q * whole, st.q);
+      if (whole !== 0 && st.p !== 0) {
+        const same = twin.p === 0 ? "not moving at all"
+          : "a step of " + fracText(Math.abs(twin.p), twin.q) + " of a turn" + (twin.p < 0 ? " the other way" : "");
+        put("alias", "These are exactly the landing points of " + same + ". " + Math.abs(whole) + " whole turn" + (Math.abs(whole) > 1 ? "s" : "") + " per step " + (Math.abs(whole) > 1 ? "leave" : "leaves") + " no trace in the samples." + (twin.p < 0 && st.p > 0 ? " The point appears to turn backwards." : ""));
+      } else {
+        put("alias", "");
+      }
+    } else if (steps) {
+      put("explain", "Ω = " + fmt(st.rad, 1) + " rad = " + fmt(st.rad * DEG, 1) + "° per step");
+      put("verdict", "<b>No.</b> It never lands on a point it has already visited.", true);
+      for (let n = closest.n + 1; n <= landed; n++) {
+        const a = mod(st.rad * n, TAU), off = Math.min(a, TAU - a);
+        if (off < closest.off) closest = { n: n, off: off, n0: n };
+        closest.n = n;
+      }
+      put("verdict-why", "To repeat, n × " + fmt(st.rad, 1) + " rad would have to equal a whole number of turns, k × 2π. That would make π a ratio of whole numbers, which it is not." +
+        (closest.off < Infinity ? " Closest so far: step " + closest.n0 + ", off by " + fmt(closest.off * DEG, 2) + "°." : ""));
+      put("alias", "");
+    } else {
+      const f = st.f;
+      put("explain", "ω = 2π · " + fmt(f, 2) + " = " + fmt(TAU * f, 2) + " rad/s");
+      if (f === 0) {
+        put("verdict", "It is not turning. A constant repeats over any interval at all, so it has no smallest period.", true);
+        put("verdict-why", "");
+      } else {
+        put("verdict", "Always. It repeats every <b>T = " + fmt(1 / Math.abs(f), 3) + " s</b>" + (f < 0 ? ", turning clockwise" : "") + ".", true);
+        put("verdict-why", "The angle passes through every value on the way round, so it reaches a full turn when ωT = 2π, which is T = 2π/|ω| = 1/|f|." + (f < 0 ? " Clockwise leaves the cosine as it was and flips the sine." : ""));
+      }
+      put("alias", "");
+    }
+  }
+
+  // ------------------------------------------------------------ controls
+
+  function restart() {
+    st.n = 0; st.hop = 1; st.t = 0; rest = 0;
+    closest = { n: 0, off: Infinity };
+  }
+  function sync() {
+    document.querySelectorAll("[data-mode]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.mode === st.mode)));
+    document.querySelectorAll("[data-unit]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.unit === st.unit)));
+    $("ctl-steps").hidden = st.mode !== "steps";
+    $("ctl-smooth").hidden = st.mode !== "smooth";
+    $("ctl-smooth").style.display = st.mode === "smooth" ? "" : "none";
+    $("ctl-turn").style.display = st.unit === "turn" ? "" : "none";
+    $("ctl-rad").style.display = st.unit === "rad" ? "" : "none";
+    $("out-p").textContent = fmt(st.p);
+    $("out-q").textContent = String(st.q);
+    $("rad").value = st.rad;
+    $("out-rad").textContent = fmt(st.rad, 1) + " rad";
+    $("freq").value = st.f;
+    $("out-freq").textContent = fmt(st.f, 2) + " turns/s";
+    $("play").textContent = st.playing ? "pause" : "play";
+    $("step").disabled = st.mode !== "steps";
+    $("between-wrap").style.display = st.mode === "steps" ? "" : "none";
+    $("between").checked = st.between;
+  }
+  function change(fn) { fn(); restart(); sync(); draw(); }
+
+  document.querySelectorAll("[data-mode]").forEach((b) => b.addEventListener("click", () => change(() => { st.mode = b.dataset.mode; })));
+  document.querySelectorAll("[data-unit]").forEach((b) => b.addEventListener("click", () => change(() => { st.unit = b.dataset.unit; })));
+  document.querySelectorAll("[data-nudge]").forEach((b) => b.addEventListener("click", () => change(() => {
+    const kind = b.dataset.nudge;
+    if (kind === "q+") st.q = Math.min(24, st.q + 1);
+    if (kind === "q-") st.q = Math.max(1, st.q - 1);
+    if (kind === "p+") st.p += 1;
+    if (kind === "p-") st.p -= 1;
+    st.p = clamp(st.p, -2 * st.q, 2 * st.q);       // at most two full turns per step either way
+  })));
+  $("rad").addEventListener("input", (e) => change(() => { st.rad = Number(e.target.value); }));
+  $("freq").addEventListener("input", (e) => change(() => { st.f = Number(e.target.value); }));
+  $("between").addEventListener("change", (e) => { st.between = e.target.checked; draw(); });
+  $("play").addEventListener("click", () => {
+    st.playing = !st.playing;
+    if (st.playing && st.mode === "steps" && st.n >= limit()) restart();
+    sync();
+  });
+  $("step").addEventListener("click", () => { st.playing = false; if (st.hop >= 1) advance(); sync(); draw(); });
+  $("restart").addEventListener("click", () => { restart(); st.playing = !still; sync(); draw(); });
+
+  document.querySelectorAll("[data-try]").forEach((b) => b.addEventListener("click", () => {
+    const what = b.dataset.try;
+    change(() => {
+      if (what === "smooth") { st.mode = "smooth"; }
+      else if (what === "rad") { st.mode = "steps"; st.unit = "rad"; st.rad = 1; }
+      else { const parts = what.split("/"); st.mode = "steps"; st.unit = "turn"; st.p = Number(parts[0]); st.q = Number(parts[1]); }
+      st.playing = !still;
+    });
+    svg.scrollIntoView({ behavior: still ? "auto" : "smooth", block: "center" });
+  }));
+
+  $("theme").addEventListener("click", () => {
+    const root = document.documentElement;
+    const dark = root.dataset.theme ? root.dataset.theme === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+    root.dataset.theme = dark ? "light" : "dark";
+    try { localStorage.setItem("momentos-theme", root.dataset.theme); } catch (_) { /* switched, just not remembered */ }
+  });
+
+  // ------------------------------------------------------------ time
+
+  let rest = 0, last = 0;
+  function advance() {
+    if (st.n >= limit()) { st.playing = false; sync(); return; }
+    st.n += 1;
+    st.hop = still ? 1 : 0;
+    if (still) landedNow();
+  }
+  // a ring flashes at 1 whenever the walk comes home
+  function landedNow() {
+    if (st.unit === "turn" && st.p !== 0 && mod(st.p * st.n, st.q) === 0) {
+      el.pulse.classList.remove("go");
+      void el.pulse.getBoundingClientRect();
+      el.pulse.classList.add("go");
+    }
+  }
+  function tick(now) {
+    const dt = last ? Math.min(0.1, (now - last) / 1000) : 0;
+    last = now;
+    let moved = false;
+    if (st.mode === "steps") {
+      if (st.hop < 1) {
+        st.hop = Math.min(1, st.hop + dt / (HOP * tempo()));
+        if (st.hop >= 1) landedNow();
+        moved = true;
+      } else if (st.playing) {
+        rest += dt;
+        if (rest >= PAUSE * tempo()) { rest = 0; advance(); moved = true; }
+      }
+    } else if (st.playing) {
+      st.t += dt;
+      moved = true;
+    }
+    if (moved) draw();          // nothing is redrawn while the picture is standing still
+    requestAnimationFrame(tick);
+  }
+
+  sync();
+  draw();
+  requestAnimationFrame(tick);
+
+  // for checking the numbers from the console
+  window.TOOL = { st: st, period: period, landing: landing, angleAt: angleAt, restart: restart, sync: sync, draw: draw, advance: advance };
+})();
+</script>
+</body>
+</html>
