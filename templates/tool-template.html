@@ -1,0 +1,287 @@
+<!doctype html>
+<!--
+  Concept:      One sentence: the idea this tool makes visible
+  Course:       Where it shows up
+  Play with:    What to drag or change
+  Should click: The thing you should be able to picture afterwards
+  Checked:      The hand calculation or textbook case you compared it with. Leave this out until you have done it.
+
+  HOW TO USE THIS TEMPLATE
+  1. Copy it into the topic folder under a kebab-case name, for example circuits/rc-step-response.html.
+  2. Keep the first <style> block exactly as it is: it is the shared look of every tool.
+  3. Fix the two links to the map: the path depth (../ or ../../) and the #topic-id.
+  4. Add the tool to the map data at the top of index.html and to the tool index in README.md,
+     then run:  python3 scripts/check-map.py
+  One file, no dependencies, no fetch, no modules: it must work opened from disk.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>tool name · momentos</title>
+<script>
+  // apply a saved light/dark choice before anything is painted
+  try {
+    var saved = localStorage.getItem("momentos-theme");
+    if (saved === "light" || saved === "dark") document.documentElement.dataset.theme = saved;
+  } catch (e) { /* no storage in some previews: follow the system setting */ }
+</script>
+<style>
+  /* ---- momentos house style (the same block in every tool) ---- */
+  :root {
+    color-scheme: light dark;
+    --bg: light-dark(#f6f4ee, #131312);          /* the page */
+    --surface: light-dark(#fbfaf6, #1b1b19);     /* figures and inputs */
+    --ink: light-dark(#1d1c1a, #ebe8e1);         /* text and the main strokes */
+    --ink-2: light-dark(#5f5c55, #b1ada3);       /* secondary text */
+    --ink-3: light-dark(#77736b, #8a867d);       /* labels, axis numbers */
+    --line: light-dark(rgba(29, 28, 26, 0.16), rgba(235, 232, 225, 0.18));   /* hairlines and borders */
+    --grid: light-dark(rgba(29, 28, 26, 0.07), rgba(235, 232, 225, 0.08));   /* grid lines */
+    --accent: light-dark(#c2410c, #ff8f5a);      /* the one thing being pointed at */
+    /* Colour is for quantities, never for decoration. Give each quantity one of these and keep it
+       the same in the figure, the numbers and the prose. */
+    --c1: light-dark(#2458c4, #7aa7ff);          /* blue */
+    --c2: light-dark(#c2410c, #ff9a62);          /* orange */
+    --c3: light-dark(#0f7f6b, #4fd3b4);          /* teal */
+    --c4: light-dark(#9d3fb0, #d78be6);          /* purple */
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+    --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  }
+  :root[data-theme="light"] { color-scheme: light; }
+  :root[data-theme="dark"] { color-scheme: dark; }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 17px/1.55 var(--serif);
+    -webkit-font-smoothing: antialiased;
+  }
+  .bar {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 22px;
+    font: 12px/1 var(--mono);
+    letter-spacing: 0.06em;
+    color: var(--ink-3);
+  }
+  .bar a { color: var(--ink-2); text-decoration: none; border-bottom: 1px solid var(--line); padding-bottom: 2px; }
+  .bar a:hover { color: var(--accent); border-color: var(--accent); }
+  .bar .grow { flex: 1; }
+  button {
+    font: 12px/1 var(--mono);
+    color: var(--ink-2);
+    background: transparent;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 7px 10px;
+    cursor: pointer;
+  }
+  button:hover { color: var(--ink); border-color: var(--ink-2); }
+  button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  button:disabled { opacity: 0.4; cursor: default; }
+  :focus-visible { outline: 1px dashed var(--ink); outline-offset: 2px; }
+
+  main { max-width: 1120px; margin: 0 auto; padding: 4px 22px 72px; }
+  h1 { font: 400 clamp(30px, 4.6vw, 44px)/1.08 var(--serif); letter-spacing: -0.015em; margin: 14px 0 10px; }
+  .lede { max-width: 62ch; margin: 0 0 26px; color: var(--ink-2); font-size: 18px; }
+  h2 {
+    font: 500 10.5px/1.4 var(--mono);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin: 0 0 10px;
+  }
+  .bench { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(280px, 1fr); gap: 28px; align-items: start; }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-top: 28px; }
+  figure { margin: 0; }
+  .stage { border: 1px solid var(--line); border-radius: 4px; background: var(--surface); overflow: hidden; }
+  .stage svg { display: block; width: 100%; height: auto; touch-action: none; user-select: none; -webkit-user-select: none; }
+  figcaption { padding: 9px 12px; border-top: 1px solid var(--line); font: 11.5px/1.5 var(--mono); color: var(--ink-3); }
+  .controls { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 12px; }
+  .controls label { font: 12px/1 var(--mono); color: var(--ink-2); display: inline-flex; align-items: center; gap: 6px; margin-left: 6px; }
+  input[type="range"] { accent-color: var(--ink); }
+  input[type="checkbox"] { accent-color: var(--ink); }
+
+  .notes { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 44px; margin-top: 46px; padding-top: 28px; border-top: 1px solid var(--line); }
+  .notes p { margin: 0 0 14px; max-width: 62ch; }
+  .notes p b { font-weight: 600; }
+  .notes ul { margin: 0 0 26px; padding: 0; list-style: none; }
+  .notes li { margin: 0 0 12px; padding-left: 14px; border-left: 1px solid var(--line); font-size: 16px; line-height: 1.45; }
+  .notes li a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--line); }
+  .notes li a:hover { color: var(--accent); border-color: var(--accent); }
+  details { margin-top: 4px; }
+  summary { font: 11.5px/1.4 var(--mono); color: var(--ink-3); cursor: pointer; }
+  details span { color: var(--ink-2); font-size: 15px; }
+  sup, sub { font-size: 0.72em; line-height: 0; }
+
+  @media (max-width: 860px) {
+    .bench, .pair, .notes { grid-template-columns: 1fr; }
+    .notes { gap: 28px; }
+  }
+
+  /* ---- this tool: everything below is yours ---- */
+  var { font-style: italic; font-family: var(--serif); }
+  .grid line { stroke: var(--grid); stroke-width: 1; }
+  .grid .axis { stroke: var(--line); }
+  .mark { stroke: var(--c1); stroke-width: 2.4; stroke-linecap: round; }
+  .knob { fill: var(--c1); }
+  .handle { fill: transparent; stroke: transparent; stroke-width: 1.5; cursor: grab; outline: none; }
+  .handle:hover, .handle:focus-visible { stroke: var(--ink-2); stroke-dasharray: 3 3; }
+  .read { font: 13px/1.6 var(--mono); font-variant-numeric: tabular-nums; }
+  .read .big { font: 400 34px/1.1 var(--serif); color: var(--c1); }
+</style>
+</head>
+<body>
+
+<header class="bar">
+  <a href="../index.html#topic-id">← map</a>
+  <span>folder / subfolder</span>
+  <span class="grow"></span>
+  <button type="button" id="theme" aria-label="Switch between light and dark">◐</button>
+</header>
+
+<main>
+  <h1>Tool name</h1>
+  <p class="lede">Two or three plain sentences. Say the picture, not the formula: what is being shown, and what to watch for.</p>
+
+  <div class="bench">
+    <div>
+      <figure class="stage">
+        <svg id="stage" viewBox="0 0 640 400" role="group" aria-label="Describe what the figure shows"></svg>
+        <figcaption>Say what can be dragged. With the point focused, the arrow keys nudge it.</figcaption>
+      </figure>
+      <div class="controls">
+        <button type="button" id="reset">reset</button>
+      </div>
+    </div>
+    <aside class="read">
+      <h2>Right now</h2>
+      <div class="big" id="out-length"></div>
+      <div id="out-point"></div>
+    </aside>
+  </div>
+
+  <section class="notes">
+    <div>
+      <h2>What should click</h2>
+      <p><b>Name the idea.</b> Then say it in two or three sentences, picture first.</p>
+    </div>
+    <div>
+      <h2>Predict, then try</h2>
+      <ul>
+        <li>Ask for a prediction before the reader touches anything.
+          <details><summary>why</summary><span>The answer, in one or two sentences.</span></details></li>
+      </ul>
+      <h2>Where this shows up</h2>
+      <ul>
+        <li><a href="../index.html#another-topic-id">Another topic</a>: one sentence on what carries over.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+
+  // ---- helpers every tool uses
+
+  const NS = "http://www.w3.org/2000/svg";
+  function S(name, attrs, parent) {                 // make an SVG element
+    const el = document.createElementNS(NS, name);
+    for (const k in attrs) el.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(el);
+    return el;
+  }
+  const $ = (id) => document.getElementById(id);
+  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+  // numbers the way a person writes them: no trailing zeros, a real minus sign
+  function fmt(v, d) {
+    if (d === undefined) d = 2;
+    let s = (Math.round(v * Math.pow(10, d)) / Math.pow(10, d)).toFixed(d);
+    if (s.indexOf(".") >= 0) s = s.replace(/0+$/, "").replace(/\.$/, "");
+    if (s === "-0") s = "0";
+    return s.replace("-", "−");
+  }
+  // where a pointer event is, in the SVG's own coordinates
+  function svgPoint(svg, e) {
+    const ctm = svg.getScreenCTM();
+    if (!ctm) return { x: 0, y: 0 };
+    const p = new DOMPoint(e.clientX, e.clientY).matrixTransform(ctm.inverse());
+    return { x: p.x, y: p.y };
+  }
+
+  // ---- the maths: plain functions with no drawing in them, so they can be tested on their own
+
+  const START = { x: 3, y: 2 };
+  const point = { x: START.x, y: START.y };
+  function measure() {
+    return { length: Math.hypot(point.x, point.y) };
+  }
+
+  // ---- the figure: build it once, then only move things
+
+  const svg = $("stage");
+  const U = 40, OX = 320, OY = 200;                 // pixels per unit, and where the origin sits
+  const X = (x) => OX + x * U, Y = (y) => OY - y * U;
+  const grid = S("g", { class: "grid" }, svg);
+  for (let i = -8; i <= 8; i++) S("line", { x1: X(i), y1: 0, x2: X(i), y2: 400, class: i === 0 ? "axis" : "" }, grid);
+  for (let j = -5; j <= 5; j++) S("line", { x1: 0, y1: Y(j), x2: 640, y2: Y(j), class: j === 0 ? "axis" : "" }, grid);
+  const mark = S("line", { class: "mark", x1: OX, y1: OY }, svg);
+  const knob = S("circle", { class: "knob", r: 5 }, svg);
+  const handle = S("circle", { class: "handle", r: 17, tabindex: 0, role: "slider", "aria-label": "The point" }, svg);
+
+  function render() {
+    const m = measure(), px = X(point.x), py = Y(point.y);
+    mark.setAttribute("x2", px); mark.setAttribute("y2", py);
+    knob.setAttribute("cx", px); knob.setAttribute("cy", py);
+    handle.setAttribute("cx", px); handle.setAttribute("cy", py);
+    handle.setAttribute("aria-valuetext", "(" + fmt(point.x) + ", " + fmt(point.y) + ")");
+    $("out-length").textContent = fmt(m.length);
+    $("out-point").textContent = "length of (" + fmt(point.x) + ", " + fmt(point.y) + ")";
+  }
+
+  // ---- interaction: pointer and keyboard both work
+
+  let dragging = false;
+  function moveTo(x, y) {
+    point.x = clamp(Math.round(x * 2) / 2, -7.5, 7.5);
+    point.y = clamp(Math.round(y * 2) / 2, -4.5, 4.5);
+    render();
+  }
+  handle.addEventListener("pointerdown", (e) => {
+    e.preventDefault();
+    dragging = true;
+    try { handle.setPointerCapture(e.pointerId); } catch (_) { /* fine without capture */ }
+    handle.focus({ preventScroll: true });
+  });
+  handle.addEventListener("pointermove", (e) => {
+    if (!dragging) return;
+    const p = svgPoint(svg, e);
+    moveTo((p.x - OX) / U, (OY - p.y) / U);
+  });
+  handle.addEventListener("pointerup", () => { dragging = false; });
+  handle.addEventListener("pointercancel", () => { dragging = false; });
+  handle.addEventListener("keydown", (e) => {
+    const step = { ArrowLeft: [-0.5, 0], ArrowRight: [0.5, 0], ArrowUp: [0, 0.5], ArrowDown: [0, -0.5] }[e.key];
+    if (!step) return;
+    e.preventDefault();
+    moveTo(point.x + step[0], point.y + step[1]);
+  });
+  $("reset").addEventListener("click", () => moveTo(START.x, START.y));
+
+  $("theme").addEventListener("click", () => {
+    const root = document.documentElement;
+    const dark = root.dataset.theme ? root.dataset.theme === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+    root.dataset.theme = dark ? "light" : "dark";
+    try { localStorage.setItem("momentos-theme", root.dataset.theme); } catch (_) { /* switched, just not remembered */ }
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

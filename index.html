@@ -790,7 +790,7 @@
     groupOf.set(g.label, g);
   });
 
-  links.forEach((l) => { l.el = S("line", { class: "link" }, layerLinks); });
+  links.forEach((l) => { l.el = S("path", { class: "link" }, layerLinks); });
 
   // ---------------------------------------------------------------- geometry
   // Smallest circle that contains a set of discs {x, y, r}. It is pinned down by at most
@@ -944,19 +944,86 @@
     node.R = e.r + (node === root ? 0 : PAD);
   }
 
-  // `shape` is "wide", "tall" or "square": the top-level folders are gathered harder along
-  // the short side of the window, so the map spreads along the long side.
-  function layout(shape) {
+  // ---- how good is an arrangement? (lower is better)
+
+  // does the straight line of link l pass through the words of topic t?
+  function runsThrough(l, t) {
+    const hw = t.w / 2 + 5, hh = t.h / 2 + 2, dx = l.b.x - l.a.x, dy = l.b.y - l.a.y;
+    const edges = [[-dx, l.a.x - (t.x - hw)], [dx, t.x + hw - l.a.x], [-dy, l.a.y - (t.y - hh)], [dy, t.y + hh - l.a.y]];
+    let t0 = 0, t1 = 1;
+    for (const e of edges) {
+      if (e[0] === 0) { if (e[1] < 0) return false; continue; }
+      const r = e[1] / e[0];
+      if (e[0] < 0) { if (r > t1) return false; if (r > t0) t0 = r; }
+      else { if (r < t0) return false; if (r < t1) t1 = r; }
+    }
+    return true;
+  }
+  function cross(p, q) {
+    if (p.a === q.a || p.a === q.b || p.b === q.a || p.b === q.b) return false;
+    const side = (a, b, c) => (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
+    return side(p.a, p.b, q.a) * side(p.a, p.b, q.b) < 0 && side(q.a, q.b, p.a) * side(q.a, q.b, p.b) < 0;
+  }
+  // the box around the top-level folders, and the zoom at which it fills the free part of the window
+  function extent() {
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    for (const c of root.children) {
+      const rx = c.kind === "group" ? c.R : c.hl + c.r, ry = c.kind === "group" ? c.R : c.r;
+      x0 = Math.min(x0, c.x - rx); x1 = Math.max(x1, c.x + rx);
+      y0 = Math.min(y0, c.y - ry); y1 = Math.max(y1, c.y + ry);
+    }
+    const f = free(), m = 16;
+    return { cx: (x0 + x1) / 2, cy: (y0 + y1) / 2, zoom: Math.min(f.w / (x1 - x0 + 2 * m), f.h / (y1 - y0 + 2 * m)) };
+  }
+  // A link through somebody else's label is the worst thing a map can do, because it reads as a
+  // connection that is not there. After that: how large the map can be drawn in this window
+  // (a shape that wastes the window means small text), links crossing each other, and sheer length.
+  function quality() {
+    let through = 0, crossings = 0, length = 0;
+    for (const l of links) {
+      length += Math.hypot(l.b.x - l.a.x, l.b.y - l.a.y);
+      for (const t of topics) if (t !== l.a && t !== l.b && runsThrough(l, t)) through++;
+    }
+    for (let i = 0; i < links.length; i++) for (let j = i + 1; j < links.length; j++) if (cross(links[i], links[j])) crossings++;
+    const zoom = extent().zoom;
+    return { through: through, crossings: crossings, length: length, zoom: zoom, score: through * 1000 + 1500 / zoom + crossings * 40 + length / 50 };
+  }
+
+  // ---- one arrangement
+
+  // small seeded generator: the same `seed` always gives the same sequence
+  function dice(seed) {
+    let a = (seed * 2654435761) >>> 0;
+    return function () {
+      a = (a + 0x6d2b79f5) >>> 0;
+      let t = a;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  // `shape` is "wide", "tall" or "square": the top-level folders are gathered harder along the
+  // short side of the window, so the map spreads along the long side.
+  // `attempt` picks the starting point. 0 fans everything out in the order of the data;
+  // every other number shuffles the order and the angles in its own repeatable way.
+  function arrange(shape, attempt) {
     const gx = shape === "wide" ? 0.5 : shape === "tall" ? 1.7 : 1;
     const gy = shape === "wide" ? 1.7 : shape === "tall" ? 0.5 : 1;
+    const roll = dice(attempt);
 
-    // a fixed starting point: children fanned around their folder, in the order they appear in the data
     (function seed(node, x, y) {
       node.x = x; node.y = y;
       if (node.kind === "leaf") return;
-      const n = node.children.length, spread = 40 * Math.sqrt(node.mass), top = node === root;
-      node.children.forEach((c, i) => {
-        const ang = TAU * (i / n) - Math.PI / 2 + node.depth * 0.7;
+      const kids = node.children.slice();
+      let turn = node.depth * 0.7;
+      if (attempt > 0) {
+        for (let i = kids.length - 1; i > 0; i--) { const j = Math.floor(roll() * (i + 1)), t = kids[i]; kids[i] = kids[j]; kids[j] = t; }
+        turn = roll() * TAU;
+      }
+      const n = kids.length, spread = 40 * Math.sqrt(node.mass), top = node === root;
+      kids.forEach((c, i) => {
+        const ang = TAU * (i / n) - Math.PI / 2 + turn;
         const rad = n > 1 ? spread * (0.5 + 0.14 * ((i * 7) % 3)) : 0;
         seed(c, x + (Math.cos(ang) * rad) / (top ? Math.sqrt(gx) : 1), y + (Math.sin(ang) * rad * 0.82) / (top ? Math.sqrt(gy) : 1));
       });
@@ -972,24 +1039,36 @@
     }
 
     // A label that sits on somebody else's link looks connected to it, so labels step aside.
+    // The label is treated as the horizontal stroke through the middle of its words.
     function clearLinks(strength) {
       for (const l of links) {
-        const ax = l.a.x, ay = l.a.y, vx = l.b.x - ax, vy = l.b.y - ay, len2 = vx * vx + vy * vy;
-        if (len2 < 1) continue;
+        const ax = l.a.x, ay = l.a.y, bx = l.b.x, by = l.b.y, vx = bx - ax, vy = by - ay, len = Math.hypot(vx, vy);
+        if (len < 1) continue;
         for (const t of topics) {
           if (t === l.a || t === l.b) continue;
-          let best = Infinity, nx = 0, ny = 0;
-          for (let e = -1; e <= 1; e++) {          // left end, middle and right end of the label
-            const sx = t.x + e * t.hl;
-            const u = clamp(((sx - ax) * vx + (t.y - ay) * vy) / len2, 0, 1);
-            const ox = sx - (ax + vx * u), oy = t.y - (ay + vy * u), d = Math.hypot(ox, oy);
-            if (d < best) { best = d; nx = ox; ny = oy; }
+          const need = t.h / 2 + 9, half = t.w / 2, x0 = t.x - half, x1 = t.x + half, y = t.y;
+          if (Math.min(ax, bx) > x1 + need || Math.max(ax, bx) < x0 - need || Math.min(ay, by) > y + need || Math.max(ay, by) < y - need) continue;
+          let px = 0, py = 0;
+          const xAt = vy !== 0 && (ay - y) * (by - y) <= 0 ? ax + (vx * (y - ay)) / vy : NaN;
+          if (xAt >= x0 && xAt <= x1) {
+            // the link cuts through the words: step off it sideways, to the side the middle of the label is already on
+            const side = vx * (y - ay) - vy * (t.x - ax) >= 0 ? 1 : -1;
+            px = (-vy / len) * side * need; py = (vx / len) * side * need;
+          } else {
+            // not cut, but perhaps too close: back away from the nearest point of the link
+            let best = Infinity, fx = 0, fy = 0;
+            const consider = (lx, ly, tx, ty) => { const d = Math.hypot(tx - lx, ty - ly); if (d < best) { best = d; fx = tx - lx; fy = ty - ly; } };
+            for (const ex of [x0, x1]) {            // each end of the label against the link
+              const u = clamp(((ex - ax) * vx + (y - ay) * vy) / (len * len), 0, 1);
+              consider(ax + vx * u, ay + vy * u, ex, y);
+            }
+            consider(ax, ay, clamp(ax, x0, x1), y);    // each end of the link against the label
+            consider(bx, by, clamp(bx, x0, x1), y);
+            if (best >= need) continue;
+            if (best < 1e-6) { fx = -vy; fy = vx; best = len; }
+            px = (fx / best) * (need - best); py = (fy / best) * (need - best);
           }
-          const need = t.h / 2 + 9;
-          if (best >= need) continue;
-          if (best < 1e-6) { nx = -vy; ny = vx; best = Math.hypot(nx, ny); }
-          const push = ((need - best) * strength) / best;
-          t.x += nx * push; t.y += ny * push;
+          t.x += px * strength; t.y += py * strength;
         }
       }
     }
@@ -1010,13 +1089,35 @@
         if (l.gb !== l.b) { l.b.x -= ux * LEAN * heat; l.b.y -= uy * LEAN * heat; }
       }
 
-      clearLinks(0.3);
+      clearLinks(0.35);
       gather(root, K_GATHER * (0.35 + 0.65 * heat));
       settle(root, 3);
     }
     // squeeze out the slack that is left, then make sure nothing overlaps
-    for (let i = 0; i < 90; i++) { clearLinks(0.3); gather(root, 0.03); settle(root, 4); }
+    for (let i = 0; i < 90; i++) { clearLinks(0.35); gather(root, 0.03); settle(root, 4); }
     for (let i = 0; i < 6; i++) settle(root, 80);
+  }
+
+  // ---- the layout: try several starting points and keep the cleanest result
+
+  function everything(fn) {
+    (function walk(n) { fn(n); if (n.kind === "group") n.children.forEach(walk); })(root);
+  }
+  let chosen = null;     // what quality() said about the arrangement that was kept
+  function layout(shape) {
+    const attempts = topics.length <= 40 ? 16 : topics.length <= 90 ? 8 : 4;    // each attempt costs more on a bigger map
+    let best = null;
+    for (let attempt = 0; attempt < attempts; attempt++) {
+      arrange(shape, attempt);
+      const q = quality();
+      if (best && q.score >= best.q.score) continue;
+      const places = [];
+      everything((n) => places.push(n.x, n.y, n.R || 0));
+      best = { q: q, places: places, attempt: attempt };
+    }
+    let i = 0;
+    everything((n) => { n.x = best.places[i++]; n.y = best.places[i++]; const R = best.places[i++]; if (n.kind === "group") n.R = R; });
+    chosen = { attempt: best.attempt, through: best.q.through, crossings: best.q.crossings, length: Math.round(best.q.length), zoom: +best.q.zoom.toFixed(2) };
   }
 
   // ---------------------------------------------------------------- drawing
@@ -1046,16 +1147,54 @@
       // upper half of the circle, left to right, so the folder name sits on the line at the top
       g.arc.setAttribute("d", "M" + (g.x - g.R).toFixed(2) + " " + g.y.toFixed(2) + " A" + g.R.toFixed(2) + " " + g.R.toFixed(2) + " 0 0 1 " + (g.x + g.R).toFixed(2) + " " + g.y.toFixed(2));
     });
+    bent = 0; overruns = 0;
     links.forEach((l) => {
-      const ta = exit(l.a, l.b.x, l.b.y), tb = exit(l.b, l.a.x, l.a.y);
-      if (ta + tb >= 0.98) { l.el.setAttribute("visibility", "hidden"); return; }
-      const dx = l.b.x - l.a.x, dy = l.b.y - l.a.y;
+      const a = l.a, b = l.b, dx = b.x - a.x, dy = b.y - a.y, len = Math.hypot(dx, dy);
+      if (exit(a, b.x, b.y) + exit(b, a.x, a.y) >= 0.98) { l.el.setAttribute("visibility", "hidden"); return; }
       l.el.removeAttribute("visibility");
-      l.el.setAttribute("x1", (l.a.x + dx * ta).toFixed(2));
-      l.el.setAttribute("y1", (l.a.y + dy * ta).toFixed(2));
-      l.el.setAttribute("x2", (l.b.x - dx * tb).toFixed(2));
-      l.el.setAttribute("y2", (l.b.y - dy * tb).toFixed(2));
+      // A straight line unless that would run over somebody else's label. Then try gentle bows to
+      // either side, the smallest first, and keep the first one that runs over nothing.
+      const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2, nx = -dy / len, ny = dx / len;
+      let bow = 0, hits = overrun(l, mx, my);
+      if (hits) {
+        for (const tryBow of BOWS) {
+          if (Math.abs(tryBow) > len * 0.45) continue;
+          const h = overrun(l, mx + nx * tryBow * 2, my + ny * tryBow * 2);
+          if (h < hits) { hits = h; bow = tryBow; if (!h) break; }
+        }
+      }
+      overruns += hits;
+      if (!bow) {
+        const ta = exit(a, b.x, b.y), tb = exit(b, a.x, a.y);
+        l.el.setAttribute("d", "M" + (a.x + dx * ta).toFixed(2) + " " + (a.y + dy * ta).toFixed(2) + "L" + (b.x - dx * tb).toFixed(2) + " " + (b.y - dy * tb).toFixed(2));
+        return;
+      }
+      bent++;
+      // the curve leaves each label heading for the control point (the apex of the bow is half way to it)
+      const cx = mx + nx * bow * 2, cy = my + ny * bow * 2;
+      const ta = exit(a, cx, cy), tb = exit(b, cx, cy);
+      l.el.setAttribute("d", "M" + (a.x + (cx - a.x) * ta).toFixed(2) + " " + (a.y + (cy - a.y) * ta).toFixed(2) +
+        "Q" + cx.toFixed(2) + " " + cy.toFixed(2) + " " + (b.x + (cx - b.x) * tb).toFixed(2) + " " + (b.y + (cy - b.y) * tb).toFixed(2));
     });
+  }
+
+  // How many labels, other than its own two, a link would run over if it were drawn as the curve
+  // from a to b that bends toward the control point (cx, cy). The midpoint as control point is a straight line.
+  const BOWS = [24, -24, 44, -44, 68, -68, 96, -96, 130, -130];
+  let bent = 0, overruns = 0;
+  function overrun(l, cx, cy) {
+    const a = l.a, b = l.b, steps = clamp(Math.ceil(Math.hypot(b.x - a.x, b.y - a.y) / 7), 12, 120);
+    let hits = 0;
+    for (const t of topics) {
+      if (t === a || t === b) continue;
+      const hw = t.w / 2 + 6, hh = t.h / 2 + 3;
+      for (let i = 1; i < steps; i++) {
+        const u = i / steps, v = 1 - u;
+        const x = v * v * a.x + 2 * v * u * cx + u * u * b.x, y = v * v * a.y + 2 * v * u * cy + u * u * b.y;
+        if (Math.abs(x - t.x) < hw && Math.abs(y - t.y) < hh) { hits++; break; }
+      }
+    }
+    return hits;
   }
 
   // ---------------------------------------------------------------- view (pan and zoom)
@@ -1118,15 +1257,8 @@
   }
   function fitAll(instant) {
     touched = false;
-    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
-    for (const c of root.children) {
-      const rx = c.kind === "group" ? c.R : c.hl + c.r, ry = c.kind === "group" ? c.R : c.r;
-      x0 = Math.min(x0, c.x - rx); x1 = Math.max(x1, c.x + rx);
-      y0 = Math.min(y0, c.y - ry); y1 = Math.max(y1, c.y + ry);
-    }
-    const f = free(), m = 16;
-    const k = clamp(Math.min(f.w / (x1 - x0 + 2 * m), f.h / (y1 - y0 + 2 * m)), K_MIN, 1.8);
-    go({ k: k, x: f.x + f.w / 2 - ((x0 + x1) / 2) * k, y: f.y + f.h / 2 - ((y0 + y1) / 2) * k }, instant);
+    const e = extent(), f = free(), k = clamp(e.zoom, K_MIN, 1.8);
+    go({ k: k, x: f.x + f.w / 2 - e.cx * k, y: f.y + f.h / 2 - e.cy * k }, instant);
   }
   function fitFolder(g) {
     touched = true;
@@ -1408,7 +1540,7 @@
   fromHash();
 
   // handy when poking at the layout from the console
-  window.MOMENTOS = { topics: topics, links: links, groups: groups, root: root, view: view, problems: problems };
+  window.MOMENTOS = { topics: topics, links: links, groups: groups, root: root, view: view, problems: problems, quality: quality, layoutChosen: () => chosen, drawn: () => ({ bent: bent, overruns: overruns }) };
 })();
 </script>
 </body>

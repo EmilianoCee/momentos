@@ -9,9 +9,9 @@
                 height you started at. Dividers are those two rules applied once.
   Checked:      The solver against hand calculations: 12 V into 2 kΩ + 4 kΩ gives 2 mA and 8 V at the midpoint;
                 6 mA into 2 kΩ ∥ 4 kΩ gives 8 V, 4 mA and 2 mA; the T network (12 V, 2, 6, 1, 2 kΩ) gives 6 V, 4 V and
-                3, 1, 2 mA; two sources (12 V and 6 V, 2, 6, 3 kΩ) give 8 V with −0.667 mA in R3. KCL and KVL residuals
-                are zero for every generated problem (see scripts/check-map.py for the map, and the console helper
-                window.TOOL.audit() for this file).
+                3, 1, 2 mA; two sources (12 V and 6 V, 2, 6, 3 kΩ) give 8 V with −0.667 mA in R3.
+                1 200 generated problems: KCL at every node and KVL round every loop (from iR drops and source
+                voltages) balance to within 1e-14. Run window.TOOL.audit() in the console to repeat that check.
 -->
 <html lang="en">
 <head>
@@ -133,8 +133,8 @@
   .glow.on { stroke-opacity: 0.22; }
   .junction { fill: var(--ink); }
   .part, .cur, .node, .volt { paint-order: stroke; stroke: var(--surface); stroke-width: 4px; stroke-linejoin: round; }
-  .part { font: 11px var(--mono); fill: var(--ink-2); }
-  .cur { font: 11px var(--mono); fill: var(--c1); }
+  .part { font: 10.5px var(--mono); fill: var(--ink-2); }
+  .cur { font: 10.5px var(--mono); fill: var(--c1); }
   .node { font: italic 15px var(--serif); fill: var(--ink); }
   .volt { font: 11px var(--mono); fill: var(--c2); }
   .asked { fill: var(--accent); font-weight: 700; }
@@ -219,7 +219,7 @@
   <div class="bench">
     <div>
       <figure class="stage">
-        <svg id="schematic" viewBox="0 0 560 284" role="img"></svg>
+        <svg id="schematic" viewBox="-12 0 590 284" role="img"></svg>
         <figcaption id="caption">Arrows show the direction each current is counted in. Values are in volts, kilohms and milliamps, so V = mA × kΩ.</figcaption>
       </figure>
       <div class="controls">
@@ -340,6 +340,7 @@
   // `pts` is the path of the part and its leads, in the direction the current is counted,
   // and `body` says which segment of that path carries the symbol.
   // `wires` are stretches of rail shared by several parts; `carries` lists whose current they hold.
+  // A loop is a walk [part, from node, to node] that ends where it starts; `via` lists any wires it passes along.
   const CIRCUITS = {
     loop2: {
       title: "one loop, two resistors", level: 1,
@@ -387,9 +388,9 @@
     par2: {
       title: "one pair of nodes, two resistors", level: 1,
       parts: [
-        { id: "Is", type: "I", p: "A", n: "0", pts: [[280, 220], [90, 220], [90, 64], [280, 64]], body: 1, side: "left" },
+        { id: "Is", type: "I", p: "A", n: "0", pts: [[280, 220], [90, 220], [90, 64], [280, 64]], body: 1 },
         { id: "R1", type: "R", a: "A", b: "0", pts: [[280, 64], [280, 220]], body: 0 },
-        { id: "R2", type: "R", a: "A", b: "0", pts: [[280, 64], [470, 64], [470, 220], [280, 220]], body: 1, side: "left" }
+        { id: "R2", type: "R", a: "A", b: "0", pts: [[280, 64], [470, 64], [470, 220], [280, 220]], body: 1 }
       ],
       wires: [],
       nodes: { A: { at: [280, 64], label: [0, -12, "middle"] } },
@@ -411,22 +412,22 @@
     par3: {
       title: "one pair of nodes, three resistors", level: 2,
       parts: [
-        { id: "Is", type: "I", p: "A", n: "0", pts: [[210, 220], [70, 220], [70, 64], [210, 64]], body: 1, side: "left" },
-        { id: "R1", type: "R", a: "A", b: "0", pts: [[210, 64], [210, 220]], body: 0 },
-        { id: "R2", type: "R", a: "A", b: "0", pts: [[350, 64], [350, 220]], body: 0 },
-        { id: "R3", type: "R", a: "A", b: "0", pts: [[350, 64], [490, 64], [490, 220], [350, 220]], body: 1, side: "left" }
+        { id: "Is", type: "I", p: "A", n: "0", pts: [[190, 220], [56, 220], [56, 64], [190, 64]], body: 1 },
+        { id: "R1", type: "R", a: "A", b: "0", pts: [[190, 64], [190, 220]], body: 0 },
+        { id: "R2", type: "R", a: "A", b: "0", pts: [[324, 64], [324, 220]], body: 0 },
+        { id: "R3", type: "R", a: "A", b: "0", pts: [[324, 64], [458, 64], [458, 220], [324, 220]], body: 1 }
       ],
       wires: [
-        { pts: [[210, 64], [350, 64]], carries: ["R2", "R3"] },
-        { pts: [[350, 220], [210, 220]], carries: ["R2", "R3"] }
+        { pts: [[190, 64], [324, 64]], carries: ["R2", "R3"] },
+        { pts: [[324, 220], [190, 220]], carries: ["R2", "R3"] }
       ],
-      nodes: { A: { at: [210, 64], label: [0, -12, "middle"] } },
-      ground: [210, 220], dots: [[210, 64], [350, 64], [210, 220], [350, 220]],
+      nodes: { A: { at: [190, 64], label: [0, -12, "middle"] } },
+      ground: [190, 220], dots: [[190, 64], [324, 64], [190, 220], [324, 220]],
       start: { Is: 11, R1: 2, R2: 3, R3: 6 },
       kcl: ["A"],
       loops: [
         { name: "source and R1", walk: [["Is", "0", "A"], ["R1", "A", "0"]] },
-        { name: "R1 and R2", walk: [["R1", "0", "A"], ["R2", "A", "0"]] },
+        { name: "R1 and R2", walk: [["R1", "0", "A"], ["R2", "A", "0"]], via: [0, 1] },
         { name: "R2 and R3", walk: [["R2", "0", "A"], ["R3", "A", "0"]] }
       ],
       ask: [{ kind: "v", node: "A" }, { kind: "i", el: "R1" }, { kind: "i", el: "R2" }, { kind: "i", el: "R3" }],
@@ -444,7 +445,7 @@
         { id: "R1", type: "R", a: "P", b: "A", pts: [[90, 64], [280, 64]], body: 0 },
         { id: "R2", type: "R", a: "A", b: "0", pts: [[280, 64], [280, 220]], body: 0 },
         { id: "R3", type: "R", a: "A", b: "B", pts: [[280, 64], [470, 64]], body: 0 },
-        { id: "R4", type: "R", a: "B", b: "0", pts: [[470, 64], [470, 220], [280, 220]], body: 0, side: "left" }
+        { id: "R4", type: "R", a: "B", b: "0", pts: [[470, 64], [470, 220], [280, 220]], body: 0 }
       ],
       wires: [],
       nodes: { P: { at: [90, 64], label: [-10, -9, "end"] }, A: { at: [280, 64], label: [0, -12, "middle"] }, B: { at: [470, 64], label: [10, -9, "start"] } },
@@ -656,13 +657,18 @@
         return { ok: false, msg: q.kind === "v" ? "That is the voltage at node " + name + ". The question asks about node " + q.node + "." : "That is the voltage at node " + name + ". The question asks for a current." };
       }
     }
-    for (const p of tpl.parts) {
-      if (p.type !== "R") continue;
+    const resistors = tpl.parts.filter((p) => p.type === "R");
+    // for a voltage question the likelier slip is another voltage, so look at those first
+    if (q.kind === "v") {
+      for (const p of resistors) {
+        if (near(ans, Math.abs(sol.V[p.a] - sol.V[p.b]))) {
+          return { ok: false, msg: "That is the voltage across " + p.id + ". The question asks for the voltage at node " + q.node + ", measured from ground." };
+        }
+      }
+    }
+    for (const p of resistors) {
       if (!(q.kind === "i" && p.id === q.el) && near(ans, sol.I[p.id])) {
         return { ok: false, msg: q.kind === "i" ? "That is the current through " + p.id + ". The question asks about " + q.el + "." : "That is the current through " + p.id + ". The question asks for a voltage." };
-      }
-      if (q.kind === "v" && near(ans, Math.abs(sol.V[p.a] - sol.V[p.b]))) {
-        return { ok: false, msg: "That is the voltage across " + p.id + ". The question asks for the voltage at node " + q.node + ", measured from ground." };
       }
     }
     return { ok: false, msg: "Not yet." };
@@ -715,8 +721,8 @@
   function build() {
     const tpl = CIRCUITS[ui.key];
     empty(svg);
-    const L = { glow: S("g", {}, svg), wire: S("g", {}, svg), knock: S("g", {}, svg), flow: S("g", {}, svg), sym: S("g", {}, svg), text: S("g", {}, svg) };
-    drawn = { parts: {}, flows: [], nodes: {}, rings: {} };
+    const L = { wire: S("g", {}, svg), knock: S("g", {}, svg), glow: S("g", {}, svg), flow: S("g", {}, svg), sym: S("g", {}, svg), text: S("g", {}, svg) };
+    drawn = { parts: {}, wires: [], flows: [], nodes: {}, rings: {} };
 
     function strand(pts, current) {
       const d = pathOf(pts);
@@ -727,7 +733,7 @@
       return glow;
     }
 
-    tpl.wires.forEach((w) => { w.glow = strand(w.pts, (s) => w.carries.reduce((sum, id) => sum + s.I[id], 0)); });
+    tpl.wires.forEach((w) => { drawn.wires.push(strand(w.pts, (s) => w.carries.reduce((sum, id) => sum + s.I[id], 0))); });
 
     tpl.parts.forEach((p) => {
       const glow = strand(p.pts, (s) => s.I[p.id]);
@@ -755,8 +761,8 @@
       // where the labels go: above and below a flat part, beside an upright one
       let name, cur, anchor;
       if (flat) { name = [cx, cy - 16]; cur = [cx, cy + 25]; anchor = "middle"; }
-      else if (p.side === "left") { name = [cx - 24, cy - 2]; cur = [cx - 24, cy + 13]; anchor = "end"; }
-      else { name = [cx + 24, cy - 2]; cur = [cx + 24, cy + 13]; anchor = "start"; }
+      else if (p.side === "left") { name = [cx - (p.type === "R" ? 15 : 24), cy - 2]; cur = [cx - 15, cy + 13]; anchor = "end"; }
+      else { name = [cx + (p.type === "R" ? 15 : 24), cy - 2]; cur = [cx + 15, cy + 13]; anchor = "start"; }
       const handle = { def: p, glow: glow };
       handle.name = S("text", { x: name[0], y: name[1], "text-anchor": anchor, class: "part" }, L.text);
       if (p.type === "R") {
@@ -845,7 +851,8 @@
     const inLoop = {};
     tpl.loops[ui.loop].walk.forEach((w) => { inLoop[w[0]] = true; });
     tpl.parts.forEach((p) => drawn.parts[p.id].glow.setAttribute("class", "glow" + (show && inLoop[p.id] ? " on" : "")));
-    tpl.wires.forEach((w) => w.glow.setAttribute("class", "glow" + (show && w.carries.some((id) => inLoop[id]) && tpl.loops[ui.loop].walk.every((s) => s[0] !== "Is" && s[0] !== "R1") ? " on" : "")));
+    const via = tpl.loops[ui.loop].via || [];
+    drawn.wires.forEach((glow, i) => glow.setAttribute("class", "glow" + (show && via.indexOf(i) >= 0 ? " on" : "")));
     if (!show) return;
 
     // ---- KCL: two bars
@@ -1113,7 +1120,15 @@
       for (let i = 0; i < (count || 300); i++) {
         const key = ORDER[i % ORDER.length], tpl = CIRCUITS[key], vals = niceValues(tpl, r), s = solve(tpl, vals);
         nodeNames(tpl).concat(["0"]).forEach((n) => { worstKcl = Math.max(worstKcl, Math.abs(leaving(tpl, s, n).reduce((a, f) => a + f.out, 0))); });
-        tpl.loops.forEach((l) => { worstKvl = Math.max(worstKvl, Math.abs(l.walk.reduce((a, w) => a + (s.V[w[2]] - s.V[w[1]]), 0))); });
+        tpl.loops.forEach((l) => {
+          const round = l.walk.reduce((a, w) => {
+            const part = tpl.parts.filter((p) => p.id === w[0])[0];
+            if (part.type === "R") return a + (w[1] === part.a ? -1 : 1) * s.I[part.id] * vals[part.id];   // down with the current, up against it
+            if (part.type === "V") return a + (w[1] === part.n ? 1 : -1) * vals[part.id];
+            return a + (s.V[w[2]] - s.V[w[1]]);    // a current source takes whatever voltage the rest of the loop leaves it
+          }, 0);
+          worstKvl = Math.max(worstKvl, Math.abs(round));
+        });
         done++;
       }
       return { problems: done, worstKclResidual_mA: worstKcl, worstKvlResidual_V: worstKvl };
