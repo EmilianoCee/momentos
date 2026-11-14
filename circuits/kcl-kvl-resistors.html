@@ -1,0 +1,1125 @@
+<!doctype html>
+<!--
+  Concept:      KCL: the current into a node equals the current out. KVL: voltage is a height, so round any loop the rises
+                equal the drops. With Ohm's law between them, those two rules solve every resistor circuit.
+  Course:       EECS 16A (KCL, KVL, nodal analysis, dividers)
+  Play with:    Practice: solve for a node voltage or a branch current, with hints and a worked solution.
+                Explore: slide the resistor and source values and watch the current split and the heights move.
+  Should click: Dots per second into a node equal dots per second out. Walking round a loop always returns to the
+                height you started at. Dividers are those two rules applied once.
+  Checked:      The solver against hand calculations: 12 V into 2 kΩ + 4 kΩ gives 2 mA and 8 V at the midpoint;
+                6 mA into 2 kΩ ∥ 4 kΩ gives 8 V, 4 mA and 2 mA; the T network (12 V, 2, 6, 1, 2 kΩ) gives 6 V, 4 V and
+                3, 1, 2 mA; two sources (12 V and 6 V, 2, 6, 3 kΩ) give 8 V with −0.667 mA in R3. KCL and KVL residuals
+                are zero for every generated problem (see scripts/check-map.py for the map, and the console helper
+                window.TOOL.audit() for this file).
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KCL and KVL on resistor circuits · momentos</title>
+<script>
+  try {
+    var saved = localStorage.getItem("momentos-theme");
+    if (saved === "light" || saved === "dark") document.documentElement.dataset.theme = saved;
+  } catch (e) { /* no storage in this preview: follow the system setting */ }
+</script>
+<style>
+  /* ---- momentos house style (same block in every tool; see templates/tool-template.html) ---- */
+  :root {
+    color-scheme: light dark;
+    --bg: light-dark(#f6f4ee, #131312);
+    --surface: light-dark(#fbfaf6, #1b1b19);
+    --ink: light-dark(#1d1c1a, #ebe8e1);
+    --ink-2: light-dark(#5f5c55, #b1ada3);
+    --ink-3: light-dark(#77736b, #8a867d);
+    --line: light-dark(rgba(29, 28, 26, 0.16), rgba(235, 232, 225, 0.18));
+    --grid: light-dark(rgba(29, 28, 26, 0.07), rgba(235, 232, 225, 0.08));
+    --accent: light-dark(#c2410c, #ff8f5a);
+    --c1: light-dark(#2458c4, #7aa7ff);
+    --c2: light-dark(#c2410c, #ff9a62);
+    --c3: light-dark(#0f7f6b, #4fd3b4);
+    --c4: light-dark(#9d3fb0, #d78be6);
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+    --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  }
+  :root[data-theme="light"] { color-scheme: light; }
+  :root[data-theme="dark"] { color-scheme: dark; }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 17px/1.55 var(--serif);
+    -webkit-font-smoothing: antialiased;
+  }
+  .bar {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 22px;
+    font: 12px/1 var(--mono);
+    letter-spacing: 0.06em;
+    color: var(--ink-3);
+  }
+  .bar a { color: var(--ink-2); text-decoration: none; border-bottom: 1px solid var(--line); padding-bottom: 2px; }
+  .bar a:hover { color: var(--accent); border-color: var(--accent); }
+  .bar .grow { flex: 1; }
+  button {
+    font: 12px/1 var(--mono);
+    color: var(--ink-2);
+    background: transparent;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 7px 10px;
+    cursor: pointer;
+  }
+  button:hover { color: var(--ink); border-color: var(--ink-2); }
+  button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  button:disabled { opacity: 0.4; cursor: default; }
+  :focus-visible { outline: 1px dashed var(--ink); outline-offset: 2px; }
+
+  main { max-width: 1120px; margin: 0 auto; padding: 4px 22px 72px; }
+  h1 { font: 400 clamp(30px, 4.6vw, 44px)/1.08 var(--serif); letter-spacing: -0.015em; margin: 14px 0 10px; }
+  .lede { max-width: 62ch; margin: 0 0 26px; color: var(--ink-2); font-size: 18px; }
+  h2 {
+    font: 500 10.5px/1.4 var(--mono);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin: 0 0 10px;
+  }
+  .bench { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(300px, 1fr); gap: 28px; align-items: start; }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-top: 28px; }
+  figure { margin: 0; }
+  .stage { border: 1px solid var(--line); border-radius: 4px; background: var(--surface); overflow: hidden; }
+  .stage svg { display: block; width: 100%; height: auto; user-select: none; -webkit-user-select: none; }
+  figcaption { padding: 9px 12px; border-top: 1px solid var(--line); font: 11.5px/1.5 var(--mono); color: var(--ink-3); }
+  .controls { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 12px; }
+  .controls label { font: 12px/1 var(--mono); color: var(--ink-2); display: inline-flex; align-items: center; gap: 6px; margin-left: 6px; }
+  input[type="range"] { accent-color: var(--ink); }
+  input[type="checkbox"] { accent-color: var(--ink); }
+
+  .notes { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 44px; margin-top: 46px; padding-top: 28px; border-top: 1px solid var(--line); }
+  .notes p { margin: 0 0 14px; max-width: 62ch; }
+  .notes p b { font-weight: 600; }
+  .notes ul { margin: 0 0 26px; padding: 0; list-style: none; }
+  .notes li { margin: 0 0 12px; padding-left: 14px; border-left: 1px solid var(--line); font-size: 16px; line-height: 1.45; }
+  .notes li a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--line); }
+  .notes li a:hover { color: var(--accent); border-color: var(--accent); }
+  details { margin-top: 4px; }
+  summary { font: 11.5px/1.4 var(--mono); color: var(--ink-3); cursor: pointer; }
+  details span { color: var(--ink-2); font-size: 15px; }
+  sub { font-size: 0.72em; line-height: 0; }
+
+  @media (max-width: 860px) {
+    .bench, .pair, .notes { grid-template-columns: 1fr; }
+    .notes { gap: 28px; }
+  }
+
+  /* ---- this tool ---- */
+  .cur-c { color: var(--c1); } .volt-c { color: var(--c2); }
+  var { font-style: italic; font-family: var(--serif); }
+
+  .wire { stroke: var(--ink); stroke-width: 1.5; fill: none; stroke-linejoin: round; stroke-linecap: round; }
+  .knock { stroke: var(--surface); stroke-width: 9; }
+  .sym { stroke: var(--ink); stroke-width: 1.5; fill: none; stroke-linejoin: round; stroke-linecap: round; }
+  .src { fill: var(--surface); stroke: var(--ink); stroke-width: 1.5; }
+  .sign { font: 13px var(--mono); fill: var(--ink); text-anchor: middle; }
+  .arrow-fill { fill: var(--ink); stroke: none; }
+  .flow { stroke: var(--c1); stroke-width: 4.4; stroke-linecap: round; stroke-dasharray: 0.1 15; fill: none; }
+  .glow { stroke: var(--c2); stroke-width: 12; stroke-opacity: 0; fill: none; stroke-linecap: round; stroke-linejoin: round; transition: stroke-opacity 0.2s; }
+  .glow.on { stroke-opacity: 0.22; }
+  .junction { fill: var(--ink); }
+  .part, .cur, .node, .volt { paint-order: stroke; stroke: var(--surface); stroke-width: 4px; stroke-linejoin: round; }
+  .part { font: 11px var(--mono); fill: var(--ink-2); }
+  .cur { font: 11px var(--mono); fill: var(--c1); }
+  .node { font: italic 15px var(--serif); fill: var(--ink); }
+  .volt { font: 11px var(--mono); fill: var(--c2); }
+  .asked { fill: var(--accent); font-weight: 700; }
+  .ring { fill: none; stroke: var(--c1); stroke-width: 1.5; opacity: 0; transition: opacity 0.2s; }
+  .ring.on { opacity: 1; }
+
+  .panel { font: 13px/1.5 var(--mono); }
+  .seg { display: flex; margin-bottom: 14px; }
+  .seg button { flex: 1; border-radius: 0; margin-left: -1px; }
+  .seg button:first-child { border-radius: 3px 0 0 3px; margin-left: 0; }
+  .seg button:last-child { border-radius: 0 3px 3px 0; }
+  .level-note { margin: -6px 0 16px; color: var(--ink-3); }
+  .question { margin: 0 0 12px; font: 400 22px/1.3 var(--serif); color: var(--ink); }
+  .answer { display: flex; align-items: center; gap: 8px; margin: 0 0 10px; }
+  .answer input {
+    width: 120px;
+    padding: 8px 10px;
+    border: 1px solid var(--ink-2);
+    border-radius: 3px;
+    background: var(--surface);
+    color: var(--ink);
+    font: 16px/1.2 var(--mono);
+    font-variant-numeric: tabular-nums;
+  }
+  .answer .unit { color: var(--ink-2); min-width: 26px; }
+  .answer button { padding: 10px 14px; border-color: var(--ink-2); color: var(--ink); }
+  .feedback { min-height: 1.5em; margin: 0 0 10px; font: 16px/1.4 var(--serif); }
+  .feedback.good { color: var(--c3); }
+  .feedback.bad { color: var(--accent); }
+  .steps { margin: 16px 0 0; padding: 0 0 0 20px; font: 15.5px/1.5 var(--serif); color: var(--ink); }
+  .steps li { margin: 0 0 10px; }
+  .steps:empty { display: none; }
+  .eq { display: block; margin: 4px 0 2px; font: 13px/1.5 var(--mono); color: var(--ink); font-variant-numeric: tabular-nums; }
+  .tally { margin: 14px 0 0; color: var(--ink-3); }
+  .matrix { margin: 14px 0 0; font: 13px/1.5 var(--mono); }
+  .matrix .sys { display: flex; align-items: center; gap: 8px; margin: 8px 0; flex-wrap: wrap; font-variant-numeric: tabular-nums; }
+  .matrix .m { display: grid; gap: 2px 14px; padding: 4px 8px; border-left: 1px solid var(--ink-2); border-right: 1px solid var(--ink-2); border-radius: 4px; text-align: right; }
+  .matrix p { margin: 6px 0 0; font: 15px/1.45 var(--serif); color: var(--ink-2); }
+  .field { display: flex; align-items: center; gap: 10px; margin: 0 0 14px; color: var(--ink-2); }
+  select {
+    flex: 1;
+    padding: 7px 8px;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    background: var(--surface);
+    color: var(--ink);
+    font: 12px/1.2 var(--mono);
+  }
+  .slider { display: grid; grid-template-columns: 34px 1fr 76px; align-items: center; gap: 10px; margin: 0 0 8px; }
+  .slider output { text-align: right; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .explain { margin: 12px 0 0; color: var(--ink-3); }
+
+  .pick { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 10px 12px; border-bottom: 1px solid var(--line); font: 11.5px/1 var(--mono); color: var(--ink-3); }
+  .pick button { padding: 5px 8px; font-size: 11.5px; }
+  .veil { margin: 0; padding: 46px 22px; text-align: center; font: 15px/1.5 var(--serif); color: var(--ink-3); }
+  .sum { margin: 0; padding: 9px 12px; border-top: 1px solid var(--line); font: 12.5px/1.5 var(--mono); color: var(--ink); font-variant-numeric: tabular-nums; }
+  .bar-in { fill: var(--c1); }
+  .bar-out { fill: var(--c1); fill-opacity: 0.45; }
+  .bar-label { font: 11px var(--mono); fill: var(--ink-2); }
+  .bar-name { font: 10.5px var(--mono); letter-spacing: 0.1em; fill: var(--ink-3); }
+  .height { fill: none; stroke: var(--c2); stroke-width: 2.2; stroke-linejoin: round; stroke-linecap: round; }
+  .level { stroke: var(--ink-3); stroke-width: 1; stroke-dasharray: 2 4; }
+  .stop { fill: var(--c2); }
+  .ax { font: 10.5px var(--mono); fill: var(--ink-3); }
+  .ax-node { font: italic 13px var(--serif); fill: var(--ink); }
+  .delta { font: 11px var(--mono); fill: var(--ink-2); paint-order: stroke; stroke: var(--surface); stroke-width: 4px; stroke-linejoin: round; }
+</style>
+</head>
+<body>
+
+<header class="bar">
+  <a href="../index.html#kcl">← map</a>
+  <span>circuits</span>
+  <span class="grow"></span>
+  <button type="button" id="theme" aria-label="Switch between light and dark">◐</button>
+</header>
+
+<main>
+  <h1>KCL and KVL on resistor circuits</h1>
+  <p class="lede">Two rules solve every circuit on this page. <span class="cur-c">Current</span> that flows into a node flows out again. And <span class="volt-c">voltage</span> is a height: go round any loop and you arrive back at the height you left. Ohm's law, <var>v</var> = <var>iR</var>, ties the two together.</p>
+
+  <div class="bench">
+    <div>
+      <figure class="stage">
+        <svg id="schematic" viewBox="0 0 560 284" role="img"></svg>
+        <figcaption id="caption">Arrows show the direction each current is counted in. Values are in volts, kilohms and milliamps, so V = mA × kΩ.</figcaption>
+      </figure>
+      <div class="controls">
+        <label><input type="checkbox" id="flow"> show the current moving</label>
+      </div>
+    </div>
+
+    <aside class="panel">
+      <div class="seg" role="group" aria-label="Mode">
+        <button type="button" data-mode="practice">practice</button>
+        <button type="button" data-mode="explore">explore</button>
+      </div>
+
+      <div id="practice">
+        <div class="seg" role="group" aria-label="Level">
+          <button type="button" data-level="1">level 1</button>
+          <button type="button" data-level="2">level 2</button>
+          <button type="button" data-level="3">level 3</button>
+        </div>
+        <p class="level-note" id="level-note"></p>
+        <p class="question" id="question"></p>
+        <form class="answer" id="answer-form">
+          <input id="answer" type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer">
+          <span class="unit" id="unit"></span>
+          <button type="submit">check</button>
+        </form>
+        <p class="feedback" id="feedback" role="status"></p>
+        <div class="controls">
+          <button type="button" id="hint">hint</button>
+          <button type="button" id="reveal">show the solution</button>
+          <button type="button" id="next">new problem</button>
+          <button type="button" id="to-explore" hidden>explore this circuit</button>
+        </div>
+        <ol class="steps" id="steps"></ol>
+        <div class="matrix" id="matrix" hidden></div>
+        <p class="tally" id="tally"></p>
+      </div>
+
+      <div id="explore" hidden>
+        <div class="field"><span>circuit</span><select id="pick" aria-label="Circuit"></select></div>
+        <div id="sliders"></div>
+        <p class="explain">Slide a value and watch three things: how fast the dots move in each branch, the heights in the loop chart, and the two bars at the node staying the same length.</p>
+      </div>
+    </aside>
+  </div>
+
+  <div class="pair">
+    <figure class="stage">
+      <div class="pick" id="kcl-pick"></div>
+      <p class="veil" id="kcl-veil">Answer the question, or reveal the solution, to see KCL checked at a node of this circuit.</p>
+      <svg id="kcl" viewBox="0 0 520 170" role="img" aria-label="Currents into and out of the chosen node, drawn as two bars of equal length"></svg>
+      <p class="sum" id="kcl-sum"></p>
+      <figcaption>KCL. The <span class="cur-c">current</span> flowing into a node and the current flowing out of it, drawn to the same scale. The two bars are always the same length.</figcaption>
+    </figure>
+    <figure class="stage">
+      <div class="pick" id="kvl-pick"></div>
+      <p class="veil" id="kvl-veil">Answer the question, or reveal the solution, to see KVL checked round a loop of this circuit.</p>
+      <svg id="kvl" viewBox="0 0 520 230" role="img" aria-label="The voltage at each node met while walking once round the chosen loop"></svg>
+      <p class="sum" id="kvl-sum"></p>
+      <figcaption>KVL. The <span class="volt-c">height</span> of each node you meet walking once round a loop. A source lifts you, a resistor lets you down, and you finish where you began.</figcaption>
+    </figure>
+  </div>
+
+  <section class="notes">
+    <div>
+      <h2>What should click</h2>
+      <p><b>KCL is bookkeeping for charge.</b> A node has nowhere to store charge, so at every instant the current arriving equals the current leaving. Watch the dots where a wire splits: the stream divides, and the number of dots per second going in equals the number coming out.</p>
+      <p><b>KVL says voltage is a height.</b> Every node sits at one height. A source lifts you up. A resistor lets you down by <var>iR</var> if you walk the way the current flows, and lifts you by <var>iR</var> if you walk against it. Go round any closed loop and you must arrive back at the height you left, so the rises and the drops cancel.</p>
+      <p><b>Ohm's law is the exchange rate.</b> KCL speaks about currents and KVL about voltages. <var>v</var> = <var>iR</var> converts one into the other, and that is what makes a circuit solvable: write KCL at each node whose voltage you do not know, replace every current by a difference of node voltages over <var>R</var>, and solve.</p>
+      <p><b>Dividers are the two rules used once.</b> One loop: resistors in series share a single current, so each drops voltage in proportion to its <var>R</var>. One pair of nodes: resistors in parallel share a single voltage, so each takes current in proportion to 1/<var>R</var>. The larger resistor gets the larger share of the voltage and the smaller share of the current.</p>
+      <p><b>A negative answer is not a mistake.</b> You choose the direction of each arrow before you know the answer. If the number comes out negative, the current flows the other way, and every equation you wrote is still correct.</p>
+    </div>
+    <div>
+      <h2>Predict, then try</h2>
+      <ul>
+        <li><button type="button" class="try" data-try="loop2">one loop</button><br>Make <var>R</var><sub>2</sub> much larger than <var>R</var><sub>1</sub>. Where does the voltage at A go?
+          <details><summary>why</summary><span>Up toward the source voltage. The same current flows through both, so the larger resistor takes nearly all of the drop.</span></details></li>
+        <li><button type="button" class="try" data-try="par2">one pair of nodes</button><br>Make <var>R</var><sub>2</sub> much larger than <var>R</var><sub>1</sub>. Which resistor carries the current now?
+          <details><summary>why</summary><span><var>R</var><sub>1</sub>. Both see the same voltage, and the smaller resistance lets more current through.</span></details></li>
+        <li><button type="button" class="try" data-try="tee">T network</button><br>Raise <var>R</var><sub>4</sub> a long way. What happens to the current in <var>R</var><sub>2</sub>?
+          <details><summary>why</summary><span>It goes up. Less current is drawn off through the right-hand branch, so node A rises and pushes more through <var>R</var><sub>2</sub>.</span></details></li>
+        <li><button type="button" class="try" data-try="two">two sources</button><br>Lower <var>V</var><sub>2</sub> until the dots in <var>R</var><sub>3</sub> stand still. What is <var>V</var><sub>2</sub> equal to at that moment?
+          <details><summary>why</summary><span>The voltage at A. With the same height at both ends of <var>R</var><sub>3</sub> there is nothing to drive a current through it.</span></details></li>
+      </ul>
+      <h2>Where this shows up</h2>
+      <ul>
+        <li><a href="../index.html#nodal-analysis">Nodal analysis</a> is this method made systematic, and the equations it produces are a <a href="../index.html#linear-systems">linear system</a>, <var>G</var><var>v</var> = <var>i</var>.</li>
+        <li><a href="../index.html#phasors-impedance">Phasors and impedance</a>: swap each <var>R</var> for a complex <var>Z</var> and everything on this page carries over to capacitors and inductors at one frequency.</li>
+        <li><a href="../index.html#dividers">Dividers</a> set bias points, scale sensor outputs and load every source you will ever measure.</li>
+        <li><a href="../index.html#work">Work</a>: voltage is work per unit charge, which is why KVL is really conservation of energy.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+
+  // ==== LOGIC START (no DOM in this block, so it can be tested on its own) ====
+
+  function fmt(v, d) {
+    if (d === undefined) d = 3;
+    let s = (Math.round(v * Math.pow(10, d)) / Math.pow(10, d)).toFixed(d);
+    if (s.indexOf(".") >= 0) s = s.replace(/0+$/, "").replace(/\.$/, "");
+    if (s === "-0") s = "0";
+    return s.replace("-", "−");
+  }
+  const sub = (name) => "<var>" + name.charAt(0) + "</var><sub>" + name.slice(1) + "</sub>";
+  const eq = (text) => '<span class="eq">' + text + "</span>";
+
+  // Units throughout: volts, kilohms, milliamps (so V = mA × kΩ with no factors of 1000).
+  //
+  // A circuit is a list of parts between named nodes; node "0" is ground.
+  //   R: resistor from a to b. Its current is counted from a to b.
+  //   V: voltage source, + at p and − at n. Its current is what it delivers out of the + terminal.
+  //   I: current source driving its value from n to p (the arrow points at p).
+  // `pts` is the path of the part and its leads, in the direction the current is counted,
+  // and `body` says which segment of that path carries the symbol.
+  // `wires` are stretches of rail shared by several parts; `carries` lists whose current they hold.
+  const CIRCUITS = {
+    loop2: {
+      title: "one loop, two resistors", level: 1,
+      parts: [
+        { id: "Vs", type: "V", p: "P", n: "0", pts: [[390, 220], [150, 220], [150, 64]], body: 1, side: "left" },
+        { id: "R1", type: "R", a: "P", b: "A", pts: [[150, 64], [390, 64]], body: 0 },
+        { id: "R2", type: "R", a: "A", b: "0", pts: [[390, 64], [390, 220]], body: 0 }
+      ],
+      wires: [],
+      nodes: { P: { at: [150, 64], label: [-10, -9, "end"] }, A: { at: [390, 64], label: [10, -9, "start"] } },
+      ground: [390, 220], dots: [],
+      start: { Vs: 12, R1: 2, R2: 4 },
+      kcl: ["A"],
+      loops: [{ name: "the loop", walk: [["Vs", "0", "P"], ["R1", "P", "A"], ["R2", "A", "0"]] }],
+      ask: [{ kind: "v", node: "A" }, { kind: "i", el: "R1" }],
+      steps: (v, s) => [
+        "There is only one loop, so a single current <var>I</var> flows through the source and both resistors: " + sub("I1") + " = " + sub("I2") + " = <var>I</var>.",
+        "KVL, walking clockwise from ground: up by " + sub("Vs") + " across the source, then down across each resistor." + eq("Vs − I·R1 − I·R2 = 0"),
+        "Solve for the current. Volts over kilohms gives milliamps." + eq("I = Vs / (R1 + R2) = " + fmt(v.Vs) + " / (" + fmt(v.R1) + " + " + fmt(v.R2) + ") = " + fmt(s.I.R1) + " mA"),
+        "Node A is one resistor above ground." + eq("V_A = I·R2 = " + fmt(s.I.R1) + " × " + fmt(v.R2) + " = " + fmt(s.V.A) + " V") + "This is the voltage divider: " + sub("Vs") + "·" + sub("R2") + " / (" + sub("R1") + " + " + sub("R2") + ")."
+      ]
+    },
+    loop3: {
+      title: "one loop, three resistors", level: 2,
+      parts: [
+        { id: "Vs", type: "V", p: "P", n: "0", pts: [[150, 220], [150, 64]], body: 0, side: "left" },
+        { id: "R1", type: "R", a: "P", b: "A", pts: [[150, 64], [390, 64]], body: 0 },
+        { id: "R2", type: "R", a: "A", b: "B", pts: [[390, 64], [390, 220]], body: 0 },
+        { id: "R3", type: "R", a: "B", b: "0", pts: [[390, 220], [150, 220]], body: 0 }
+      ],
+      wires: [],
+      nodes: { P: { at: [150, 64], label: [-10, -9, "end"] }, A: { at: [390, 64], label: [10, -9, "start"] }, B: { at: [390, 220], label: [10, 18, "start"] } },
+      ground: [150, 220], dots: [],
+      start: { Vs: 12, R1: 1, R2: 2, R3: 3 },
+      kcl: ["A", "B"],
+      loops: [{ name: "the loop", walk: [["Vs", "0", "P"], ["R1", "P", "A"], ["R2", "A", "B"], ["R3", "B", "0"]] }],
+      ask: [{ kind: "v", node: "A" }, { kind: "v", node: "B" }, { kind: "i", el: "R2" }],
+      steps: (v, s) => [
+        "One loop again, so one current <var>I</var> flows through everything.",
+        "KVL round the loop: the source lifts by " + sub("Vs") + " and the three resistors bring you back down." + eq("Vs − I·R1 − I·R2 − I·R3 = 0"),
+        eq("I = Vs / (R1 + R2 + R3) = " + fmt(v.Vs) + " / (" + fmt(v.R1) + " + " + fmt(v.R2) + " + " + fmt(v.R3) + ") = " + fmt(s.I.R1) + " mA"),
+        "Now climb up from ground, one resistor at a time." + eq("V_B = I·R3 = " + fmt(s.I.R1) + " × " + fmt(v.R3) + " = " + fmt(s.V.B) + " V") + eq("V_A = V_B + I·R2 = " + fmt(s.V.B) + " + " + fmt(s.I.R1) + " × " + fmt(v.R2) + " = " + fmt(s.V.A) + " V")
+      ]
+    },
+    par2: {
+      title: "one pair of nodes, two resistors", level: 1,
+      parts: [
+        { id: "Is", type: "I", p: "A", n: "0", pts: [[280, 220], [90, 220], [90, 64], [280, 64]], body: 1, side: "left" },
+        { id: "R1", type: "R", a: "A", b: "0", pts: [[280, 64], [280, 220]], body: 0 },
+        { id: "R2", type: "R", a: "A", b: "0", pts: [[280, 64], [470, 64], [470, 220], [280, 220]], body: 1, side: "left" }
+      ],
+      wires: [],
+      nodes: { A: { at: [280, 64], label: [0, -12, "middle"] } },
+      ground: [280, 220], dots: [[280, 64], [280, 220]],
+      start: { Is: 6, R1: 2, R2: 4 },
+      kcl: ["A"],
+      loops: [
+        { name: "source and R1", walk: [["Is", "0", "A"], ["R1", "A", "0"]] },
+        { name: "R1 and R2", walk: [["R1", "0", "A"], ["R2", "A", "0"]] }
+      ],
+      ask: [{ kind: "v", node: "A" }, { kind: "i", el: "R1" }, { kind: "i", el: "R2" }],
+      steps: (v, s) => [
+        "Both resistors join node A to ground, so they share one voltage, " + sub("VA") + ".",
+        "KCL at A: the source pushes " + sub("Is") + " in, and it leaves through the two resistors." + eq("Is = V_A/R1 + V_A/R2"),
+        eq("V_A = Is / (1/R1 + 1/R2) = " + fmt(v.Is) + " / (1/" + fmt(v.R1) + " + 1/" + fmt(v.R2) + ") = " + fmt(s.V.A) + " V"),
+        "Ohm's law gives each branch." + eq("I1 = V_A/R1 = " + fmt(s.V.A) + " / " + fmt(v.R1) + " = " + fmt(s.I.R1) + " mA") + eq("I2 = V_A/R2 = " + fmt(s.V.A) + " / " + fmt(v.R2) + " = " + fmt(s.I.R2) + " mA") + "Check: " + fmt(s.I.R1) + " + " + fmt(s.I.R2) + " = " + fmt(v.Is) + " mA. The smaller resistor takes the larger share."
+      ]
+    },
+    par3: {
+      title: "one pair of nodes, three resistors", level: 2,
+      parts: [
+        { id: "Is", type: "I", p: "A", n: "0", pts: [[210, 220], [70, 220], [70, 64], [210, 64]], body: 1, side: "left" },
+        { id: "R1", type: "R", a: "A", b: "0", pts: [[210, 64], [210, 220]], body: 0 },
+        { id: "R2", type: "R", a: "A", b: "0", pts: [[350, 64], [350, 220]], body: 0 },
+        { id: "R3", type: "R", a: "A", b: "0", pts: [[350, 64], [490, 64], [490, 220], [350, 220]], body: 1, side: "left" }
+      ],
+      wires: [
+        { pts: [[210, 64], [350, 64]], carries: ["R2", "R3"] },
+        { pts: [[350, 220], [210, 220]], carries: ["R2", "R3"] }
+      ],
+      nodes: { A: { at: [210, 64], label: [0, -12, "middle"] } },
+      ground: [210, 220], dots: [[210, 64], [350, 64], [210, 220], [350, 220]],
+      start: { Is: 11, R1: 2, R2: 3, R3: 6 },
+      kcl: ["A"],
+      loops: [
+        { name: "source and R1", walk: [["Is", "0", "A"], ["R1", "A", "0"]] },
+        { name: "R1 and R2", walk: [["R1", "0", "A"], ["R2", "A", "0"]] },
+        { name: "R2 and R3", walk: [["R2", "0", "A"], ["R3", "A", "0"]] }
+      ],
+      ask: [{ kind: "v", node: "A" }, { kind: "i", el: "R1" }, { kind: "i", el: "R2" }, { kind: "i", el: "R3" }],
+      steps: (v, s) => [
+        "The whole top rail is one node, A, and the whole bottom rail is ground. All three resistors sit across the same voltage, " + sub("VA") + ".",
+        "KCL at A: what the source pushes in leaves through the three resistors." + eq("Is = V_A/R1 + V_A/R2 + V_A/R3"),
+        eq("V_A = Is / (1/R1 + 1/R2 + 1/R3) = " + fmt(v.Is) + " / (1/" + fmt(v.R1) + " + 1/" + fmt(v.R2) + " + 1/" + fmt(v.R3) + ") = " + fmt(s.V.A) + " V"),
+        "Each branch current is " + sub("VA") + " over its own resistance." + eq("I1 = " + fmt(s.I.R1) + " mA,  I2 = " + fmt(s.I.R2) + " mA,  I3 = " + fmt(s.I.R3) + " mA") + "Check: they add up to " + fmt(s.I.R1 + s.I.R2 + s.I.R3) + " mA, which is " + sub("Is") + "."
+      ]
+    },
+    tee: {
+      title: "T network", level: 2,
+      parts: [
+        { id: "Vs", type: "V", p: "P", n: "0", pts: [[280, 220], [90, 220], [90, 64]], body: 1, side: "left" },
+        { id: "R1", type: "R", a: "P", b: "A", pts: [[90, 64], [280, 64]], body: 0 },
+        { id: "R2", type: "R", a: "A", b: "0", pts: [[280, 64], [280, 220]], body: 0 },
+        { id: "R3", type: "R", a: "A", b: "B", pts: [[280, 64], [470, 64]], body: 0 },
+        { id: "R4", type: "R", a: "B", b: "0", pts: [[470, 64], [470, 220], [280, 220]], body: 0, side: "left" }
+      ],
+      wires: [],
+      nodes: { P: { at: [90, 64], label: [-10, -9, "end"] }, A: { at: [280, 64], label: [0, -12, "middle"] }, B: { at: [470, 64], label: [10, -9, "start"] } },
+      ground: [280, 220], dots: [[280, 64], [280, 220]],
+      start: { Vs: 12, R1: 2, R2: 6, R3: 1, R4: 2 },
+      kcl: ["A", "B"],
+      loops: [
+        { name: "left loop", walk: [["Vs", "0", "P"], ["R1", "P", "A"], ["R2", "A", "0"]] },
+        { name: "right loop", walk: [["R2", "0", "A"], ["R3", "A", "B"], ["R4", "B", "0"]] },
+        { name: "outer loop", walk: [["Vs", "0", "P"], ["R1", "P", "A"], ["R3", "A", "B"], ["R4", "B", "0"]] }
+      ],
+      ask: [{ kind: "v", node: "A" }, { kind: "v", node: "B" }, { kind: "i", el: "R1" }, { kind: "i", el: "R2" }, { kind: "i", el: "R4" }],
+      steps: (v, s) => [
+        "Node P is held at " + sub("Vs") + " = " + fmt(v.Vs) + " V by the source. " + sub("R3") + " and " + sub("R4") + " carry the same current, so seen from A that branch is one resistor of " + fmt(v.R3) + " + " + fmt(v.R4) + " = " + fmt(v.R3 + v.R4) + " kΩ to ground. One unknown is left: " + sub("VA") + ".",
+        "KCL at A: what arrives through " + sub("R1") + " leaves through " + sub("R2") + " and through " + sub("R3") + "." + eq("(Vs − V_A)/R1 = V_A/R2 + V_A/(R3 + R4)"),
+        "Put in the numbers and solve." + eq("(" + fmt(v.Vs) + " − V_A)/" + fmt(v.R1) + " = V_A/" + fmt(v.R2) + " + V_A/" + fmt(v.R3 + v.R4)) + eq("V_A = " + fmt(s.V.A) + " V"),
+        "Everything else is Ohm's law." + eq("I1 = (Vs − V_A)/R1 = " + fmt(s.I.R1) + " mA") + eq("I2 = V_A/R2 = " + fmt(s.I.R2) + " mA") + eq("I3 = I4 = V_A/(R3 + R4) = " + fmt(s.I.R3) + " mA") + eq("V_B = I4·R4 = " + fmt(s.V.B) + " V") + "Check KCL at A: " + fmt(s.I.R1) + " = " + fmt(s.I.R2) + " + " + fmt(s.I.R3) + "."
+      ]
+    },
+    two: {
+      title: "two sources", level: 3,
+      parts: [
+        { id: "V1", type: "V", p: "P", n: "0", pts: [[280, 220], [90, 220], [90, 64]], body: 1, side: "left" },
+        { id: "R1", type: "R", a: "P", b: "A", pts: [[90, 64], [280, 64]], body: 0 },
+        { id: "R2", type: "R", a: "A", b: "0", pts: [[280, 64], [280, 220]], body: 0 },
+        { id: "R3", type: "R", a: "Q", b: "A", pts: [[470, 64], [280, 64]], body: 0 },
+        { id: "V2", type: "V", p: "Q", n: "0", pts: [[280, 220], [470, 220], [470, 64]], body: 1 }
+      ],
+      wires: [],
+      nodes: { P: { at: [90, 64], label: [-10, -9, "end"] }, A: { at: [280, 64], label: [0, -12, "middle"] }, Q: { at: [470, 64], label: [10, -9, "start"] } },
+      ground: [280, 220], dots: [[280, 64], [280, 220]],
+      start: { V1: 12, R1: 2, R2: 6, R3: 3, V2: 6 },
+      kcl: ["A"],
+      loops: [
+        { name: "left loop", walk: [["V1", "0", "P"], ["R1", "P", "A"], ["R2", "A", "0"]] },
+        { name: "right loop", walk: [["V2", "0", "Q"], ["R3", "Q", "A"], ["R2", "A", "0"]] },
+        { name: "outer loop", walk: [["V1", "0", "P"], ["R1", "P", "A"], ["R3", "A", "Q"], ["V2", "Q", "0"]] }
+      ],
+      ask: [{ kind: "v", node: "A" }, { kind: "i", el: "R1" }, { kind: "i", el: "R2" }, { kind: "i", el: "R3" }],
+      steps: (v, s) => [
+        "Nodes P and Q are held at " + sub("V1") + " = " + fmt(v.V1) + " V and " + sub("V2") + " = " + fmt(v.V2) + " V by the two sources. The only unknown is " + sub("VA") + ".",
+        "KCL at A: the currents arriving through " + sub("R1") + " and " + sub("R3") + " leave through " + sub("R2") + "." + eq("(V1 − V_A)/R1 + (V2 − V_A)/R3 = V_A/R2"),
+        "Collect the terms in " + sub("VA") + "." + eq("V_A = (V1/R1 + V2/R3) / (1/R1 + 1/R2 + 1/R3)") + eq("    = (" + fmt(v.V1) + "/" + fmt(v.R1) + " + " + fmt(v.V2) + "/" + fmt(v.R3) + ") / (1/" + fmt(v.R1) + " + 1/" + fmt(v.R2) + " + 1/" + fmt(v.R3) + ") = " + fmt(s.V.A) + " V"),
+        "Then Ohm's law for each branch." + eq("I1 = (V1 − V_A)/R1 = " + fmt(s.I.R1) + " mA") + eq("I3 = (V2 − V_A)/R3 = " + fmt(s.I.R3) + " mA") + eq("I2 = V_A/R2 = " + fmt(s.I.R2) + " mA") +
+          (s.I.R1 < -1e-9 || s.I.R3 < -1e-9 ? "The negative current flows against its arrow: the stronger source is pushing current back into the weaker one." : "Check: " + fmt(s.I.R1) + " + " + fmt(s.I.R3) + " = " + fmt(s.I.R2) + ".")
+      ]
+    }
+  };
+  const ORDER = ["loop2", "par2", "loop3", "par3", "tee", "two"];
+
+  function nodeNames(tpl) {
+    const seen = [];
+    tpl.parts.forEach((p) => [p.a, p.b, p.p, p.n].forEach((n) => { if (n && n !== "0" && seen.indexOf(n) < 0) seen.push(n); }));
+    return seen;
+  }
+
+  // Gaussian elimination with partial pivoting. Returns null if the system has no single answer.
+  function gauss(A, b) {
+    const n = b.length, M = A.map((row, i) => row.concat([b[i]]));
+    for (let c = 0; c < n; c++) {
+      let best = c;
+      for (let r = c + 1; r < n; r++) if (Math.abs(M[r][c]) > Math.abs(M[best][c])) best = r;
+      if (Math.abs(M[best][c]) < 1e-12) return null;
+      const t = M[c]; M[c] = M[best]; M[best] = t;
+      for (let r = c + 1; r < n; r++) {
+        const f = M[r][c] / M[c][c];
+        for (let k = c; k <= n; k++) M[r][k] -= f * M[c][k];
+      }
+    }
+    const x = new Array(n).fill(0);
+    for (let r = n - 1; r >= 0; r--) {
+      let sum = M[r][n];
+      for (let k = r + 1; k < n; k++) sum -= M[r][k] * x[k];
+      x[r] = sum / M[r][r];
+    }
+    return x;
+  }
+
+  // Modified nodal analysis: one KCL equation per node, plus one extra unknown (its current) and
+  // one extra equation (its voltage) per voltage source. Returns node voltages V and part currents I.
+  function solve(tpl, vals) {
+    const names = nodeNames(tpl), sources = tpl.parts.filter((p) => p.type === "V");
+    const n = names.length, N = n + sources.length;
+    const A = [], z = new Array(N).fill(0);
+    for (let i = 0; i < N; i++) A.push(new Array(N).fill(0));
+    const at = (name) => names.indexOf(name);     // −1 for ground, which is left out of the equations
+    tpl.parts.forEach((p) => {
+      const val = vals[p.id];
+      if (p.type === "R") {
+        const g = 1 / val, a = at(p.a), b = at(p.b);
+        if (a >= 0) A[a][a] += g;
+        if (b >= 0) A[b][b] += g;
+        if (a >= 0 && b >= 0) { A[a][b] -= g; A[b][a] -= g; }
+      } else if (p.type === "I") {
+        if (at(p.p) >= 0) z[at(p.p)] += val;
+        if (at(p.n) >= 0) z[at(p.n)] -= val;
+      } else {
+        const k = n + sources.indexOf(p), pp = at(p.p), nn = at(p.n);
+        if (pp >= 0) { A[pp][k] += 1; A[k][pp] += 1; }
+        if (nn >= 0) { A[nn][k] -= 1; A[k][nn] -= 1; }
+        z[k] = val;
+      }
+    });
+    const x = gauss(A, z);
+    if (!x) return null;
+    const V = { "0": 0 }, I = {};
+    names.forEach((name, i) => { V[name] = x[i]; });
+    tpl.parts.forEach((p) => {
+      if (p.type === "R") I[p.id] = (V[p.a] - V[p.b]) / vals[p.id];
+      else if (p.type === "I") I[p.id] = vals[p.id];
+      else I[p.id] = -x[n + sources.indexOf(p)];
+    });
+    return { V: V, I: I };
+  }
+
+  // The current that leaves `node` through each part touching it (negative means it arrives).
+  function leaving(tpl, sol, node) {
+    const list = [];
+    tpl.parts.forEach((p) => {
+      let out = null;
+      if (p.type === "R") { if (p.a === node) out = sol.I[p.id]; else if (p.b === node) out = -sol.I[p.id]; }
+      else { if (p.p === node) out = -sol.I[p.id]; else if (p.n === node) out = sol.I[p.id]; }
+      // a part with both ends on this node contributes nothing
+      if (out !== null && !(p.type === "R" && p.a === p.b)) list.push({ id: p.id, out: out });
+    });
+    return list;
+  }
+
+  // The same equations the worked solution writes down, collected as G·v = i (only when there are
+  // at least two unknown node voltages, otherwise there is nothing to show).
+  function nodalMatrix(tpl, vals) {
+    const pinned = {};
+    tpl.parts.forEach((p) => { if (p.type === "V" && p.n === "0") pinned[p.p] = vals[p.id]; });
+    const unknown = nodeNames(tpl).filter((name) => !(name in pinned));
+    if (unknown.length < 2) return null;
+    const G = unknown.map(() => unknown.map(() => 0)), i = unknown.map(() => 0);
+    tpl.parts.forEach((p) => {
+      if (p.type === "R") {
+        const g = 1 / vals[p.id];
+        [[p.a, p.b], [p.b, p.a]].forEach((pair) => {
+          const r = unknown.indexOf(pair[0]);
+          if (r < 0) return;
+          G[r][r] += g;
+          const c = unknown.indexOf(pair[1]);
+          if (c >= 0) G[r][c] -= g;
+          else if (pair[1] in pinned) i[r] += g * pinned[pair[1]];
+        });
+      } else if (p.type === "I") {
+        if (unknown.indexOf(p.p) >= 0) i[unknown.indexOf(p.p)] += vals[p.id];
+        if (unknown.indexOf(p.n) >= 0) i[unknown.indexOf(p.n)] -= vals[p.id];
+      }
+    });
+    return { unknown: unknown, G: G, i: i };
+  }
+
+  // ---- practice problems
+
+  const R_POOL = [1, 2, 3, 4, 5, 6, 8, 10, 12, 15, 20];
+  const V_POOL = [5, 6, 8, 9, 10, 12, 15, 18, 20, 24];
+  const I_POOL = [1, 2, 3, 4, 5, 6, 8, 9, 10, 12];
+
+  // small seeded generator, so a problem can be reproduced when testing
+  function rng(seed) {
+    let a = seed >>> 0;
+    return function () {
+      a = (a + 0x6d2b79f5) >>> 0;
+      let t = a;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  const isStep = (v, step) => Math.abs(v / step - Math.round(v / step)) < 1e-9;
+
+  // Values that give answers you can reach by hand: every node voltage a multiple of 0.5 V,
+  // every current a multiple of 0.25 mA, nothing zero, and not all resistors equal.
+  function niceValues(tpl, rand) {
+    const pick = (pool) => pool[Math.floor(rand() * pool.length)];
+    for (let tries = 0; tries < 6000; tries++) {
+      const vals = {};
+      tpl.parts.forEach((p) => { vals[p.id] = pick(p.type === "R" ? R_POOL : p.type === "V" ? V_POOL : I_POOL); });
+      const rs = tpl.parts.filter((p) => p.type === "R").map((p) => vals[p.id]);
+      if (rs.every((r) => r === rs[0])) continue;
+      const vs = tpl.parts.filter((p) => p.type === "V").map((p) => vals[p.id]);
+      if (vs.length > 1 && vs[0] === vs[1]) continue;
+      const sol = solve(tpl, vals);
+      if (!sol) continue;
+      const volts = Object.keys(sol.V).filter((k) => k !== "0").map((k) => sol.V[k]);
+      const amps = tpl.parts.filter((p) => p.type === "R").map((p) => sol.I[p.id]);
+      if (volts.every((x) => isStep(x, 0.5) && Math.abs(x) > 1e-9) && amps.every((x) => isStep(x, 0.25) && Math.abs(x) > 1e-9)) return vals;
+    }
+    return Object.assign({}, tpl.start);
+  }
+
+  function target(prob, sol) { return prob.q.kind === "v" ? sol.V[prob.q.node] : sol.I[prob.q.el]; }
+
+  // Is the answer right, and if not, is it a recognisable slip?
+  function judge(ans, prob, sol) {
+    const tpl = CIRCUITS[prob.key], q = prob.q, want = target(prob, sol);
+    const near = (x, y) => Math.abs(x - y) <= Math.max(0.01, Math.abs(y) * 0.01);
+    if (near(ans, want)) return { ok: true };
+    if (Math.abs(want) > 0.02 && near(ans, -want)) {
+      return { ok: false, msg: q.kind === "i" ? "Right size, wrong sign. Look at which way the arrow for this current points." : "Right size, wrong sign. Is this node above ground or below it?" };
+    }
+    if (near(ans * 1000, want) || near(ans, want * 1000)) return { ok: false, msg: "Off by a factor of 1000. With volts and kilohms, currents come out in milliamps." };
+    for (const name in sol.V) {
+      if (name === "0" || (q.kind === "v" && name === q.node)) continue;
+      if (near(ans, sol.V[name])) {
+        return { ok: false, msg: q.kind === "v" ? "That is the voltage at node " + name + ". The question asks about node " + q.node + "." : "That is the voltage at node " + name + ". The question asks for a current." };
+      }
+    }
+    for (const p of tpl.parts) {
+      if (p.type !== "R") continue;
+      if (!(q.kind === "i" && p.id === q.el) && near(ans, sol.I[p.id])) {
+        return { ok: false, msg: q.kind === "i" ? "That is the current through " + p.id + ". The question asks about " + q.el + "." : "That is the current through " + p.id + ". The question asks for a voltage." };
+      }
+      if (q.kind === "v" && near(ans, Math.abs(sol.V[p.a] - sol.V[p.b]))) {
+        return { ok: false, msg: "That is the voltage across " + p.id + ". The question asks for the voltage at node " + q.node + ", measured from ground." };
+      }
+    }
+    return { ok: false, msg: "Not yet." };
+  }
+
+  // ==== LOGIC END ====
+
+  // ------------------------------------------------------------ page helpers
+
+  const NS = "http://www.w3.org/2000/svg";
+  function S(name, attrs, parent) {
+    const el = document.createElementNS(NS, name);
+    for (const k in attrs) el.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(el);
+    return el;
+  }
+  const $ = (id) => document.getElementById(id);
+  const empty = (el) => { while (el.firstChild) el.removeChild(el.firstChild); };
+  const still = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const UNIT = { R: "kΩ", V: "V", I: "mA" };
+  const f2 = (v) => fmt(v, 2);
+
+  // ------------------------------------------------------------ state
+
+  const ui = {
+    mode: "practice",
+    level: 1,
+    key: "loop2",
+    vals: Object.assign({}, CIRCUITS.loop2.start),
+    prob: null,          // { key, vals, q, solved, revealed, hints, attempts }
+    flow: false,
+    kclNode: "A",
+    loop: 0,
+    solved: 0,
+    shown: 0
+  };
+  let rand = rng(Date.now() % 2147483647);
+  let sol = null;        // the current solution
+  let drawn = null;      // handles to the pieces of the schematic that change
+
+  // may the numbers be shown? (always in explore; in practice only once it is answered or revealed)
+  const open = () => ui.mode === "explore" || (ui.prob && (ui.prob.solved || ui.prob.revealed));
+
+  // ------------------------------------------------------------ the schematic
+
+  const svg = $("schematic");
+
+  function pathOf(pts) { return pts.map((p, i) => (i ? "L" : "M") + p[0] + " " + p[1]).join(""); }
+
+  function build() {
+    const tpl = CIRCUITS[ui.key];
+    empty(svg);
+    const L = { glow: S("g", {}, svg), wire: S("g", {}, svg), knock: S("g", {}, svg), flow: S("g", {}, svg), sym: S("g", {}, svg), text: S("g", {}, svg) };
+    drawn = { parts: {}, flows: [], nodes: {}, rings: {} };
+
+    function strand(pts, current) {
+      const d = pathOf(pts);
+      const glow = S("path", { d: d, class: "glow" }, L.glow);
+      S("path", { d: d, class: "wire" }, L.wire);
+      const flow = S("path", { d: d, class: "flow" }, L.flow);
+      drawn.flows.push({ el: flow, current: current, phase: 0 });
+      return glow;
+    }
+
+    tpl.wires.forEach((w) => { w.glow = strand(w.pts, (s) => w.carries.reduce((sum, id) => sum + s.I[id], 0)); });
+
+    tpl.parts.forEach((p) => {
+      const glow = strand(p.pts, (s) => s.I[p.id]);
+      const a = p.pts[p.body], b = p.pts[p.body + 1];
+      const cx = (a[0] + b[0]) / 2, cy = (a[1] + b[1]) / 2;
+      const len = Math.hypot(b[0] - a[0], b[1] - a[1]), ux = (b[0] - a[0]) / len, uy = (b[1] - a[1]) / len;
+      const nx = -uy, ny = ux, flat = Math.abs(ux) > Math.abs(uy);
+
+      if (p.type === "R") {
+        S("line", { x1: cx - ux * 28, y1: cy - uy * 28, x2: cx + ux * 28, y2: cy + uy * 28, class: "knock" }, L.knock);
+        const zig = [[-27, 0], [-22.5, -7], [-13.5, 7], [-4.5, -7], [4.5, 7], [13.5, -7], [22.5, 7], [27, 0]];
+        S("path", { d: pathOf(zig.map((q) => [(cx + ux * q[0] + nx * q[1]).toFixed(1), (cy + uy * q[0] + ny * q[1]).toFixed(1)])), class: "sym" }, L.sym);
+      } else {
+        S("circle", { cx: cx, cy: cy, r: 17, class: "src" }, L.sym);
+        if (p.type === "V") {
+          S("text", { x: cx + ux * 8, y: cy + uy * 8 + 4.5, class: "sign" }, L.sym).textContent = "+";
+          S("text", { x: cx - ux * 8, y: cy - uy * 8 + 4.5, class: "sign" }, L.sym).textContent = "−";
+        } else {
+          S("line", { x1: cx - ux * 10, y1: cy - uy * 10, x2: cx + ux * 5, y2: cy + uy * 5, class: "sym" }, L.sym);
+          const tip = [cx + ux * 11, cy + uy * 11], base = [cx + ux * 3, cy + uy * 3];
+          S("polygon", { points: [tip[0], tip[1], base[0] + nx * 4.5, base[1] + ny * 4.5, base[0] - nx * 4.5, base[1] - ny * 4.5].map((v) => v.toFixed(1)).join(" "), class: "arrow-fill" }, L.sym);
+        }
+      }
+
+      // where the labels go: above and below a flat part, beside an upright one
+      let name, cur, anchor;
+      if (flat) { name = [cx, cy - 16]; cur = [cx, cy + 25]; anchor = "middle"; }
+      else if (p.side === "left") { name = [cx - 24, cy - 2]; cur = [cx - 24, cy + 13]; anchor = "end"; }
+      else { name = [cx + 24, cy - 2]; cur = [cx + 24, cy + 13]; anchor = "start"; }
+      const handle = { def: p, glow: glow };
+      handle.name = S("text", { x: name[0], y: name[1], "text-anchor": anchor, class: "part" }, L.text);
+      if (p.type === "R") {
+        handle.arrow = flat ? (ux > 0 ? "→" : "←") : (uy > 0 ? "↓" : "↑");
+        handle.cur = S("text", { x: cur[0], y: cur[1], "text-anchor": anchor, class: "cur" }, L.text);
+      }
+      drawn.parts[p.id] = handle;
+    });
+
+    tpl.dots.forEach((d) => S("circle", { cx: d[0], cy: d[1], r: 3, class: "junction" }, L.sym));
+    const g = tpl.ground;
+    S("path", { d: "M" + g[0] + " " + g[1] + "v11 M" + (g[0] - 12) + " " + (g[1] + 11) + "h24 M" + (g[0] - 7.5) + " " + (g[1] + 16) + "h15 M" + (g[0] - 3) + " " + (g[1] + 21) + "h6", class: "sym" }, L.sym);
+
+    Object.keys(tpl.nodes).forEach((name) => {
+      const nd = tpl.nodes[name];
+      drawn.rings[name] = S("circle", { cx: nd.at[0], cy: nd.at[1], r: 11, class: "ring" }, L.sym);
+      drawn.nodes[name] = S("text", { x: nd.at[0] + nd.label[0], y: nd.at[1] + nd.label[1], "text-anchor": nd.label[2], class: "node" }, L.text);
+    });
+  }
+
+  // ------------------------------------------------------------ everything that depends on the values
+
+  function describe(tpl) {
+    return tpl.title + ": " + tpl.parts.map((p) => p.id + " = " + fmt(ui.vals[p.id]) + " " + UNIT[p.type]).join(", ");
+  }
+
+  function refresh() {
+    const tpl = CIRCUITS[ui.key];
+    sol = solve(tpl, ui.vals);
+    const show = open(), q = ui.mode === "practice" && ui.prob ? ui.prob.q : null;
+    svg.setAttribute("aria-label", describe(tpl));
+
+    tpl.parts.forEach((p) => {
+      const h = drawn.parts[p.id];
+      h.name.textContent = p.id + " = " + fmt(ui.vals[p.id]) + " " + UNIT[p.type];
+      if (h.cur) {
+        const asked = q && q.kind === "i" && q.el === p.id && !show;
+        h.cur.textContent = h.arrow + " I" + p.id.slice(1) + (asked ? " = ?" : show ? " = " + f2(sol.I[p.id]) + " mA" : "");
+        h.cur.setAttribute("class", "cur" + (asked ? " asked" : ""));
+      }
+    });
+    Object.keys(tpl.nodes).forEach((name) => {
+      const asked = q && q.kind === "v" && q.node === name && !show;
+      const text = drawn.nodes[name];
+      empty(text);
+      text.appendChild(document.createTextNode(name));
+      if (asked || show) {
+        const v = S("tspan", { class: asked ? "volt asked" : "volt", dx: 5 }, text);
+        v.textContent = asked ? "= ?" : "= " + f2(sol.V[name]) + " V";
+      }
+      text.setAttribute("class", "node" + (asked ? " asked" : ""));
+    });
+
+    // dots move at a speed proportional to the current; the largest current sets the pace
+    let top = 0;
+    drawn.flows.forEach((f) => { f.amps = f.current(sol); top = Math.max(top, Math.abs(f.amps)); });
+    drawn.flows.forEach((f) => {
+      f.speed = top > 1e-9 ? (46 * f.amps) / top : 0;
+      f.el.style.display = ui.flow && Math.abs(f.amps) > 1e-9 ? "" : "none";
+    });
+
+    drawChecks();
+  }
+
+  // ------------------------------------------------------------ KCL and KVL, checked on this circuit
+
+  const kcl = $("kcl"), kvl = $("kvl");
+
+  function drawChecks() {
+    const tpl = CIRCUITS[ui.key], show = open();
+    $("kcl-veil").hidden = show; $("kvl-veil").hidden = show;
+    kcl.style.display = show ? "" : "none"; kvl.style.display = show ? "" : "none";
+    $("kcl-sum").hidden = !show; $("kvl-sum").hidden = !show;
+    $("kcl-pick").style.display = show ? "" : "none"; $("kvl-pick").style.display = show ? "" : "none";
+
+    if (tpl.kcl.indexOf(ui.kclNode) < 0) ui.kclNode = tpl.kcl[0];
+    if (ui.loop >= tpl.loops.length) ui.loop = 0;
+
+    // pickers
+    const kp = $("kcl-pick"), lp = $("kvl-pick");
+    kp.innerHTML = "<span>node</span>" + tpl.kcl.map((n) => '<button type="button" data-node="' + n + '" aria-pressed="' + (n === ui.kclNode) + '">' + n + "</button>").join("");
+    lp.innerHTML = "<span>walk round</span>" + tpl.loops.map((l, i) => '<button type="button" data-loop="' + i + '" aria-pressed="' + (i === ui.loop) + '">' + l.name + "</button>").join("");
+
+    // highlight on the schematic what the two figures are about
+    Object.keys(drawn.rings).forEach((n) => drawn.rings[n].setAttribute("class", "ring" + (show && n === ui.kclNode ? " on" : "")));
+    const inLoop = {};
+    tpl.loops[ui.loop].walk.forEach((w) => { inLoop[w[0]] = true; });
+    tpl.parts.forEach((p) => drawn.parts[p.id].glow.setAttribute("class", "glow" + (show && inLoop[p.id] ? " on" : "")));
+    tpl.wires.forEach((w) => w.glow.setAttribute("class", "glow" + (show && w.carries.some((id) => inLoop[id]) && tpl.loops[ui.loop].walk.every((s) => s[0] !== "Is" && s[0] !== "R1") ? " on" : "")));
+    if (!show) return;
+
+    // ---- KCL: two bars
+    empty(kcl);
+    const flows = leaving(tpl, sol, ui.kclNode).filter((f) => Math.abs(f.out) > 1e-9);
+    const ins = flows.filter((f) => f.out < 0), outs = flows.filter((f) => f.out > 0);
+    const total = ins.reduce((s, f) => s - f.out, 0);
+    const x0 = 62, width = 440;
+    function bar(list, y, cls, label) {
+      S("text", { x: x0 - 10, y: y + 19, "text-anchor": "end", class: "bar-name" }, kcl).textContent = label;
+      let x = x0;
+      list.forEach((f) => {
+        const w = total > 1e-9 ? (Math.abs(f.out) / total) * width : 0;
+        S("rect", { x: x + 1, y: y, width: Math.max(0, w - 2), height: 28, rx: 2, class: cls }, kcl);
+        const t = S("text", { x: x + w / 2, y: y + 44, "text-anchor": "middle", class: "bar-label" }, kcl);
+        t.textContent = w > 76 ? f.id + "  " + f2(Math.abs(f.out)) + " mA" : w > 30 ? f.id : "";
+        x += w;
+      });
+    }
+    if (total > 1e-9) {
+      bar(ins, 16, "bar-in", "IN");
+      bar(outs, 92, "bar-out", "OUT");
+      const join = (list) => list.map((f) => f2(Math.abs(f.out)) + " mA through " + f.id).join(" + ");
+      $("kcl-sum").textContent = "into " + ui.kclNode + ": " + join(ins) + "  =  out of " + ui.kclNode + ": " + join(outs);
+    } else {
+      S("text", { x: 260, y: 88, "text-anchor": "middle", class: "bar-label" }, kcl).textContent = "No current flows at this node.";
+      $("kcl-sum").textContent = "0 = 0";
+    }
+
+    // ---- KVL: the height of each node along the walk
+    empty(kvl);
+    const walk = tpl.loops[ui.loop].walk;
+    const heights = [sol.V[walk[0][1]]].concat(walk.map((w) => sol.V[w[2]]));
+    const lo = Math.min.apply(null, heights.concat([0])), hi = Math.max.apply(null, heights.concat([0]));
+    const range = hi - lo > 1e-9 ? hi - lo : 1;
+    const yTop = 34, yBot = 150, Y = (v) => yBot - ((v - lo) / range) * (yBot - yTop);
+    const left = 58, right = 500, flatW = 22, spanW = (right - left - flatW * (walk.length + 1)) / walk.length;
+    S("line", { x1: left - 8, y1: Y(0), x2: right + 8, y2: Y(0), class: "level" }, kvl);
+    S("text", { x: left - 12, y: Y(0) + 4, "text-anchor": "end", class: "ax" }, kvl).textContent = "0 V";
+    if (hi > 1e-9) S("text", { x: left - 12, y: Y(hi) + 4, "text-anchor": "end", class: "ax" }, kvl).textContent = f2(hi) + " V";
+    if (lo < -1e-9) S("text", { x: left - 12, y: Y(lo) + 4, "text-anchor": "end", class: "ax" }, kvl).textContent = f2(lo) + " V";
+    let d = "", x = left;
+    const terms = [];
+    heights.forEach((v, i) => {
+      d += (i ? "L" : "M") + x.toFixed(1) + " " + Y(v).toFixed(1) + "H" + (x + flatW).toFixed(1);
+      const nodeName = i === 0 ? walk[0][1] : walk[i - 1][2];
+      S("circle", { cx: x + flatW / 2, cy: Y(v), r: 3.2, class: "stop" }, kvl);
+      S("text", { x: x + flatW / 2, y: 182, "text-anchor": "middle", class: nodeName === "0" ? "ax" : "ax-node" }, kvl).textContent = nodeName === "0" ? "ground" : nodeName;
+      x += flatW;
+      if (i < walk.length) {
+        const part = tpl.parts.filter((p) => p.id === walk[i][0])[0], next = heights[i + 1], change = next - v;
+        if (part.type === "R") d += "L" + (x + spanW).toFixed(1) + " " + Y(next).toFixed(1);       // a resistor is a slope
+        else d += "H" + (x + spanW / 2).toFixed(1) + "V" + Y(next).toFixed(1) + "H" + (x + spanW).toFixed(1);   // a source is a step
+        S("text", { x: x + spanW / 2, y: 206, "text-anchor": "middle", class: "ax" }, kvl).textContent = part.id;
+        const sign = change > 1e-9 ? "+" : change < -1e-9 ? "−" : "";
+        const label = S("text", { x: x + spanW / 2 + (part.type === "R" ? 0 : 6), y: (Y(v) + Y(next)) / 2 - (part.type === "R" ? 9 : -4), "text-anchor": part.type === "R" ? "middle" : "start", class: "delta" }, kvl);
+        label.textContent = sign + f2(Math.abs(change)) + " V";
+        terms.push((terms.length && change >= 0 ? "+ " : change < 0 ? "− " : "") + f2(Math.abs(change)));
+        x += spanW;
+      }
+    });
+    S("path", { d: d, class: "height" }, kvl);
+    $("kvl-sum").textContent = terms.join(" ") + "  =  0";
+  }
+
+  // ------------------------------------------------------------ practice
+
+  const LEVEL_NOTE = { 1: "One loop, or one pair of nodes. A single equation.", 2: "Three resistors in a loop or across a node pair, or a T network.", 3: "Two sources pulling on the same node." };
+
+  function newProblem() {
+    const keys = ORDER.filter((k) => CIRCUITS[k].level === ui.level);
+    const others = keys.filter((k) => !ui.prob || k !== ui.prob.key);
+    const pool = others.length ? others : keys;
+    const key = pool[Math.floor(rand() * pool.length)], tpl = CIRCUITS[key];
+    const vals = niceValues(tpl, rand);
+    const asks = tpl.ask, q = asks[Math.floor(rand() * asks.length)];
+    ui.prob = { key: key, vals: vals, q: q, solved: false, revealed: false, hints: 0, attempts: 0 };
+    ui.key = key; ui.vals = Object.assign({}, vals);
+    ui.flow = false;
+    build();
+    showProblem();
+    refresh();
+  }
+
+  function showProblem() {
+    const p = ui.prob, q = p.q;
+    $("level-note").textContent = LEVEL_NOTE[ui.level];
+    $("question").innerHTML = q.kind === "v"
+      ? "Find the voltage at node <var>" + q.node + "</var>."
+      : "Find the current " + sub("I" + q.el.slice(1)) + " through " + sub(q.el) + ", counted the way its arrow points.";
+    $("unit").textContent = q.kind === "v" ? "V" : "mA";
+    $("answer").value = "";
+    $("answer").disabled = false;
+    $("feedback").textContent = ""; $("feedback").className = "feedback";
+    $("steps").innerHTML = ""; $("matrix").hidden = true;
+    $("hint").disabled = false; $("reveal").disabled = false;
+    $("to-explore").hidden = true;
+    $("flow").checked = ui.flow;
+    tally();
+  }
+  function tally() {
+    $("tally").textContent = ui.solved || ui.shown ? "solved " + ui.solved + (ui.shown ? " · shown " + ui.shown : "") : "";
+  }
+  function stepsHtml(upTo) {
+    const all = CIRCUITS[ui.prob.key].steps(ui.prob.vals, solve(CIRCUITS[ui.prob.key], ui.prob.vals));
+    $("steps").innerHTML = all.slice(0, upTo).map((s) => "<li>" + s + "</li>").join("");
+    return all.length;
+  }
+  function matrixHtml() {
+    const tpl = CIRCUITS[ui.prob.key], m = nodalMatrix(tpl, ui.prob.vals), box = $("matrix");
+    if (!m) { box.hidden = true; return; }
+    const s = solve(tpl, ui.prob.vals), n = m.unknown.length;
+    const grid = (cols, cells) => '<span class="m" style="grid-template-columns: repeat(' + cols + ', auto)">' + cells.map((c) => "<span>" + c + "</span>").join("") + "</span>";
+    const G = []; m.G.forEach((row) => row.forEach((v) => G.push(fmt(v, 3))));
+    box.innerHTML = "<h2>The same thing as a matrix equation</h2>" +
+      '<div class="sys">' + grid(n, G) + grid(1, m.unknown.map((u) => "V_" + u)) + "<span>=</span>" + grid(1, m.i.map((v) => fmt(v, 3))) + "</div>" +
+      "<p>Writing KCL at every unknown node, without combining anything first, gives <var>G</var><var>v</var> = <var>i</var>: conductances (1/kΩ) on the left, the currents the sources push in (mA) on the right. Its solution is " +
+      m.unknown.map((u) => "<var>V</var><sub>" + u + "</sub> = " + fmt(s.V[u]) + " V").join(", ") + ".</p>";
+    box.hidden = false;
+  }
+  function finish(solved) {
+    const p = ui.prob;
+    if (solved) { p.solved = true; ui.solved += 1; } else { p.revealed = true; ui.shown += 1; }
+    $("answer").disabled = true;
+    $("hint").disabled = true; $("reveal").disabled = true;
+    $("to-explore").hidden = false;
+    stepsHtml(99); matrixHtml();
+    ui.flow = true; $("flow").checked = true;
+    tally();
+    refresh();
+  }
+
+  $("answer-form").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const p = ui.prob;
+    if (!p || p.solved || p.revealed) return;
+    const raw = $("answer").value.replace(/−/g, "-").replace(",", ".").replace(/[^0-9eE.+-]/g, "");
+    const ans = parseFloat(raw), fb = $("feedback");
+    if (!isFinite(ans)) { fb.textContent = "Type a number, for example 2.5"; fb.className = "feedback bad"; return; }
+    p.attempts += 1;
+    const verdict = judge(ans, p, sol);
+    if (verdict.ok) {
+      const q = p.q;
+      fb.innerHTML = "Correct. " + (q.kind === "v" ? "<var>V</var><sub>" + q.node + "</sub> = " + fmt(sol.V[q.node]) + " V." : sub("I" + q.el.slice(1)) + " = " + fmt(sol.I[q.el]) + " mA.");
+      fb.className = "feedback good";
+      finish(true);
+    } else {
+      fb.textContent = verdict.msg + (verdict.msg === "Not yet." && p.attempts >= 2 ? " A hint might help." : "");
+      fb.className = "feedback bad";
+    }
+  });
+  $("hint").addEventListener("click", () => {
+    const p = ui.prob;
+    p.hints += 1;
+    const count = stepsHtml(p.hints);
+    if (p.hints >= count) $("hint").disabled = true;
+  });
+  $("reveal").addEventListener("click", () => {
+    const q = ui.prob.q, s = solve(CIRCUITS[ui.prob.key], ui.prob.vals), fb = $("feedback");
+    fb.innerHTML = "The answer is " + (q.kind === "v" ? fmt(s.V[q.node]) + " V" : fmt(s.I[q.el]) + " mA") + ". The steps are below.";
+    fb.className = "feedback";
+    finish(false);
+  });
+  $("next").addEventListener("click", newProblem);
+  $("to-explore").addEventListener("click", () => setMode("explore"));
+
+  // ------------------------------------------------------------ explore
+
+  const RANGE = { R: [0.5, 20, 0.5], V: [0, 24, 0.5], I: [0, 12, 0.5] };
+  function buildSliders() {
+    const tpl = CIRCUITS[ui.key], box = $("sliders");
+    box.innerHTML = "";
+    tpl.parts.forEach((p) => {
+      const r = RANGE[p.type], row = document.createElement("label");
+      row.className = "slider";
+      row.innerHTML = "<span>" + p.id + '</span><input type="range" min="' + r[0] + '" max="' + r[1] + '" step="' + r[2] + '" value="' + ui.vals[p.id] + '" aria-label="' + p.id + '"><output></output>';
+      const input = row.querySelector("input"), out = row.querySelector("output");
+      const say = () => { out.textContent = fmt(ui.vals[p.id]) + " " + UNIT[p.type]; };
+      input.addEventListener("input", () => { ui.vals[p.id] = Number(input.value); say(); refresh(); });
+      say();
+      box.appendChild(row);
+    });
+    $("pick").value = ui.key;
+  }
+  ORDER.forEach((k) => { const o = document.createElement("option"); o.value = k; o.textContent = CIRCUITS[k].title; $("pick").appendChild(o); });
+  $("pick").addEventListener("change", (e) => {
+    ui.key = e.target.value;
+    ui.vals = Object.assign({}, CIRCUITS[ui.key].start);
+    build(); buildSliders(); refresh();
+  });
+
+  // ------------------------------------------------------------ modes and controls
+
+  function setMode(mode) {
+    ui.mode = mode;
+    document.querySelectorAll("[data-mode]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.mode === mode)));
+    $("practice").hidden = mode !== "practice";
+    $("explore").hidden = mode !== "explore";
+    if (mode === "explore") {
+      ui.flow = true; $("flow").checked = true;
+      buildSliders();
+      refresh();
+    } else if (!ui.prob || ui.prob.key !== ui.key || Object.keys(ui.vals).some((k) => ui.vals[k] !== ui.prob.vals[k])) {
+      newProblem();          // the circuit was changed while exploring, so start a fresh problem
+    } else {
+      refresh();
+    }
+  }
+  document.querySelectorAll("[data-mode]").forEach((b) => b.addEventListener("click", () => setMode(b.dataset.mode)));
+  document.querySelectorAll("[data-level]").forEach((b) => b.addEventListener("click", () => {
+    ui.level = Number(b.dataset.level);
+    document.querySelectorAll("[data-level]").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+    newProblem();
+  }));
+  $("flow").addEventListener("change", (e) => { ui.flow = e.target.checked; refresh(); });
+  $("kcl-pick").addEventListener("click", (e) => { const b = e.target.closest("[data-node]"); if (b) { ui.kclNode = b.dataset.node; drawChecks(); } });
+  $("kvl-pick").addEventListener("click", (e) => { const b = e.target.closest("[data-loop]"); if (b) { ui.loop = Number(b.dataset.loop); drawChecks(); } });
+
+  document.querySelectorAll("[data-try]").forEach((b) => b.addEventListener("click", () => {
+    ui.key = b.dataset.try;
+    ui.vals = Object.assign({}, CIRCUITS[ui.key].start);
+    build();
+    setMode("explore");
+    svg.scrollIntoView({ behavior: still ? "auto" : "smooth", block: "center" });
+  }));
+
+  $("theme").addEventListener("click", () => {
+    const root = document.documentElement;
+    const dark = root.dataset.theme ? root.dataset.theme === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+    root.dataset.theme = dark ? "light" : "dark";
+    try { localStorage.setItem("momentos-theme", root.dataset.theme); } catch (_) { /* switched, just not remembered */ }
+  });
+
+  // ------------------------------------------------------------ time: the dots
+
+  let last = 0;
+  function tick(now) {
+    const dt = last ? Math.min(0.1, (now - last) / 1000) : 0;
+    last = now;
+    if (ui.flow && !still && drawn) {
+      drawn.flows.forEach((f) => {
+        if (!f.speed) return;
+        f.phase -= f.speed * dt;
+        f.el.style.strokeDashoffset = f.phase.toFixed(2);
+      });
+    }
+    requestAnimationFrame(tick);
+  }
+
+  // ------------------------------------------------------------ go
+
+  document.querySelectorAll("[data-mode]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.mode === ui.mode)));
+  document.querySelectorAll("[data-level]").forEach((b) => b.setAttribute("aria-pressed", String(Number(b.dataset.level) === ui.level)));
+  newProblem();
+  requestAnimationFrame(tick);
+
+  // For checking from the console. audit() solves many generated problems and reports the largest
+  // amount by which KCL (at any node) or KVL (round any listed loop) fails to balance.
+  window.TOOL = {
+    ui: ui, CIRCUITS: CIRCUITS, solve: solve, judge: judge, niceValues: niceValues, nodalMatrix: nodalMatrix, leaving: leaving,
+    seed: (n) => { rand = rng(n); },
+    newProblem: newProblem, setMode: setMode, refresh: refresh,
+    audit: function (count) {
+      const r = rng(7); let worstKcl = 0, worstKvl = 0, done = 0;
+      for (let i = 0; i < (count || 300); i++) {
+        const key = ORDER[i % ORDER.length], tpl = CIRCUITS[key], vals = niceValues(tpl, r), s = solve(tpl, vals);
+        nodeNames(tpl).concat(["0"]).forEach((n) => { worstKcl = Math.max(worstKcl, Math.abs(leaving(tpl, s, n).reduce((a, f) => a + f.out, 0))); });
+        tpl.loops.forEach((l) => { worstKvl = Math.max(worstKvl, Math.abs(l.walk.reduce((a, w) => a + (s.V[w[2]] - s.V[w[1]]), 0))); });
+        done++;
+      }
+      return { problems: done, worstKclResidual_mA: worstKcl, worstKvlResidual_V: worstKvl };
+    }
+  };
+})();
+</script>
+</body>
+</html>
