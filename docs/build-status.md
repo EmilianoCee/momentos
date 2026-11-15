@@ -2,7 +2,7 @@
 
 This file is temporary. It exists so that a session that runs out of tokens, or whose context is compacted or
 cleared, can pick the build up again from files alone. When the build is finished it is replaced by the final
-report and deleted. The brief for the whole job is `prompts/fable-mastery-brief.md` (untracked; see phase 8).
+report and deleted. The brief for the whole job is in the owner's untracked record, at learner/notes/fable-mastery-brief.md (see phase 8).
 
 ## How to resume
 
@@ -26,7 +26,7 @@ report and deleted. The brief for the whole job is `prompts/fable-mastery-brief.
 - `scripts/test-tools.js`, `scripts/sync-house-style.py`, `.github/workflows/check.yml`.
 - The three tools and the template follow the new conventions (maths block, check cases, synced house style).
 - `index.html` handles hundreds of topics (dots when far, filters, level marks, kept arrangement).
-- `docs/decisions/0001` to `0012`.
+- Twelve decision records in `docs/decisions/`.
 
 Known failing check right now: `skills` (instruction files name paths that phases 2 to 4 create), and it also
 scans the untracked brief in `prompts/`. Both clear as the phases below land.
@@ -40,8 +40,8 @@ scans the untracked brief in `prompts/`. Both clear as the phases below land.
       the complete EE 120 2024 to 2026 exam table (269 rows) and its notes are in the session scratchpad, not in
       `course-survey/` (an agent's write was blocked; the copy there has 207 rows and lacks SP24 MT2 and MT3).
 - [x] 1. Architecture, schemas, checkers
-- [ ] 2. Instruction layer
-- [ ] 3. Mastery framework, quiz protocol, pre-prompt, the owner's record in `learner/`
+- [x] 2. Instruction layer
+- [x] 3. Mastery framework, quiz protocol, pre-prompt, the owner's record in `learner/`
 - [ ] 4. Curricula
 - [ ] 5. Map expansion
 - [ ] 6. Plans: template, stubs, backlog, full plans in priority order
@@ -50,7 +50,7 @@ scans the untracked brief in `prompts/`. Both clear as the phases below land.
 
 ## Next action
 
-Phase 2, then 3. Write these files, in this order, several per turn.
+Phases 2 and 3 are done (their file lists below are kept for reference). Start phase 4: the curricula, then phase 5.
 
 ### Phase 2 files
 
@@ -105,8 +105,7 @@ Phase 2, then 3. Write these files, in this order, several per turn.
   three modes and the shortcuts. `prompts/quiz-in-chat.md`: the protocol condensed for a chat with no repo, ending
   with the evidence block the model must return.
 - The owner's record: `python3 scripts/learner.py init ec`, then fill `learner/profile.md` from the answers in
-  `course-survey/_design-notes.md` and the old "Who I am" block. Move `prompts/fable-mastery-brief.md` to
-  `learner/notes/` (untracked) once the abstract version exists (phase 8).
+  `course-survey/_design-notes.md` and the old "Who I am" block. (Done. The original brief is in learner/notes/.)
 
 ### Phase 4: curricula
 
@@ -162,3 +161,5 @@ original brief to `learner/notes/`, delete this file, and write the final report
 - 2026-11-15 01:50. Plan approved. Survey notes in `course-survey/`.
 - 2026-11-15 02:10. Phase 1 done in two commits. The usage window ran out.
 - 2026-11-15 06:35. Resumed. Status rewritten so the build can continue from files alone.
+- 2026-11-15 07:20. Phases 2 and 3 done: AGENTS.md, CLAUDE.md, README.md, docs/, nine skills, the pre-prompt, the
+  chat protocol, the course registry (35 courses), and the owner's record in learner/.
