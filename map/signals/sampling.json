@@ -1,0 +1,80 @@
+{
+  "topics": [
+    {
+      "id": "sampling-theorem",
+      "title": "sampling theorem",
+      "essence": "Sampling every T seconds copies the spectrum at every multiple of the sampling frequency. If the copies do not overlap, the original is still there, so sample faster than twice the highest frequency.",
+      "check": "A signal has nothing above 3 kHz. What is the slowest sampling rate that loses nothing, and what goes wrong just below it?",
+      "later": [
+        {
+          "course": "EE 123",
+          "how": "Data converters and multirate systems are designed by moving and filtering the spectral copies."
+        }
+      ]
+    },
+    {
+      "id": "aliasing",
+      "title": "aliasing",
+      "essence": "When the copies overlap, a frequency above half the sampling rate lands on top of a lower one and cannot be told apart from it afterwards.",
+      "check": "A 7 kHz tone is sampled at 10 kHz. What frequency does it appear as?",
+      "later": [
+        {
+          "course": "EE 123",
+          "how": "Anti-aliasing filters and oversampling exist to control it."
+        }
+      ]
+    },
+    {
+      "id": "reconstruction",
+      "title": "reconstruction",
+      "essence": "To get the signal back, keep one copy of the spectrum with a low-pass filter. In time, that is placing a sinc on every sample and adding them up.",
+      "check": "Between two samples, what decides the value of the rebuilt signal: its two neighbours only, or all the samples?"
+    },
+    {
+      "id": "zero-order-hold",
+      "title": "zero-order hold",
+      "essence": "A practical converter holds each sample until the next one, making a staircase. Holding is itself a filter: it droops the top of the band and leaves faint images above it.",
+      "check": "What does the staircase contain that the smooth original does not, and where is it in frequency?"
+    },
+    {
+      "id": "dt-processing-of-ct",
+      "title": "digital filtering of analog signals",
+      "essence": "Sample, filter the numbers, then reconstruct. Below half the sampling rate the whole chain acts as one continuous-time filter: the digital filter's response with its frequency axis stretched by the sampling rate.",
+      "check": "A digital low-pass has its cutoff at π/4 rad per sample, and the sampling rate is 8 kHz. What is the cutoff of the whole chain in hertz?"
+    },
+    {
+      "id": "downsampling",
+      "title": "downsampling",
+      "essence": "Keep every Mth sample and the spectrum stretches by M. Anything above π/M beforehand folds back on top of the rest, so filter first.",
+      "check": "A sequence with content up to π/2 is downsampled by 3 with no filter. Does it alias? Why?",
+      "later": [
+        {
+          "course": "EE 123",
+          "how": "Decimators, interpolators and filter banks are built from these two operations."
+        }
+      ]
+    },
+    {
+      "id": "upsampling",
+      "title": "upsampling",
+      "essence": "Insert M − 1 zeros between samples and the spectrum squeezes by M, which brings M − 1 unwanted images into view. A low-pass filter removes them, and in time it fills in the zeros.",
+      "check": "One zero is inserted between each pair of samples. Where does the unwanted image sit before filtering?"
+    }
+  ],
+  "links": [
+    { "from": "impulse-train", "to": "sampling-theorem", "why": "Sampling is multiplying by an impulse train, which convolves the spectrum with another impulse train." },
+    { "from": "ft-multiplication-property", "to": "sampling-theorem", "why": "Multiplying in time by the sampling train is convolving in frequency, which makes the copies." },
+    { "from": "sampling-theorem", "to": "aliasing", "why": "Aliasing is what the overlapping copies do." },
+    { "from": "dt-frequency", "to": "aliasing", "why": "Seen from the samples, a frequency and its alias are the same sequence." },
+    { "from": "sampling-theorem", "to": "reconstruction", "why": "If the copies do not overlap, a low-pass filter can keep one of them." },
+    { "from": "ideal-filters", "to": "reconstruction", "why": "The filter that keeps exactly one copy is the ideal low-pass." },
+    { "from": "rect-and-sinc", "to": "reconstruction", "why": "That filter's impulse response is the sinc placed on each sample." },
+    { "from": "reconstruction", "to": "zero-order-hold", "why": "Holding each sample is the crude interpolation that real converters use in place of the sinc." },
+    { "from": "sampling-theorem", "to": "dt-processing-of-ct", "why": "With no aliasing, the samples carry the whole signal, so filtering the samples filters the signal." },
+    { "from": "dt-frequency-response", "to": "dt-processing-of-ct", "why": "The digital filter's response becomes the response of the whole chain." },
+    { "from": "aliasing", "to": "downsampling", "why": "Keeping every Mth sample is sampling again, and it aliases for the same reason." },
+    { "from": "dtft", "to": "downsampling", "why": "The effect is read off the DTFT: stretched by M and added to its shifted copies." },
+    { "from": "dtft", "to": "upsampling", "why": "Inserting zeros squeezes the DTFT by M." },
+    { "from": "reconstruction", "to": "upsampling", "why": "The low-pass filter after the zeros is interpolation, the discrete version of reconstruction." }
+  ]
+}

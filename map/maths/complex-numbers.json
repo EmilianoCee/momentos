@@ -5,16 +5,14 @@
       "title": "complex plane",
       "essence": "A complex number is a point in a plane. Multiplying by j turns it a quarter turn; multiplying by any number on the unit circle turns it without stretching it.",
       "check": "Where does a point end up after you multiply it by j twice? Why is that the same as multiplying by −1?",
-      "tools": ["signals/complex-periodicity.html"],
-      "courses": ["EECS 16B"]
+      "tools": ["signals/complex-periodicity.html"]
     },
     {
       "id": "eulers-formula",
       "title": "Euler's formula",
       "essence": "e^(jθ) = cos θ + j sin θ: the point at angle θ on the unit circle. Multiplying two of them adds their angles.",
       "check": "What is e^(jπ/2) times e^(jπ/2), and where is it on the circle?",
-      "tools": ["signals/complex-periodicity.html"],
-      "courses": ["EECS 16B"]
+      "tools": ["signals/complex-periodicity.html"]
     }
   ],
   "links": [

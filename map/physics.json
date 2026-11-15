@@ -4,15 +4,13 @@
       "id": "work",
       "title": "work",
       "essence": "Force times the distance moved along it: W = F·d.",
-      "check": "You carry a box across a level floor at constant speed. How much work does gravity do on it, and why?",
-      "courses": ["Physics 7A"]
+      "check": "You carry a box across a level floor at constant speed. How much work does gravity do on it, and why?"
     },
     {
       "id": "magnetic-force",
       "title": "magnetic force",
       "essence": "A moving charge in a magnetic field is pushed sideways: F = qv × B.",
-      "check": "A charge moves parallel to a magnetic field. What force does it feel? What if it moves across the field instead?",
-      "courses": ["Physics 7B"]
+      "check": "A charge moves parallel to a magnetic field. What force does it feel? What if it moves across the field instead?"
     }
   ],
   "links": [

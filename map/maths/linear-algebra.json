@@ -5,24 +5,21 @@
       "title": "dot product",
       "essence": "How much of one vector lies along another: |a||b|cos θ. Zero when they are perpendicular.",
       "check": "a·b is negative. Without computing anything, what does the picture look like?",
-      "tools": ["maths/linear-algebra/vector-products.html"],
-      "courses": ["EECS 16A"]
+      "tools": ["maths/linear-algebra/vector-products.html"]
     },
     {
       "id": "projection",
       "title": "projection",
       "essence": "The shadow one vector casts on another. Any b splits into a part along a and a part across it.",
       "check": "You double the length of a. What happens to the shadow of b on a, and what happens to a·b?",
-      "tools": ["maths/linear-algebra/vector-products.html"],
-      "courses": ["EECS 16A"]
+      "tools": ["maths/linear-algebra/vector-products.html"]
     },
     {
       "id": "cross-product",
       "title": "cross product",
       "essence": "How much of one vector lies across another: |a||b|sin θ, the signed area the two span. Zero when they are parallel.",
       "check": "Swap a and b. What changes in the picture, and why does the sign flip?",
-      "tools": ["maths/linear-algebra/vector-products.html"],
-      "courses": ["Math 53", "Physics 7B"]
+      "tools": ["maths/linear-algebra/vector-products.html"]
     },
     {
       "id": "determinant",
@@ -34,15 +31,13 @@
       "id": "linear-systems",
       "title": "linear systems",
       "essence": "Ax = b asks which mix of the columns of A lands on b.",
-      "check": "The two columns of A point along the same line and b is off that line. How many solutions does Ax = b have, and why?",
-      "courses": ["EECS 16A"]
+      "check": "The two columns of A point along the same line and b is off that line. How many solutions does Ax = b have, and why?"
     },
     {
       "id": "eigenvectors",
       "title": "eigenvectors",
       "essence": "The directions a matrix only stretches and never turns.",
-      "check": "A matrix turns every vector by 90°. Can it have a real eigenvector? What would that vector have to do?",
-      "courses": ["EECS 16A", "EECS 16B"]
+      "check": "A matrix turns every vector by 90°. Can it have a real eigenvector? What would that vector have to do?"
     }
   ],
   "links": [

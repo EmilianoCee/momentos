@@ -1,0 +1,187 @@
+{
+  "topics": [
+    {
+      "id": "fourier-series",
+      "title": "Fourier series",
+      "essence": "Any periodic signal is a sum of phasors spinning at whole multiples of one fundamental frequency.",
+      "check": "You make a square wave's period twice as long. What happens to the spacing of its harmonics on the frequency axis?"
+    },
+    {
+      "id": "dtfs",
+      "title": "discrete-time Fourier series",
+      "essence": "A sequence that repeats every N samples is a sum of exactly N phasors e^(j2πkn/N), for k = 0 to N − 1. N numbers in time become N numbers in frequency, and nothing is lost.",
+      "check": "A sequence has period 4. How many distinct harmonics does it have, and why are there no more?"
+    },
+    {
+      "id": "dft",
+      "title": "DFT",
+      "essence": "The DFT is that same change of basis applied to any N samples, written as an N by N matrix whose columns are orthogonal phasors. Its inverse is its conjugate transpose, up to a constant.",
+      "check": "Why is the inverse of the DFT matrix so easy to write down?",
+      "later": [
+        {
+          "course": "EE 123",
+          "how": "The DFT and the FFT are the working tools for measuring spectra and for fast filtering."
+        }
+      ]
+    },
+    {
+      "id": "fft",
+      "title": "FFT",
+      "essence": "The FFT computes the DFT by splitting the samples into even and odd halves, again and again. The work drops from N² operations to N log₂ N.",
+      "check": "For N = 1024, roughly how many times less work is the FFT than the direct sum?"
+    },
+    {
+      "id": "fourier-symmetry",
+      "title": "symmetry and shifts in Fourier series",
+      "essence": "The look of a signal in time fixes the pattern of its coefficients. A real signal has conjugate-symmetric coefficients, a real even signal has real ones, and a time shift only turns each coefficient's phase.",
+      "check": "A real periodic signal is shifted by half a period. What happens to the magnitude and to the phase of its kth coefficient?"
+    },
+    {
+      "id": "parseval",
+      "title": "Parseval's relation",
+      "essence": "The energy of a signal added up over time equals its energy added up over frequency. Changing to an orthogonal basis does not change a vector's length.",
+      "check": "A periodic signal has only two non-zero Fourier coefficients, of magnitudes 3 and 4. What is its average power?"
+    },
+    {
+      "id": "fourier-transform",
+      "title": "Fourier transform",
+      "essence": "Let the period grow without limit and the harmonics crowd together into a continuum. X(jω) says how much of the phasor e^(jωt) the signal contains, per unit of frequency.",
+      "check": "A pulse is made narrower. Before any calculation, what must happen to its transform?",
+      "later": [
+        {
+          "course": "EE 123",
+          "how": "Filter design is done on the frequency axis, then carried back to time."
+        }
+      ]
+    },
+    {
+      "id": "dtft",
+      "title": "DTFT",
+      "essence": "The DTFT is the spectrum of a sequence. It always repeats every 2π in ω, because a sequence cannot tell ω from ω + 2π.",
+      "check": "x[n] is 1 at n = 0 and at n = 1, and zero elsewhere. Between −π and π, where is |X| largest and where is it zero?"
+    },
+    {
+      "id": "ft-time-shift",
+      "title": "time shift is a phase ramp",
+      "essence": "Delay a signal and the magnitude of its transform does not change. Each frequency's phase turns by −ωt₀, a straight line in ω.",
+      "check": "Two signals have the same |X(jω)| and different phases. What is the simplest way they can differ in time?"
+    },
+    {
+      "id": "ft-frequency-shift",
+      "title": "frequency shift",
+      "essence": "Multiply a signal by e^(jω₀t) and its whole spectrum slides to ω₀. Multiplying by a cosine makes two half-size copies, at +ω₀ and −ω₀.",
+      "check": "A signal whose spectrum is 1 kHz wide about zero is multiplied by a 10 kHz cosine. Where is its spectrum now?"
+    },
+    {
+      "id": "ft-convolution-property",
+      "title": "convolution becomes multiplication",
+      "essence": "Convolution in time is multiplication in frequency. That is why filtering is simple in frequency: the output spectrum is the input spectrum times H.",
+      "check": "A signal goes through the same filter twice. What happens to its spectrum?"
+    },
+    {
+      "id": "ft-multiplication-property",
+      "title": "multiplication becomes convolution",
+      "essence": "Multiplication in time is convolution in frequency. Cutting a signal off with a window smears its spectrum by the window's transform.",
+      "check": "A pure tone is observed for only 10 ms. Why is its measured spectrum not a single line, and roughly how wide is it?"
+    },
+    {
+      "id": "ft-duality",
+      "title": "duality",
+      "essence": "The transform and its inverse have the same form, so every pair works both ways. A rectangle in time is a sinc in frequency, and a sinc in time is a rectangle in frequency.",
+      "check": "The transform of a rectangle is a sinc. What is the transform of a sinc, and which familiar system has that frequency response?"
+    },
+    {
+      "id": "time-bandwidth",
+      "title": "time and bandwidth trade off",
+      "essence": "Squeeze a signal in time and its spectrum spreads by the same factor. A signal cannot be short in time and narrow in frequency at once.",
+      "check": "A pulse is made 10 times shorter. What happens to the bandwidth it needs?",
+      "later": [
+        {
+          "course": "EE 121",
+          "how": "The rate at which symbols can be sent is limited by the bandwidth of the channel."
+        }
+      ]
+    },
+    {
+      "id": "ft-differentiation",
+      "title": "differentiation in frequency",
+      "essence": "Differentiating in time multiplies the transform by jω. High frequencies are boosted and a constant is removed.",
+      "check": "Why does differentiating a noisy measurement make the noise look worse?"
+    },
+    {
+      "id": "spectrum-of-periodic-signals",
+      "title": "spectrum of a periodic signal",
+      "essence": "A periodic signal's transform is a row of impulses at the harmonics, weighted by the Fourier series coefficients. Repeating in time is sampling in frequency.",
+      "check": "One pulse has a smooth spectrum. The pulse is now repeated every T seconds. What does the spectrum become?"
+    },
+    {
+      "id": "impulse-train",
+      "title": "impulse train",
+      "essence": "A row of impulses T apart in time transforms into a row of impulses 2π/T apart in frequency. Pack them closer in time and they move apart in frequency.",
+      "check": "The impulses are moved twice as close together in time. What happens to the spacing of the lines in frequency?"
+    },
+    {
+      "id": "rect-and-sinc",
+      "title": "rectangle and sinc",
+      "essence": "A rectangle of width T has a sinc for its transform, with its first zeros at ±2π/T. The narrower the rectangle, the wider the main lobe.",
+      "check": "A rectangle is 2 ms wide. At what frequency, in hertz, is the first zero of its transform?"
+    },
+    {
+      "id": "windowing",
+      "title": "windowing and leakage",
+      "essence": "Looking at a signal through a finite window replaces each spectral line by a copy of the window's transform. Its width blurs nearby tones together, and its side lobes leak energy across the spectrum.",
+      "check": "Two tones 5 Hz apart are recorded for 0.1 s. Can the spectrum show two peaks? What would you change?",
+      "later": [
+        {
+          "course": "EE 123",
+          "how": "Choosing a window sets the trade between resolution and leakage in every spectrum estimate."
+        }
+      ]
+    },
+    {
+      "id": "fourier-transform-2d",
+      "title": "Fourier transform in two dimensions",
+      "essence": "An image is a sum of two-dimensional waves, each with a direction and a spacing. A point of the 2-D transform far from the centre is fine detail in that direction.",
+      "check": "An image contains vertical stripes only. Where in the 2-D frequency plane is its transform non-zero?",
+      "later": [
+        {
+          "course": "EE 118",
+          "how": "A lens forms the two-dimensional Fourier transform of the light in its front focal plane."
+        }
+      ]
+    }
+  ],
+  "links": [
+    { "from": "projection", "to": "fourier-series", "why": "A Fourier coefficient is a projection: how much of the signal lies along one harmonic." },
+    { "from": "complex-exponential", "to": "fourier-series", "why": "The harmonics are phasors e^(jkω₀t) that make k turns per period." },
+    { "from": "periodicity", "to": "fourier-series", "why": "Only a signal that repeats can be built from whole-number multiples of one frequency." },
+    { "from": "orthogonal-expansion", "to": "dtfs", "why": "The N harmonics are orthogonal over one period, so each coefficient is one inner product." },
+    { "from": "periodicity", "to": "dtfs", "why": "Only a whole number of turns in N steps repeats, which leaves exactly N distinct harmonics." },
+    { "from": "dtfs", "to": "dft", "why": "The DFT is the DTFS of N samples treated as one period." },
+    { "from": "dft", "to": "fft", "why": "The even samples and the odd samples each form a DFT of half the size." },
+    { "from": "fourier-series", "to": "fourier-symmetry", "why": "Each symmetry of the signal over one period shows up as a pattern in its coefficients." },
+    { "from": "fourier-series", "to": "parseval", "why": "Because the harmonics are orthogonal, their powers add with no cross terms." },
+    { "from": "signal-inner-product", "to": "parseval", "why": "A change to an orthogonal basis keeps inner products, and so keeps energy." },
+    { "from": "fourier-series", "to": "fourier-transform", "why": "Let the period go to infinity: the spacing between harmonics shrinks to zero and the sum becomes an integral." },
+    { "from": "dtfs", "to": "dtft", "why": "Let N grow without limit and the N harmonics fill in the whole interval from −π to π." },
+    { "from": "dt-frequency", "to": "dtft", "why": "A sequence cannot tell ω from ω + 2π, so its spectrum repeats every 2π." },
+    { "from": "fourier-transform", "to": "ft-time-shift", "why": "A delay multiplies every phasor e^(jωt) by e^(−jωt₀)." },
+    { "from": "fourier-transform", "to": "ft-frequency-shift", "why": "Multiplying by e^(jω₀t) adds ω₀ to the frequency of every phasor in the signal." },
+    { "from": "fourier-transform", "to": "ft-convolution-property", "why": "Each phasor passes through the convolution scaled by the other signal's transform at that frequency." },
+    { "from": "convolution", "to": "ft-convolution-property", "why": "An LTI system convolves in time, which multiplies the spectrum by H." },
+    { "from": "fourier-transform", "to": "ft-multiplication-property", "why": "It is the convolution property with the roles of time and frequency exchanged." },
+    { "from": "ft-duality", "to": "ft-multiplication-property", "why": "Duality turns \"convolution in time is multiplication in frequency\" round." },
+    { "from": "fourier-transform", "to": "ft-duality", "why": "The forward and inverse integrals differ only by a sign and a constant." },
+    { "from": "fourier-transform", "to": "time-bandwidth", "why": "Compressing the time axis by a stretches the frequency axis by a." },
+    { "from": "signal-operations", "to": "time-bandwidth", "why": "It is what time scaling does to the transform." },
+    { "from": "fourier-transform", "to": "ft-differentiation", "why": "Differentiating e^(jωt) brings down a factor of jω." },
+    { "from": "fourier-transform", "to": "rect-and-sinc", "why": "The rectangle is the first transform worth knowing by heart, and almost every other pair is built from it." },
+    { "from": "fourier-series", "to": "spectrum-of-periodic-signals", "why": "The series coefficients become the weights of impulses at the harmonics." },
+    { "from": "impulse-train", "to": "spectrum-of-periodic-signals", "why": "A periodic signal is one period convolved with an impulse train, so its spectrum is the period's spectrum sampled." },
+    { "from": "unit-impulse", "to": "impulse-train", "why": "It is the impulse repeated every T seconds." },
+    { "from": "ft-multiplication-property", "to": "windowing", "why": "Multiplying by a window convolves the spectrum with the window's transform." },
+    { "from": "rect-and-sinc", "to": "windowing", "why": "The simplest window is a rectangle, so each line becomes a sinc." },
+    { "from": "windowing", "to": "dft", "why": "Taking N samples is windowing, so every DFT shows a smeared spectrum." },
+    { "from": "fourier-transform", "to": "fourier-transform-2d", "why": "The same decomposition, with a wave vector in place of a single frequency." }
+  ]
+}
