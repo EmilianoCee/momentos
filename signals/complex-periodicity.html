@@ -23,21 +23,24 @@
   } catch (e) { /* no storage in this preview: follow the system setting */ }
 </script>
 <style>
-  /* ---- momentos house style (same block in every tool; see templates/tool-template.html) ---- */
+  /* ---- momentos house style: begin (the same block in every tool. Change it only in
+     templates/tool-template.html, then run scripts/sync-house-style.py) ---- */
   :root {
     color-scheme: light dark;
-    --bg: light-dark(#f6f4ee, #131312);
-    --surface: light-dark(#fbfaf6, #1b1b19);
-    --ink: light-dark(#1d1c1a, #ebe8e1);
-    --ink-2: light-dark(#5f5c55, #b1ada3);
-    --ink-3: light-dark(#77736b, #8a867d);
-    --line: light-dark(rgba(29, 28, 26, 0.16), rgba(235, 232, 225, 0.18));
-    --grid: light-dark(rgba(29, 28, 26, 0.07), rgba(235, 232, 225, 0.08));
-    --accent: light-dark(#c2410c, #ff8f5a);
-    --c1: light-dark(#2458c4, #7aa7ff);
-    --c2: light-dark(#c2410c, #ff9a62);
-    --c3: light-dark(#0f7f6b, #4fd3b4);
-    --c4: light-dark(#9d3fb0, #d78be6);
+    --bg: light-dark(#f6f4ee, #131312);          /* the page */
+    --surface: light-dark(#fbfaf6, #1b1b19);     /* figures and inputs */
+    --ink: light-dark(#1d1c1a, #ebe8e1);         /* text and the main strokes */
+    --ink-2: light-dark(#5f5c55, #b1ada3);       /* secondary text */
+    --ink-3: light-dark(#77736b, #8a867d);       /* labels, axis numbers */
+    --line: light-dark(rgba(29, 28, 26, 0.16), rgba(235, 232, 225, 0.18));   /* hairlines and borders */
+    --grid: light-dark(rgba(29, 28, 26, 0.07), rgba(235, 232, 225, 0.08));   /* grid lines */
+    --accent: light-dark(#c2410c, #ff8f5a);      /* the one thing being pointed at */
+    /* Colour is for quantities, never for decoration. Give each quantity one of these and keep it
+       the same in the figure, the numbers and the prose. */
+    --c1: light-dark(#2458c4, #7aa7ff);          /* blue */
+    --c2: light-dark(#c2410c, #ff9a62);          /* orange */
+    --c3: light-dark(#0f7f6b, #4fd3b4);          /* teal */
+    --c4: light-dark(#9d3fb0, #d78be6);          /* purple */
     --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
     --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
   }
@@ -88,10 +91,11 @@
     color: var(--ink-3);
     margin: 0 0 10px;
   }
-  .bench { display: grid; grid-template-columns: minmax(0, 1.75fr) minmax(280px, 1fr); gap: 28px; align-items: start; }
+  .bench { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(280px, 1fr); gap: 28px; align-items: start; }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-top: 28px; }
   figure { margin: 0; }
   .stage { border: 1px solid var(--line); border-radius: 4px; background: var(--surface); overflow: hidden; }
-  .stage svg { display: block; width: 100%; height: auto; user-select: none; -webkit-user-select: none; }
+  .stage svg { display: block; width: 100%; height: auto; touch-action: none; user-select: none; -webkit-user-select: none; }
   figcaption { padding: 9px 12px; border-top: 1px solid var(--line); font: 11.5px/1.5 var(--mono); color: var(--ink-3); }
   .controls { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 12px; }
   .controls label { font: 12px/1 var(--mono); color: var(--ink-2); display: inline-flex; align-items: center; gap: 6px; margin-left: 6px; }
@@ -108,14 +112,17 @@
   details { margin-top: 4px; }
   summary { font: 11.5px/1.4 var(--mono); color: var(--ink-3); cursor: pointer; }
   details span { color: var(--ink-2); font-size: 15px; }
-  sup { font-size: 0.72em; line-height: 0; }
+  sup, sub { font-size: 0.72em; line-height: 0; }
 
   @media (max-width: 860px) {
-    .bench, .notes { grid-template-columns: 1fr; }
+    .bench, .pair, .notes { grid-template-columns: 1fr; }
     .notes { gap: 28px; }
   }
+  /* ---- momentos house style: end ---- */
 
   /* ---- this tool ---- */
+  @media (min-width: 861px) { .bench { grid-template-columns: minmax(0, 1.75fr) minmax(280px, 1fr); } }
+  .stage svg { touch-action: auto; }
   .re { color: var(--c1); } .im { color: var(--c2); }
   var { font-style: italic; font-family: var(--serif); }
 
@@ -294,6 +301,41 @@
   </section>
 </main>
 
+<script id="maths">
+// ---- the maths: plain functions with no page behind them. scripts/test-tools.js runs this block on
+// its own and compares it with the check cases below, so nothing in here may touch the DOM.
+var MATHS = (function () {
+  "use strict";
+
+  var TAU = Math.PI * 2;
+  function mod(a, m) { return ((a % m) + m) % m; }
+  function gcd(a, b) { a = Math.abs(a); b = Math.abs(b); while (b) { var t = a % b; a = b; b = t; } return a; }
+  // A step of p/q of a full turn repeats after N steps, having gone round k times.
+  function period(p, q) { var g = gcd(p, q) || q; return { N: q / g, k: p / g }; }
+  // Where the walk has landed after n whole steps of p/q of a turn: an angle in radians, in [0, 2π).
+  // The whole number of turns is dropped before the division, so no rounding error builds up.
+  function landingTurn(p, q, n) { return (TAU * mod(p * n, q)) / q; }
+  // The same for a step given in radians.
+  function landingRad(rad, n) { return mod(rad * n, TAU); }
+
+  return { mod: mod, gcd: gcd, period: period, landingTurn: landingTurn, landingRad: landingRad };
+})();
+</script>
+<script type="application/json" id="check-cases">
+[
+  {"fn": "period", "args": [1, 4], "expect": {"N": 4, "k": 1}, "units": "steps, turns", "note": "a quarter turn per step repeats after 4 steps and 1 turn"},
+  {"fn": "period", "args": [3, 8], "expect": {"N": 8, "k": 3}, "units": "steps, turns", "note": "3/8 of a turn per step repeats after 8 steps and 3 turns"},
+  {"fn": "period", "args": [2, 8], "expect": {"N": 4, "k": 1}, "units": "steps, turns", "note": "2/8 is 1/4 in lowest terms"},
+  {"fn": "landingTurn", "args": [1, 4, 1], "expect": 1.5707963267948966, "tol": 1e-12, "units": "rad", "note": "one quarter-turn step lands on j"},
+  {"fn": "landingTurn", "args": [1, 4, 4], "expect": 0, "tol": 1e-12, "units": "rad", "note": "four quarter-turn steps come back to 1"},
+  {"fn": "landingTurn", "args": [9, 8, 5], "expect": 3.9269908169872414, "tol": 1e-12, "units": "rad", "note": "9/8 of a turn per step lands where 1/8 does: a whole extra turn per step changes nothing"},
+  {"fn": "landingTurn", "args": [1, 8, 5], "expect": 3.9269908169872414, "tol": 1e-12, "units": "rad", "note": "five steps of 1/8 of a turn"},
+  {"fn": "landingTurn", "args": [7, 8, 3], "expect": 3.9269908169872414, "tol": 1e-12, "units": "rad", "note": "7/8 of a turn per step lands where −1/8 does"},
+  {"fn": "landingTurn", "args": [-1, 8, 3], "expect": 3.9269908169872414, "tol": 1e-12, "units": "rad", "note": "three steps of −1/8 of a turn"},
+  {"fn": "landingRad", "args": [1, 44], "expect": 0.017702849742896376, "tol": 1e-09, "units": "rad", "note": "one radian per step: after 44 steps it is 0.0177 rad (1.01°) past closing, and never lands exactly"},
+  {"fn": "landingRad", "args": [1, 710], "expect": 6.028870675578446e-05, "tol": 1e-09, "units": "rad", "note": "after 710 steps it is 0.00006 rad (0.003°) off"}
+]
+</script>
 <script>
 (function () {
   "use strict";
@@ -308,8 +350,7 @@
   const $ = (id) => document.getElementById(id);
   const TAU = Math.PI * 2, DEG = 360 / TAU;
   const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
-  const mod = (a, m) => ((a % m) + m) % m;
-  function gcd(a, b) { a = Math.abs(a); b = Math.abs(b); while (b) { const t = a % b; a = b; b = t; } return a; }
+  const mod = MATHS.mod, gcd = MATHS.gcd;
   function fmt(v, d) {
     if (d === undefined) d = 2;
     let s = (Math.round(v * Math.pow(10, d)) / Math.pow(10, d)).toFixed(d);
@@ -354,12 +395,10 @@
   // the angle after x steps (x may be a fraction while a step is in flight)
   const angleAt = (x) => (st.unit === "turn" ? (TAU * st.p * x) / st.q : st.rad * x);
   // exact landing angle for a whole number of steps: no rounding error builds up, so repeats are exact
-  const landing = (n) => (st.unit === "turn" ? (TAU * mod(st.p * n, st.q)) / st.q : mod(st.rad * n, TAU));
+  const landing = (n) => (st.unit === "turn" ? MATHS.landingTurn(st.p, st.q, n) : MATHS.landingRad(st.rad, n));
   // a p/q turn per step repeats after N steps, having gone round k times
   function period() {
-    if (st.unit !== "turn") return null;
-    const g = gcd(st.p, st.q) || st.q;
-    return { N: st.q / g, k: st.p / g };
+    return st.unit === "turn" ? MATHS.period(st.p, st.q) : null;
   }
 
   // ------------------------------------------------------------ drawing: the parts that never change

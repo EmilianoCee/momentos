@@ -1,0 +1,72 @@
+{
+  "topics": [
+    {
+      "id": "ohms-law",
+      "title": "Ohm's law",
+      "essence": "The current through a resistor is proportional to the voltage across it: v = iR. It flows from the higher voltage to the lower.",
+      "check": "The current through a resistor is zero. What can you say about the voltages at its two ends?",
+      "tools": ["circuits/kcl-kvl-resistors.html"],
+      "courses": ["EECS 16A"]
+    },
+    {
+      "id": "kcl",
+      "title": "KCL",
+      "essence": "Charge does not pile up at a node. Whatever current flows in must flow out.",
+      "check": "Three wires meet at a node. Two of them carry 2 mA and 5 mA in. What does the third carry, and which way?",
+      "tools": ["circuits/kcl-kvl-resistors.html"],
+      "courses": ["EECS 16A"]
+    },
+    {
+      "id": "kvl",
+      "title": "KVL",
+      "essence": "Voltage is a height. Walk around any closed loop and you come back to the height you started at, so the rises equal the drops.",
+      "check": "A 12 V source drives two resistors in series and one of them drops 9 V. What does the other drop, whatever its resistance?",
+      "tools": ["circuits/kcl-kvl-resistors.html"],
+      "courses": ["EECS 16A"]
+    },
+    {
+      "id": "dividers",
+      "title": "dividers",
+      "essence": "Series resistors share one current and split the voltage in proportion to R. Parallel resistors share one voltage and split the current in proportion to 1/R.",
+      "check": "In a two-resistor voltage divider you make the bottom resistor much larger than the top one. Where does the output voltage go?",
+      "tools": ["circuits/kcl-kvl-resistors.html"],
+      "courses": ["EECS 16A"]
+    },
+    {
+      "id": "nodal-analysis",
+      "title": "nodal analysis",
+      "essence": "Name every node voltage, write KCL at each unknown node using Ohm's law, and solve. KVL comes for free.",
+      "check": "A circuit has four nodes. One is ground and one is pinned by a voltage source. How many equations do you need?",
+      "tools": ["circuits/kcl-kvl-resistors.html"],
+      "courses": ["EECS 16A"]
+    },
+    {
+      "id": "phasors-impedance",
+      "title": "phasors & impedance",
+      "essence": "At one frequency a sinusoid is just an amplitude and a phase, and R, L and C all obey V = ZI.",
+      "check": "At a very high frequency, does a capacitor look like an open circuit or a short? Say why from Z = 1/(jωC).",
+      "courses": ["EECS 16B"]
+    },
+    {
+      "id": "ac-power",
+      "title": "AC power",
+      "essence": "Only the part of the current that is in phase with the voltage delivers power on average.",
+      "check": "The current through a capacitor is a quarter cycle ahead of its voltage. How much power does it take in on average?"
+    }
+  ],
+  "links": [
+    { "from": "linear-systems", "to": "nodal-analysis", "why": "KCL at every unknown node gives Gv = i. Solving the circuit is solving a linear system." },
+    { "from": "complex-exponential", "to": "phasors-impedance", "why": "Every voltage in the circuit turns at the same ω, so drop the e^(jωt) and keep the complex number in front." },
+    { "from": "dot-product", "to": "ac-power", "why": "Average power is ½|V||I|cos φ: half the dot product of the voltage and current phasors." },
+    { "from": "cross-product", "to": "ac-power", "why": "Reactive power is ½|V||I|sin φ: half their cross product, the part of the current that lies across the voltage." },
+    { "from": "kvl", "to": "dividers", "why": "One loop: the source voltage is shared out across series resistors in proportion to R." },
+    { "from": "kcl", "to": "dividers", "why": "One pair of nodes: the source current is shared out across parallel resistors in proportion to 1/R." },
+    { "from": "ohms-law", "to": "nodal-analysis", "why": "Ohm's law turns each branch current into a difference of node voltages over R." },
+    { "from": "kcl", "to": "nodal-analysis", "why": "One KCL equation for each unknown node voltage." },
+    { "from": "kvl", "to": "nodal-analysis", "why": "Describing the circuit by node voltages satisfies KVL automatically: every loop already closes." },
+    { "from": "ohms-law", "to": "phasors-impedance", "why": "Impedance is Ohm's law with complex numbers: V = ZI." },
+    { "from": "nodal-analysis", "to": "phasors-impedance", "why": "Swap each R for a Z and every resistor-circuit method works for R, L and C at one frequency." },
+    { "from": "phasors-impedance", "to": "ac-power", "why": "Power depends on the angle between the voltage phasor and the current phasor." },
+    { "from": "work", "to": "kvl", "why": "Voltage is work per unit charge. Around a closed loop the total work is zero." }
+  ]
+}

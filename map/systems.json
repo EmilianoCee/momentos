@@ -1,0 +1,16 @@
+{
+  "topics": [
+    {
+      "id": "frequency-response",
+      "title": "frequency response",
+      "essence": "An LTI system can only scale a sinusoid and shift it in time. H(jω) says by how much at each frequency.",
+      "check": "A sinusoid at 1 kHz goes into an LTI system. Which frequencies can come out, and which two numbers describe the change?",
+      "courses": ["EECS 16B", "EE 120"]
+    }
+  ],
+  "links": [
+    { "from": "complex-exponential", "to": "frequency-response", "why": "Put e^(jωt) into an LTI system and the same phasor comes out, scaled and turned by H(jω)." },
+    { "from": "eigenvectors", "to": "frequency-response", "why": "e^(jωt) is to an LTI system what an eigenvector is to a matrix, and H(jω) is its eigenvalue." },
+    { "from": "phasors-impedance", "to": "frequency-response", "why": "Solve the circuit with impedances, sweep ω, and V_out/V_in traces out H(jω)." }
+  ]
+}

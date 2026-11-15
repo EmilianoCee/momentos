@@ -1,0 +1,34 @@
+{
+  "topics": [
+    {
+      "id": "complex-exponential",
+      "title": "complex exponential",
+      "essence": "e^(jωt) is a point going round the unit circle, ω radians every second. Cosine and sine are its two shadows.",
+      "check": "The phasor turns clockwise instead. Which of its two shadows can tell the difference?",
+      "tools": ["signals/complex-periodicity.html"],
+      "courses": ["EE 120"]
+    },
+    {
+      "id": "periodicity",
+      "title": "periodicity",
+      "essence": "A signal repeats when its phasor comes back to where it started. In continuous time it always does. In discrete time it does only if a whole number of steps makes a whole number of turns.",
+      "check": "Is e^(jn), one radian per step, periodic? What about e^(j2πn·3/8)?",
+      "tools": ["signals/complex-periodicity.html"],
+      "courses": ["EE 120"]
+    },
+    {
+      "id": "fourier-series",
+      "title": "Fourier series",
+      "essence": "Any periodic signal is a sum of phasors spinning at whole multiples of one fundamental frequency.",
+      "check": "You make a square wave's period twice as long. What happens to the spacing of its harmonics on the frequency axis?",
+      "courses": ["EE 120"]
+    }
+  ],
+  "links": [
+    { "from": "eulers-formula", "to": "complex-exponential", "why": "Let the angle grow with time, θ = ωt, and the point on the circle starts to turn." },
+    { "from": "complex-exponential", "to": "periodicity", "why": "The signal repeats each time the phasor completes a whole number of turns: ωT = 2π." },
+    { "from": "projection", "to": "fourier-series", "why": "A Fourier coefficient is a projection: how much of the signal lies along one harmonic." },
+    { "from": "complex-exponential", "to": "fourier-series", "why": "The harmonics are phasors e^(jkω₀t) that make k turns per period." },
+    { "from": "periodicity", "to": "fourier-series", "why": "Only a signal that repeats can be built from whole-number multiples of one frequency." }
+  ]
+}

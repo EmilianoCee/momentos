@@ -25,21 +25,24 @@
   } catch (e) { /* no storage in this preview: follow the system setting */ }
 </script>
 <style>
-  /* ---- momentos house style (same block in every tool; see templates/tool-template.html) ---- */
+  /* ---- momentos house style: begin (the same block in every tool. Change it only in
+     templates/tool-template.html, then run scripts/sync-house-style.py) ---- */
   :root {
     color-scheme: light dark;
-    --bg: light-dark(#f6f4ee, #131312);
-    --surface: light-dark(#fbfaf6, #1b1b19);
-    --ink: light-dark(#1d1c1a, #ebe8e1);
-    --ink-2: light-dark(#5f5c55, #b1ada3);
-    --ink-3: light-dark(#77736b, #8a867d);
-    --line: light-dark(rgba(29, 28, 26, 0.16), rgba(235, 232, 225, 0.18));
-    --grid: light-dark(rgba(29, 28, 26, 0.07), rgba(235, 232, 225, 0.08));
-    --accent: light-dark(#c2410c, #ff8f5a);
-    --c1: light-dark(#2458c4, #7aa7ff);
-    --c2: light-dark(#c2410c, #ff9a62);
-    --c3: light-dark(#0f7f6b, #4fd3b4);
-    --c4: light-dark(#9d3fb0, #d78be6);
+    --bg: light-dark(#f6f4ee, #131312);          /* the page */
+    --surface: light-dark(#fbfaf6, #1b1b19);     /* figures and inputs */
+    --ink: light-dark(#1d1c1a, #ebe8e1);         /* text and the main strokes */
+    --ink-2: light-dark(#5f5c55, #b1ada3);       /* secondary text */
+    --ink-3: light-dark(#77736b, #8a867d);       /* labels, axis numbers */
+    --line: light-dark(rgba(29, 28, 26, 0.16), rgba(235, 232, 225, 0.18));   /* hairlines and borders */
+    --grid: light-dark(rgba(29, 28, 26, 0.07), rgba(235, 232, 225, 0.08));   /* grid lines */
+    --accent: light-dark(#c2410c, #ff8f5a);      /* the one thing being pointed at */
+    /* Colour is for quantities, never for decoration. Give each quantity one of these and keep it
+       the same in the figure, the numbers and the prose. */
+    --c1: light-dark(#2458c4, #7aa7ff);          /* blue */
+    --c2: light-dark(#c2410c, #ff9a62);          /* orange */
+    --c3: light-dark(#0f7f6b, #4fd3b4);          /* teal */
+    --c4: light-dark(#9d3fb0, #d78be6);          /* purple */
     --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
     --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
   }
@@ -90,11 +93,11 @@
     color: var(--ink-3);
     margin: 0 0 10px;
   }
-  .bench { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(300px, 1fr); gap: 28px; align-items: start; }
+  .bench { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(280px, 1fr); gap: 28px; align-items: start; }
   .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-top: 28px; }
   figure { margin: 0; }
   .stage { border: 1px solid var(--line); border-radius: 4px; background: var(--surface); overflow: hidden; }
-  .stage svg { display: block; width: 100%; height: auto; user-select: none; -webkit-user-select: none; }
+  .stage svg { display: block; width: 100%; height: auto; touch-action: none; user-select: none; -webkit-user-select: none; }
   figcaption { padding: 9px 12px; border-top: 1px solid var(--line); font: 11.5px/1.5 var(--mono); color: var(--ink-3); }
   .controls { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 12px; }
   .controls label { font: 12px/1 var(--mono); color: var(--ink-2); display: inline-flex; align-items: center; gap: 6px; margin-left: 6px; }
@@ -111,14 +114,17 @@
   details { margin-top: 4px; }
   summary { font: 11.5px/1.4 var(--mono); color: var(--ink-3); cursor: pointer; }
   details span { color: var(--ink-2); font-size: 15px; }
-  sub { font-size: 0.72em; line-height: 0; }
+  sup, sub { font-size: 0.72em; line-height: 0; }
 
   @media (max-width: 860px) {
     .bench, .pair, .notes { grid-template-columns: 1fr; }
     .notes { gap: 28px; }
   }
+  /* ---- momentos house style: end ---- */
 
   /* ---- this tool ---- */
+  @media (min-width: 861px) { .bench { grid-template-columns: minmax(0, 1.45fr) minmax(300px, 1fr); } }
+  .stage svg { touch-action: auto; }
   .cur-c { color: var(--c1); } .volt-c { color: var(--c2); }
   var { font-style: italic; font-family: var(--serif); }
 
@@ -315,11 +321,11 @@
   </section>
 </main>
 
-<script>
-(function () {
+<script id="maths">
+// ---- the maths: plain functions with no page behind them. scripts/test-tools.js runs this block on
+// its own and compares it with the check cases below, so nothing in here may touch the DOM.
+var MATHS = (function () {
   "use strict";
-
-  // ==== LOGIC START (no DOM in this block, so it can be tested on its own) ====
 
   function fmt(v, d) {
     if (d === undefined) d = 3;
@@ -674,7 +680,54 @@
     return { ok: false, msg: "Not yet." };
   }
 
-  // ==== LOGIC END ====
+  // Solve many generated problems and report the largest amount by which KCL (at any node) or
+  // KVL (round any listed loop) fails to balance.
+  function audit(count) {
+    const r = rng(7); let worstKcl = 0, worstKvl = 0, done = 0;
+    for (let i = 0; i < (count || 300); i++) {
+      const key = ORDER[i % ORDER.length], tpl = CIRCUITS[key], vals = niceValues(tpl, r), s = solve(tpl, vals);
+      nodeNames(tpl).concat(["0"]).forEach((n) => { worstKcl = Math.max(worstKcl, Math.abs(leaving(tpl, s, n).reduce((a, f) => a + f.out, 0))); });
+      tpl.loops.forEach((l) => {
+        const round = l.walk.reduce((a, w) => {
+          const part = tpl.parts.filter((p) => p.id === w[0])[0];
+          if (part.type === "R") return a + (w[1] === part.a ? -1 : 1) * s.I[part.id] * vals[part.id];   // down with the current, up against it
+          if (part.type === "V") return a + (w[1] === part.n ? 1 : -1) * vals[part.id];
+          return a + (s.V[w[2]] - s.V[w[1]]);    // a current source takes whatever voltage the rest of the loop leaves it
+        }, 0);
+        worstKvl = Math.max(worstKvl, Math.abs(round));
+      });
+      done++;
+    }
+    return { problems: done, worstKclResidual_mA: worstKcl, worstKvlResidual_V: worstKvl };
+  }
+
+  // one circuit by its key, for the check cases
+  function solveByKey(key, vals) { return solve(CIRCUITS[key], vals); }
+
+  return { fmt: fmt, sub: sub, eq: eq, CIRCUITS: CIRCUITS, ORDER: ORDER, nodeNames: nodeNames, gauss: gauss, solve: solve,
+           leaving: leaving, nodalMatrix: nodalMatrix, rng: rng, niceValues: niceValues, target: target, judge: judge,
+           audit: audit, solveByKey: solveByKey };
+})();
+</script>
+<script type="application/json" id="check-cases">
+[
+  {"fn": "solveByKey", "args": ["loop2", {"Vs": 12, "R1": 2, "R2": 4}], "expect": {"V": {"P": 12, "A": 8.0}, "I": {"R1": 2.0, "R2": 2.0, "Vs": 2.0}}, "tol": 1e-09, "units": "V at nodes, mA through parts (values given in V, kΩ, mA)", "note": "12 V into 2 kΩ + 4 kΩ: 2 mA round the loop and 8 V at the midpoint"},
+  {"fn": "solveByKey", "args": ["par2", {"Is": 6, "R1": 2, "R2": 4}], "expect": {"V": {"A": 8.0}, "I": {"R1": 4.0, "R2": 2.0}}, "tol": 1e-09, "units": "V at nodes, mA through parts (values given in V, kΩ, mA)", "note": "6 mA into 2 kΩ ∥ 4 kΩ: 8 V, and the current splits 4 mA and 2 mA"},
+  {"fn": "solveByKey", "args": ["loop3", {"Vs": 12, "R1": 1, "R2": 2, "R3": 3}], "expect": {"V": {"A": 10, "B": 6}, "I": {"R2": 2}}, "tol": 1e-09, "units": "V at nodes, mA through parts (values given in V, kΩ, mA)", "note": "12 V into 1 + 2 + 3 kΩ: 2 mA, and the heights step down 12, 10, 6, 0 V"},
+  {"fn": "solveByKey", "args": ["par3", {"Is": 11, "R1": 2, "R2": 3, "R3": 6}], "expect": {"V": {"A": 11}, "I": {"R1": 5.5, "R2": 3.6666666666666665, "R3": 1.8333333333333333}}, "tol": 1e-09, "units": "V at nodes, mA through parts (values given in V, kΩ, mA)", "note": "11 mA into 2 ∥ 3 ∥ 6 kΩ (1 kΩ together): 11 V, split in proportion to 1/R"},
+  {"fn": "solveByKey", "args": ["tee", {"Vs": 12, "R1": 2, "R2": 6, "R3": 1, "R4": 2}], "expect": {"V": {"A": 6, "B": 4}, "I": {"R1": 3, "R2": 1, "R4": 2}}, "tol": 1e-09, "units": "V at nodes, mA through parts (values given in V, kΩ, mA)", "note": "the T network: 6 V and 4 V at the two nodes, and 3 mA in splits into 1 mA and 2 mA"},
+  {"fn": "solveByKey", "args": ["two", {"V1": 12, "R1": 2, "R2": 6, "R3": 3, "V2": 6}], "expect": {"V": {"A": 8}, "I": {"R1": 2, "R2": 1.3333333333333333, "R3": -0.6666666666666666}}, "tol": 1e-09, "units": "V at nodes, mA through parts (values given in V, kΩ, mA)", "note": "two sources: 8 V at the node, and −0.667 mA in R3, against its arrow"},
+  {"fn": "solveByKey", "args": ["loop2", {"Vs": 12, "R1": 2, "R2": 1000000000.0}], "pick": "V.A", "expect": 12, "tol": 1e-06, "units": "V", "note": "limit: R2 far larger than R1 takes the whole 12 V"},
+  {"fn": "solveByKey", "args": ["loop2", {"Vs": 12, "R1": 2, "R2": 1e-09}], "pick": "V.A", "expect": 0, "tol": 1e-06, "units": "V", "note": "limit: R2 near zero pulls the midpoint down to ground"},
+  {"fn": "audit", "args": [1200], "pick": "worstKclResidual_mA", "expect": 0, "tol": 1e-12, "units": "mA", "note": "1 200 generated problems: KCL balances at every node"},
+  {"fn": "audit", "args": [1200], "pick": "worstKvlResidual_V", "expect": 0, "tol": 1e-12, "units": "V", "note": "1 200 generated problems: KVL balances round every loop"}
+]
+</script>
+<script>
+(function () {
+  "use strict";
+
+  const { fmt, sub, eq, CIRCUITS, ORDER, nodeNames, solve, leaving, nodalMatrix, rng, niceValues, target, judge } = MATHS;
 
   // ------------------------------------------------------------ page helpers
 
@@ -1115,24 +1168,7 @@
     ui: ui, CIRCUITS: CIRCUITS, solve: solve, judge: judge, niceValues: niceValues, nodalMatrix: nodalMatrix, leaving: leaving,
     seed: (n) => { rand = rng(n); },
     newProblem: newProblem, setMode: setMode, refresh: refresh,
-    audit: function (count) {
-      const r = rng(7); let worstKcl = 0, worstKvl = 0, done = 0;
-      for (let i = 0; i < (count || 300); i++) {
-        const key = ORDER[i % ORDER.length], tpl = CIRCUITS[key], vals = niceValues(tpl, r), s = solve(tpl, vals);
-        nodeNames(tpl).concat(["0"]).forEach((n) => { worstKcl = Math.max(worstKcl, Math.abs(leaving(tpl, s, n).reduce((a, f) => a + f.out, 0))); });
-        tpl.loops.forEach((l) => {
-          const round = l.walk.reduce((a, w) => {
-            const part = tpl.parts.filter((p) => p.id === w[0])[0];
-            if (part.type === "R") return a + (w[1] === part.a ? -1 : 1) * s.I[part.id] * vals[part.id];   // down with the current, up against it
-            if (part.type === "V") return a + (w[1] === part.n ? 1 : -1) * vals[part.id];
-            return a + (s.V[w[2]] - s.V[w[1]]);    // a current source takes whatever voltage the rest of the loop leaves it
-          }, 0);
-          worstKvl = Math.max(worstKvl, Math.abs(round));
-        });
-        done++;
-      }
-      return { problems: done, worstKclResidual_mA: worstKcl, worstKvlResidual_V: worstKvl };
-    }
+    audit: MATHS.audit
   };
 })();
 </script>
