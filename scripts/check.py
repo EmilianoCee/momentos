@@ -641,6 +641,12 @@ def check_learner(r):
     except ImportError:
         r.error("scripts/learner.py is missing.")
         return
+    done = subprocess.run([sys.executable, str(ROOT / "scripts" / "learner.py"), "selftest"], capture_output=True, text=True)
+    if done.returncode != 0:
+        for line in done.stdout.splitlines():
+            r.error("learner.py selftest: " + line.strip())
+    else:
+        r.note(done.stdout.strip().splitlines()[-1])
     template = ROOT / "templates" / "learner"
     if not template.is_dir():
         r.error("templates/learner/ is missing: it is what a new learner's record is copied from.")
