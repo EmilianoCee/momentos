@@ -1,0 +1,208 @@
+source_id	item	tags	task	points	note
+EE 120 FA26 MT1	E1.1a	convolution-dt;step-response;lti-impulse-response	compute	20	one-sided geometric h, step response as partial sum, plot approach to 1/(1-a)
+EE 120 FA26 MT1	E1.1b	convolution-dt;lti-impulse-response;unit-impulse-dt	sketch	15	two-delta first-difference system acting on four-sample pulse
+EE 120 FA26 MT1	E1.2a	difference-equation-lccde;lti-impulse-response;fir-iir	derive	10	read three-tap h from plot, show equation
+EE 120 FA26 MT1	E1.2b	block-diagram;fir-iir	design	10	minimum delay count is two
+EE 120 FA26 MT1	E1.2c	frequency-response-dt;magnitude-phase;filter-types	derive	20	raised-cosine low-pass, show magnitude form, plot over two periods
+EE 120 FA26 MT1	E1.2d	eigenfunction-property;frequency-response-dt	compute	10	input is DC plus Nyquist-frequency term, null at pi
+EE 120 FA26 MT1	E1.3a	frequency-response-dt;difference-equation-lccde	derive	15	first-order recursion with a feedforward tap
+EE 120 FA26 MT1	E1.3b	lti-impulse-response;difference-equation-lccde;fir-iir	derive	15	impulse plus geometric tail starting at n=1
+EE 120 FA26 MT1	E1.3c	frequency-response-dt;dtft	compute	20	sums of h equal H at omega 0 and pi; no summation needed
+EE 120 FA26 MT1	E1.4a	second-order-system;differential-equation-lccde;complex-exponential	derive	10	undamped mass-spring, substitute exponential, two frequencies plus/minus omega0
+EE 120 FA26 MT1	E1.4b	differential-equation-lccde;complex-exponential;complex-numbers	derive	10	initial conditions force equal coefficients
+EE 120 FA26 MT1	E1.4c	second-order-system;complex-numbers;complex-exponential	derive	12	reduce to amplitude-phase cosine, phase depends on sign of Y0
+EE 120 FA26 MT1	E1.4d	periodicity-ct;second-order-system	compute	8	period in seconds and frequency in Hz
+EE 120 FA26 MT1	E1.4e	energy-power;second-order-system	prove	10	constant mechanical energy via derivative and the equation
+EE 120 FA26 MT2	E2.1a	dtfs;fourier-series-properties	prove	15	phase ramp on coefficients equals one-sample delay
+EE 120 FA26 MT2	E2.1b	dtfs;fourier-series-properties;parseval;+signal-puzzle-from-clues	compute	30	period 3, real; DC, cos(pi n) sum and coefficient energy clues, stem plot
+EE 120 FA26 MT2	E2.2a	dft;inner-product-orthogonality	prove	15	inverse of Psi is its Hermitian over p
+EE 120 FA26 MT2	E2.2b	dft;dtfs	compute	25	build 4-point Psi and Fourier matrix, powers of i
+EE 120 FA26 MT2	E2.3a	feedback;frequency-response-ct	derive	15	negative feedback, two outputs: error node and output
+EE 120 FA26 MT2	E2.3b	feedback;frequency-response-ct;complex-numbers	derive	30	equal first-order blocks; two responses sum to one, so input splits
+EE 120 FA26 MT2	E2.4a	state-space;stability-from-poles;+internal-stability	compute	8	symmetric 2x2, find second eigenpair, justify stability
+EE 120 FA26 MT2	E2.4b	state-space;+modal-decomposition;inner-product-orthogonality	derive	10	zero input trajectory; coefficients by projection on orthonormal eigenvectors
+EE 120 FA26 MT2	E2.4c	state-space;+cayley-hamilton	prove	5	check characteristic polynomial of A annihilates A
+EE 120 FA26 MT2	E2.4d	state-space;differential-equation-lccde;+cayley-hamilton	derive	15	state model to second-order input-output equation via repeated differentiation
+EE 120 FA26 MT2	E2.4e	frequency-response-ct;lti-impulse-response;state-space	derive	9	partial fractions given; impulse response is difference of two decaying exponentials
+EE 120 FA26 MT2	E2.4f	block-diagram;state-space	design	8	minimum two integrators, integrator-adder-gain form
+EE 120 FA25 MT2	Q1ai	bibo-stability;lti-impulse-response	explain	4	shifted saturating exponential, not absolutely integrable
+EE 120 FA25 MT2	Q1aii	causality;lti-impulse-response;invertibility	explain	5	noncausal by advance; fix by cascading a delay
+EE 120 FA25 MT2	Q1bi	system-linearity	explain	5	sum of linear terms, parenthesised difference is a trap
+EE 120 FA25 MT2	Q1bii	time-invariance	explain	5	FIR combination of delays, initial rest
+EE 120 FA25 MT2	Q1c	system-linearity	explain	5	magnitude homogeneity only; does it force linearity
+EE 120 FA25 MT2	Q2a	dft;fourier-series-properties	explain	3	count of independent DFT coefficients for real even-length input
+EE 120 FA25 MT2	Q2b	dft	compute	3	4-point DFT of alternating zero sequence
+EE 120 FA25 MT2	Q2c	dft;unit-impulse-dt	compute	3	DFT of all-ones is a scaled impulse
+EE 120 FA25 MT2	Q2d	dtfs;fourier-series-properties	compute	3	real odd period-7 signal, conjugate-odd coefficients
+EE 120 FA25 MT2	Q2e	+fft-radix-2;dft	compute	3	count of 2-point DFTs in size-8 split
+EE 120 FA25 MT2	Q3a	ctfs;+sinc-function	derive	8	rect pulse train coefficients, normalized sinc
+EE 120 FA25 MT2	Q3b	ctfs;fourier-series-properties;ft-time-shift	compute	8	staircase of shifted rects; reuse part a by linearity
+EE 120 FA25 MT2	Q3c	eigenfunction-property;convolution-ct;ctfs	compute	10	complex exponential convolved with periodic rect, sinc answer
+EE 120 FA25 MT2	Q4a	convolution-ct	sketch	8	two unit rects at offset positions
+EE 120 FA25 MT2	Q4b	dtfs;fourier-series-properties;+signal-puzzle-from-clues	sketch	8	period 4; coefficient relation X_k=-X_(k-2) plus odd-sample values
+EE 120 FA25 MT2	Q5a	dtft;signal-operations	compute	6	sampled decaying exponential, T=2 gives (1/4)^n
+EE 120 FA25 MT2	Q5b	dtft;signal-operations	compute	6	x(1-x): squared geometric is geometric, not a convolution
+EE 120 FA25 MT2	Q5c	dtft;ft-convolution-property;ft-time-shift;time-frequency-scaling	compute	6	convolve with reversed shifted copy
+EE 120 FA25 MT2	Q5d	dtft;ft-multiplication-property;signal-operations	compute	6	product of right-sided and reversed copy has finite support
+EE 120 FA25 MT2	Q6	dtfs;fourier-series-properties;parseval;+signal-puzzle-from-clues	compute	14	period 5, even, imaginary, DC, energy and coefficient-product clues
+EE 120 FA25 FINAL	Q1a	convolution-ct	sketch	4	two rects of different width and offset
+EE 120 FA25 FINAL	Q1b	convolution-ct;unit-impulse-ct;sifting-property	sketch	4	rect minus two weighted impulses, result is rect copies minus rect copies
+EE 120 FA25 FINAL	Q1c	causality;bibo-stability;lti-impulse-response	explain	4	four impulse responses including ones with impulses
+EE 120 FA25 FINAL	Q2a	ctft;frequency-response-ct;eigenfunction-property	compute	6	boxcar centered at zero, sinc response, output as scaled exponential
+EE 120 FA25 FINAL	Q2b	frequency-response-ct;+sinc-function	compute	3	zeros of sinc give frequencies where y(0)=0
+EE 120 FA25 FINAL	Q2c	convolution-ct;eigenfunction-property	derive	4	time-domain check agrees with frequency-domain value
+EE 120 FA25 FINAL	Q3a	dft;inner-product-orthogonality	true-false	3	basis vector form, norm sqrt(N), orthogonality
+EE 120 FA25 FINAL	Q3bi	system-linearity	true-false	2	six systems: affine offset, square, time-scaling, n-weighted
+EE 120 FA25 FINAL	Q3bii	time-invariance	true-false	2	same six systems; n-weighted and time-compressed fail
+EE 120 FA25 FINAL	Q3biii	eigenfunction-property;frequency-response-ct;magnitude-phase	true-false	2	real h, cosine in with phase, apply H gain and phase
+EE 120 FA25 FINAL	Q3biv	bibo-stability;lti-impulse-response	true-false	2	six h(t): decaying, growing, t*exp, step, sinusoid, deltas
+EE 120 FA25 FINAL	Q3bv	causality;lti-impulse-response	true-false	2	six h mixing CT and DT, shifted deltas, window
+EE 120 FA25 FINAL	Q3c	dtfs;fourier-series-properties;+signal-spectrum-matching	match	10	five period-100 signals matched to coefficient magnitude plots
+EE 120 FA25 FINAL	Q4	convolution-properties;convolution-dt;invertibility	compute	8	input is exact inverse of second block; first block is sin(2025n)
+EE 120 FA25 FINAL	Q5a	periodicity-ct;ctfs	compute	2	which real part makes the sum periodic
+EE 120 FA25 FINAL	Q5b	ctfs;complex-exponential	compute	4	coefficients of three-term sum of exponentials
+EE 120 FA25 FINAL	Q5c	frequency-response-ct;ctfs;filter-types	compute	4	piecewise-constant gain read from plot, per-component scaling
+EE 120 FA25 FINAL	Q6	ctfs;ft-of-periodic-signals;parseval;+signal-puzzle-from-clues	compute	12	period 3, band-limited, real even spectrum, energy and endpoint values
+EE 120 FA25 FINAL	Q7a	amplitude-modulation;frequency-division-multiplexing	sketch	4	two carriers summed, second carrier at first plus 4 omega0
+EE 120 FA25 FINAL	Q7b	frequency-division-multiplexing;bandwidth;amplitude-modulation	compute	3	smallest second carrier avoiding channel overlap
+EE 120 FA25 FINAL	Q7ci	synchronous-demodulation;ideal-filters;frequency-division-multiplexing	design	3	recover channel A after front low-pass of given cutoff
+EE 120 FA25 FINAL	Q7cii	synchronous-demodulation;ideal-filters;frequency-division-multiplexing	design	3	channel B removed by front filter, so not recoverable
+EE 120 FA25 FINAL	Q8a	sampling-theorem;bandwidth	compute	1	Nyquist rate of sinc signal with rect spectrum
+EE 120 FA25 FINAL	Q8b	sampling-theorem;reconstruction-interpolation;ideal-filters	explain	2	conditions on sampling rate and reconstruction cutoff
+EE 120 FA25 FINAL	Q8c	reconstruction-interpolation;sampling-theorem	compute	3	twice Nyquist, cutoff W, closed-form output
+EE 120 FA25 FINAL	Q8d	aliasing;sampling-theorem;reconstruction-interpolation	compute	8	undersample at two thirds Nyquist, overlapping copies, closed-form output
+EE 120 FA25 FINAL	Q9a	laplace-transform;poles-zeros;laplace-roc	sketch	4	one RHP pole, one LHP pole, one zero; list all ROCs
+EE 120 FA25 FINAL	Q9b	laplace-roc;causality;bibo-stability	explain	2	causal ROC, right-half pole makes it unstable
+EE 120 FA25 FINAL	Q9c	laplace-roc;bibo-stability;causality	explain	2	stable ROC contains jw axis, so two-sided, not causal
+EE 120 FA25 FINAL	Q9d	laplace-inverse;laplace-roc;unit-step	compute	6	strip ROC gives one causal and one anticausal exponential
+EE 120 SP25 MT1	Q1a	periodicity-dt;periodicity-ct;complex-exponential	compute	12	irrational-frequency exponential, cos squared, sum of two sinusoids
+EE 120 SP25 MT1	Q1bi	system-linearity;time-invariance;lti-impulse-response	explain	5	periodic input-output pair; must, can or must not be LTI
+EE 120 SP25 MT1	Q1bii	system-linearity;time-invariance;lti-impulse-response	explain	5	second periodic pair with negative values; same trichotomy
+EE 120 SP25 MT1	Q1ci	causality;bibo-stability;lti-impulse-response	explain	6	accumulator h[n]=u[n]
+EE 120 SP25 MT1	Q1cii	causality;bibo-stability;memory	explain	6	y[n]=u[-n]x[n]: memoryless gating, causal despite looking odd
+EE 120 SP25 MT1	Q1ciii	causality;bibo-stability;lti-impulse-response	explain	6	left-sided growing-looking exponential that is actually decaying toward minus infinity
+EE 120 SP25 MT1	Q2a	lti-impulse-response;difference-equation-lccde;first-order-system	derive	7	leaky integrator impulse response
+EE 120 SP25 MT1	Q2b	step-response;convolution-dt;first-order-system	derive	8	response to a delayed constant input, limit as n grows
+EE 120 SP25 MT1	Q2c	bibo-stability;periodicity-dt;convolution-dt	prove	8	stable LTI with N-periodic input gives N-periodic output
+EE 120 SP25 MT1	Q2d	first-order-system;unit-impulse-dt;periodicity-dt	sketch	8	impulse train N=5, alpha=0.1, qualitative periodic response
+EE 120 SP25 MT1	Q3a	difference-equation-lccde;frequency-response-dt	derive	6	rational in e^{-i4 omega}, read off delay-4 recursion
+EE 120 SP25 MT1	Q3b	eigenfunction-property;frequency-response-dt;complex-numbers	compute	12	sine at pi/8 makes the 4 omega term pi/2
+EE 120 SP25 MT1	Q3c	magnitude-phase;frequency-response-dt;bibo-stability	sketch	5	infinite peaks on the unit circle at multiples of pi/2
+EE 120 SP25 MT1	Q4a	block-diagram;difference-equation-lccde	design	6	leading coefficient not 1, minimum delays
+EE 120 SP25 MT1	Q4b	state-space;block-diagram	derive	14	three delays, read A B C D from diagram
+EE 120 SP25 MT1	Q4c	state-space;+internal-stability	compute	5	complex entries, triangular A, eigenvalues on diagonal
+EE 120 SP25 MT2	Q1a	convolution-ct;unit-impulse-ct;unit-step	sketch	6	rect input with impulse pair, rect and step responses
+EE 120 SP25 MT2	Q1b	causality;lti-impulse-response	explain	6	deduce causality from one input-output pair of an LTI system
+EE 120 SP25 MT2	Q1ci	causality;bibo-stability	explain	4	running integral with gain: causal, unbounded
+EE 120 SP25 MT2	Q1cii	causality;bibo-stability	explain	4	delay plus time-reversed term: noncausal, stable
+EE 120 SP25 MT2	Q1d	dft;+fft-radix-2	compute	10	zero-pad length 3 to 4, run even-odd split by hand
+EE 120 SP25 MT2	Q1ei	dtft;z-roc	derive	4	left-sided exponential via analysis sum, condition on b
+EE 120 SP25 MT2	Q1eii	dtft;ft-time-shift;z-inverse	compute	4	pole outside unit circle forces left-sided signal
+EE 120 SP25 MT2	Q1eiii	dtft;ft-frequency-shift	compute	4	integral against cosine read off with synthesis equation
+EE 120 SP25 MT2	Q2ai	frequency-response-ct;differential-equation-lccde	derive	10	second-order with x-dot, sign pattern in output
+EE 120 SP25 MT2	Q2aii	block-diagram	design	10	minimum two integrators, integrator-adder-gain
+EE 120 SP25 MT2	Q2b	state-space;+internal-stability;bibo-stability	explain	6	eigenvalues given; internal vs BIBO, 'not enough information' possible
+EE 120 SP25 MT2	Q3a	feedback;frequency-response-ct	derive	6	G forward, K and F in feedback path
+EE 120 SP25 MT2	Q3b	feedback;invertibility;frequency-response-ct	explain	6	large K makes H approximately 1/F, cascade near identity
+EE 120 SP25 MT2	Q3c	feedback;closed-loop-stability;poles-zeros	explain	8	frequencies where 1+KFG vanishes, cancellations in FG
+EE 120 SP25 MT2	Q4a	periodicity-ct	compute	2	sum of two cosines
+EE 120 SP25 MT2	Q4b	ctfs;complex-exponential	compute	6	cosines to complex coefficients
+EE 120 SP25 MT2	Q4c	ctfs;windowing;ft-multiplication-property	derive	7	duty-cycle one half periodic window; coefficients convolve
+EE 120 SP25 MT2	Q4d	windowing;spectral-leakage;ctfs	explain	8	wider window period narrows sinc lobes, compare first zeros
+EE 120 SP25 MT2	Q5	dtfs;fourier-series-properties;parseval;+signal-puzzle-from-clues	compute	18	period 5, real even, aperiodicity clue, partial sums, x[0]=9
+EE 120 SP25 FINAL	Q1ai	eigenfunction-property;frequency-response-ct	true-false	1	claim about zero-frequency passing unchanged: gain is H(0)
+EE 120 SP25 FINAL	Q1aii	+fft-radix-2;dft	true-false	1	FFT applies to finite sampled signals, not continuous-time ones
+EE 120 SP25 FINAL	Q1aiii	even-odd-decomposition;+fft-radix-2	true-false	1	FFT even/odd means index parity, not signal symmetry
+EE 120 SP25 FINAL	Q1aiv	z-transform;dtft	true-false	1	DTFT is z-transform on e^{i omega}, not i omega
+EE 120 SP25 FINAL	Q1bi	system-linearity	true-false	3	six systems: affine, reciprocal of time-scaled input, derivative
+EE 120 SP25 FINAL	Q1bii	time-invariance	true-false	3	same six systems; modulation by cos(t) and time scaling fail
+EE 120 SP25 FINAL	Q1ci	time-invariance;system-linearity	compute	1	delay-equation with constant: offset breaks LTI
+EE 120 SP25 FINAL	Q1cii	causality;time-invariance	compute	1	restrictions on delays for causal LCCDE-like system
+EE 120 SP25 FINAL	Q1di	block-diagram;difference-equation-lccde	design	3	minimum delays for first-order recursion with x difference
+EE 120 SP25 FINAL	Q1dii	eigenfunction-property;frequency-response-dt;dtfs	compute	4	cosine at pi/2, DTFS coefficients of output
+EE 120 SP25 FINAL	Q2a	convolution-dt;unit-impulse-dt	sketch	3	two-impulse response (advance and delay) on three-delta input
+EE 120 SP25 FINAL	Q2b	frequency-response-dt	compute	2	noncausal symmetric response gives real frequency response
+EE 120 SP25 FINAL	Q2c	causality;bibo-stability	explain	2	noncausal because of advance, stable FIR
+EE 120 SP25 FINAL	Q2d	time-invariance;ft-time-shift	explain	1	shifting input by two shifts output by two
+EE 120 SP25 FINAL	Q3a	state-space;block-diagram	derive	6	three integrators with feedback gains, read A B C D
+EE 120 SP25 FINAL	Q3b	state-space;+modal-decomposition;+internal-stability	compute	6	A = V Lambda V^T with complex Lambda; norm of decaying state
+EE 120 SP25 FINAL	Q4a	ctfs;complex-exponential	compute	5	sine, cosine and exponential at multiples of pi
+EE 120 SP25 FINAL	Q4b	ideal-filters;lti-impulse-response;+sinc-function	compute	2	band-limited ideal low-pass impulse response
+EE 120 SP25 FINAL	Q4c	frequency-response-ct;ideal-filters;ctfs	explain	2	filter drops the highest harmonic; describe in words
+EE 120 SP25 FINAL	Q4d	invertibility;ideal-filters	explain	2	low-pass discards components so no LTI inverse
+EE 120 SP25 FINAL	Q5b	dtft;even-odd-decomposition	compute	5	real part of DTFT is even part; causality fixes h
+EE 120 SP25 FINAL	Q5c	dtft;even-odd-decomposition	compute	5	imaginary part plus integral of Z fixes z[0]
+EE 120 SP25 FINAL	Q6a	sampling-theorem;+bandpass-sampling	compute	1	two-band spectrum between 3 and 5 rad/s
+EE 120 SP25 FINAL	Q6b	aliasing;sampling-theorem;impulse-train	sketch	3	sample at 5 rad/s, copies interleave without overlap
+EE 120 SP25 FINAL	Q6c	aliasing;+bandpass-sampling	compute	3	sampling rates below Nyquist that still avoid aliasing
+EE 120 SP25 FINAL	Q6d	reconstruction-interpolation;ideal-filters	compute	1	gain A of recovery filter
+EE 120 SP25 FINAL	Q6e	reconstruction-interpolation;+bandpass-sampling	derive	6	reconstruct from samples using band-pass interpolation kernel
+EE 120 SP25 FINAL	Q7a	amplitude-modulation;+image-rejection;synchronous-demodulation	sketch	6	cos and sin mixing spectra of Hartley mixer
+EE 120 SP25 FINAL	Q7b	hilbert-transform;ft-differentiation;unit-step	derive	3	FT of sign function via derivative of step
+EE 120 SP25 FINAL	Q7c	hilbert-transform;frequency-response-ct	derive	2	h=1/(pi t) has response -i sgn(omega)
+EE 120 SP25 FINAL	Q7d	hilbert-transform;single-sideband;+image-rejection	sketch	6	output keeps desired band, cancels image
+EE 120 SP25 FINAL	Q8a	laplace-transform;poles-zeros;differential-equation-lccde	derive	4	second-order equation to F(s), poles at -2 and -3
+EE 120 SP25 FINAL	Q8b	z-transform;poles-zeros;z-roc	sketch	7	second-order DT, real poles inside circle, double zero at origin
+EE 120 SP25 FINAL	Q9	ctft;even-odd-decomposition;parseval;+signal-puzzle-from-clues	compute	12	real even X from causal piece; energy fixes K, sign clue picks branch
+EE 120 FA24 MT1	Q1a	periodicity-dt;periodicity-ct;complex-exponential	compute	12	exponent of sin(n), sinc, DT mixed, sum of CT cosine and sine
+EE 120 FA24 MT1	Q1bi	system-linearity	explain	4	ReLU-like clipping system, strongest assertion
+EE 120 FA24 MT1	Q1bii	time-invariance	explain	4	same clipping system, time invariance holds
+EE 120 FA24 MT1	Q1c	bibo-stability;causality;convolution-properties	true-false	12	periodic h unstable, cascade with noncausal, step input into causal
+EE 120 FA24 MT1	Q2a	correlation;unit-impulse-dt	sketch	3	autocorrelation of delta
+EE 120 FA24 MT1	Q2b	correlation	prove	4	autocorrelation of real signal is even
+EE 120 FA24 MT1	Q2c	correlation;energy-power	explain	12	pick signals sharing a given autocorrelation: reversal and sign flips
+EE 120 FA24 MT1	Q3ai	difference-equation-lccde;frequency-response-dt	derive	4	delay-3 recursion from rational response
+EE 120 FA24 MT1	Q3aii	lti-impulse-response;fir-iir;bibo-stability	derive	6	growing sparse impulse response of delay-3 feedback, deltas and steps
+EE 120 FA24 MT1	Q3b	state-space;block-diagram	derive	12	three-delay diagram with feedback gains
+EE 120 FA24 MT1	Q3c	state-space;+internal-stability;bibo-stability	compute	4	diagonal A with 3/2 and 1; B,C see only one mode
+EE 120 FA24 MT1	Q4a	frequency-response-dt;difference-equation-lccde;complex-numbers	derive	4	complex feedback coefficient alpha
+EE 120 FA24 MT1	Q4b	block-diagram;complex-numbers	design	4	one delay, complex gain allowed
+EE 120 FA24 MT1	Q4c	complex-numbers;difference-equation-lccde	derive	8	split recursion into real and imaginary coupled equations
+EE 120 FA24 MT1	Q4d	block-diagram;complex-numbers	design	12	real-only coupled two-delay realization
+EE 120 FA24 MT2	Q1ai	dft;inner-product-orthogonality	derive	4	DFT analysis sum as one inner product with basis vector
+EE 120 FA24 MT2	Q1aii	inner-product-orthogonality;dft	explain	4	double sum collapses by orthogonality to N times a single sum
+EE 120 FA24 MT2	Q1aiii	parseval;dft	prove	3	from inner-product equality to energy equality
+EE 120 FA24 MT2	Q1b	dft;+fft-radix-2	compute	8	combine given length-2 DFTs into 4-point X[k]
+EE 120 FA24 MT2	Q1c	ctfs;complex-exponential	compute	10	geometric series in e^{it}, coefficients without integral
+EE 120 FA24 MT2	Q1di	frequency-response-ct;ctft	compute	8	first-order exponential impulse response
+EE 120 FA24 MT2	Q1dii	frequency-response-ct;differential-equation-lccde	compute	8	higher derivatives on the input side
+EE 120 FA24 MT2	Q1diii	feedback;invertibility;frequency-response-ct	design	4	choose forward and feedback blocks so loop approximates inverse of F
+EE 120 FA24 MT2	Q2ai	block-diagram;differential-equation-lccde	derive	10	three integrators, find input-output equation
+EE 120 FA24 MT2	Q2aii	state-space;block-diagram	derive	12	read A B C D from the same diagram
+EE 120 FA24 MT2	Q2b	state-space;+internal-stability	compute	4	diagonal A with complex-pair eigenvalues, negative real parts
+EE 120 FA24 MT2	Q3a	dtft;ft-of-periodic-signals;frequency-response-dt	compute	8	DC, pi and 2pi/3 inputs, output spectrum as deltas over one period
+EE 120 FA24 MT2	Q3bi	upsampling;dtft;time-frequency-scaling	sketch	8	zero-interleaved signal compresses spectrum; plot over two periods
+EE 120 FA24 MT2	Q3bii	downsampling;dtft;aliasing	sketch	8	x(2n) stretches spectrum by two, overlap check
+EE 120 FA24 MT2	Q4a	dtfs;fourier-series-properties;parseval;+signal-puzzle-from-clues	compute	15	period 5, real odd, energy 130, coefficient inequality
+EE 120 FA24 MT2	Q4b	dtfs;fourier-series-properties	compute	5	rewrite coefficients as real sinusoids
+EE 120 FA24 FINAL	Q1a	amplitude-modulation;system-linearity;time-invariance	explain	4	discrete-time AM system: linear, not time-invariant
+EE 120 FA24 FINAL	Q1b	lti-impulse-response;filter-types;fir-iir	match	6	six h[n] matched to real-world uses: delay, blur, accumulator, derivative
+EE 120 FA24 FINAL	Q1c	convolution-ct	sketch	4	two unit rects with different offsets
+EE 120 FA24 FINAL	Q1d	bibo-stability;lti-impulse-response;convolution-ct	prove	5	sign-of-reversed-h input shows absolute integrability is necessary
+EE 120 FA24 FINAL	Q1ei	reconstruction-interpolation;inner-product-orthogonality;sampling-theorem	derive	4	sinc interpolation reproduces samples; orthogonal shifted sincs
+EE 120 FA24 FINAL	Q1eii	reconstruction-interpolation;ft-multiplication-property;impulse-train	prove	4	frequency-domain proof that interpolation recovers the signal
+EE 120 FA24 FINAL	Q1fi	block-diagram;difference-equation-lccde	design	3	first-order feedback, one delay
+EE 120 FA24 FINAL	Q1fii	dtfs;frequency-response-dt;eigenfunction-property	compute	5	complex-amplitude sine at 3pi/4 through first-order recursion
+EE 120 FA24 FINAL	Q1g	sampling-theorem;bandwidth;ft-convolution-property	compute	6	max sampling interval for difference versus convolution of band-limited signals
+EE 120 FA24 FINAL	Q2a	convolution-ct;lti-impulse-response	compute	4	cascade of boxcar and integrator
+EE 120 FA24 FINAL	Q2b	causality;convolution-ct	explain	2	cascade of causal blocks
+EE 120 FA24 FINAL	Q2c	bibo-stability;convolution-ct	explain	6	cascade has non-integrable ramp-then-constant response
+EE 120 FA24 FINAL	Q3a	ctft;ft-duality;+sinc-function	derive	5	rect spectrum back to sinc, no integrals
+EE 120 FA24 FINAL	Q3b	ctft;ft-duality;magnitude-phase	derive	5	spectrum with zero phase, answer in sinc form
+EE 120 FA24 FINAL	Q3c	ctft;magnitude-phase;ft-time-shift	derive	5	same magnitude, nonzero phase; relate z to y
+EE 120 FA24 FINAL	Q4a	dt-processing-of-ct;sampling-theorem;aliasing	compute	3	max bandwidth from Ts=2.5e-5 s, units required
+EE 120 FA24 FINAL	Q4b	dt-processing-of-ct;dtft	sketch	8	map CT spectrum to DT frequency, then apply filter
+EE 120 FA24 FINAL	Q4c	dt-processing-of-ct;reconstruction-interpolation	sketch	4	D/C at same rate with ideal interpolation
+EE 120 FA24 FINAL	Q4d	dt-processing-of-ct;frequency-response-ct	explain	2	effective CT filter in words
+EE 120 FA24 FINAL	Q4e	dt-processing-of-ct;time-frequency-scaling	sketch	6	reconstruction period half of sampling period rescales spectrum
+EE 120 FA24 FINAL	Q4f	dt-processing-of-ct;ideal-filters;bandwidth	design	5	largest B for ideal low-pass effective response, possibly redesign H_d
+EE 120 FA24 FINAL	Q5a	z-transform;poles-zeros;z-properties	compute	4	pole-zero plot plus delta(n+1) input value fixes gain
+EE 120 FA24 FINAL	Q5b	z-inverse;z-roc;bibo-stability	compute	6	stability picks ROC, double pole at origin plus pole at -1/2
+EE 120 FA24 FINAL	Q5c	invertibility;z-roc;minimum-phase	explain	4	zero outside unit circle: stable inverse cannot be causal
+EE 120 SP24 MT1	Q1ai	signal-operations	sketch	3	reflection, shift and scaling by -1/2, choose plot
+EE 120 SP24 MT1	Q1aii	periodicity-dt;complex-exponential	compute	3	sum of cosine and exponential, options include aperiodic
+EE 120 SP24 MT1	Q1aiii	correlation;even-odd-decomposition	true-false	3	autocorrelation is even, not odd
+EE 120 SP24 MT1	Q1aiv	dtft;periodicity-dt	true-false	3	period depends on whether variable is f or omega
+EE 120 SP24 MT1	Q1av	correlation;convolution-ct	true-false	3	autocorrelation of rect: triangle or trapezoid
+EE 120 SP24 MT1	Q1avi	correlation;convolution-properties	true-false	3	correlation is not commutative
+EE 120 SP24 MT1	Q1avii	all-pass;magnitude-phase	true-false	3	(omega + ja)/(a - j omega) has unit magnitude

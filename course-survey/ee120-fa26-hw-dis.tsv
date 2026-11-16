@@ -1,0 +1,156 @@
+source_id	item	tags	task	points	note
+EE 120 FA26 HW1	HW1.1	complex-numbers;complex-exponential	sketch		z1=1+i*sqrt3, z2=e^{i2pi/3}; conjugates, reciprocals, small integer powers
+EE 120 FA26 HW1	HW1.2	complex-numbers	prove		Four conjugate identities, including real iff self-conjugate and zero-product case
+EE 120 FA26 HW1	HW1.3	complex-numbers;complex-exponential	compute		Sixth-degree polynomial; factor out z^2, then solve a quadratic in z^2
+EE 120 FA26 HW1	HW1.4	+geometric-sum;complex-exponential	derive		Finite sum of e^{i n theta}; take real and imaginary parts for cos, sin sums
+EE 120 FA26 HW1	HW1.5	complex-numbers	sketch		Optional. Six point sets in the plane, including a circle arc and a discrete set
+EE 120 FA26 HW1	HW1.6	complex-exponential;complex-numbers	derive		Optional. Euler consequences, De Moivre, and the pi/2 = ln(i)/i curiosity
+EE 120 FA26 HW1	HW1.7	complex-numbers;+rotation-matrix	derive		Optional. Multiplying by i equals rotating by pi/2, via a 2x2 rotation matrix
+EE 120 FA26 HW2	HW2.1	complex-exponential;complex-numbers	prove		Same-frequency cosines with different phases sum to one cosine; phasor addition
+EE 120 FA26 HW2	HW2.2	system-linearity;time-invariance	true-false		Five DT systems: advance, product of neighbours, exponential, reversal, fixed-signal multiplier
+EE 120 FA26 HW2	HW2.3	lti-impulse-response;convolution-dt;filter-types	compute		First-difference system on step, box, constant, alternating inputs; why an edge detector
+EE 120 FA26 HW2	HW2.4	lti-impulse-response;system-linearity;time-invariance;frequency-response-dt	explain		One I/O pair of an LTI system; h recoverable?; responses to 1, cos(pi n)
+EE 120 FA26 HW2	HW2.5	convolution-dt;convolution-properties;unit-impulse-dt	derive		Causal exponential minus delayed scaled copy is a convolution; undo it for a box
+EE 120 FA26 HW2	HW2.6	fir-iir;convolution-dt;frequency-response-dt;+polynomial-multiplication	prove		FIR response is polynomial in e^{-i w}; cascade equals polynomial product
+EE 120 FA26 HW3	HW3.1	periodicity-ct;periodicity-dt	compute		Five signals; cos(n) is not DT-periodic; cos(pi n^2/2) challenge
+EE 120 FA26 HW3	HW3.2	difference-equation-lccde;lti-impulse-response;frequency-response-dt;magnitude-phase	derive		Recursion y[n]=a y[n-N]+x[n]; impulse response by pattern; N-fold repeated magnitude
+EE 120 FA26 HW3	HW3.3	difference-equation-lccde;eigenfunction-property;frequency-response-dt	derive		Read H(w) off an LCCDE, general case, then build an LCCDE from H(w)
+EE 120 FA26 HW4	HW4.1	periodicity-dt;upsampling;downsampling	prove		Four implications between periodicity of x and its 3x decimated or zero-stuffed version
+EE 120 FA26 HW4	HW4.2	causality;bibo-stability;downsampling;upsampling	explain		Four systems; pick must, could or cannot for causal and BIBO; one ignores input
+EE 120 FA26 HW4	HW4.3	block-diagram;difference-equation-lccde	derive		LCCDE from delay-adder-gain diagrams; cascade of two gives one equation in x and z
+EE 120 FA26 HW4	HW4.4a	block-diagram;difference-equation-lccde	design		DAG implementation of y[n]+a^2 y[n-2]=x[n]+x[n-2]
+EE 120 FA26 HW4	HW4.4b	frequency-response-dt;eigenfunction-property	derive		Frequency response of the two-delay recursion with real coefficient 0<a<1
+EE 120 FA26 HW4	HW4.4c	pole-zero-geometric-evaluation;magnitude-phase;filter-types	sketch		Notch from vector lengths in the plane; a=0.95 makes it narrow
+EE 120 FA26 HW4	HW4.4d	eigenfunction-property;magnitude-phase;frequency-response-dt	compute		Approximate output for sinusoids plus DC and Nyquist; assume phase near zero
+EE 120 FA26 HW5	HW5.1a	difference-equation-lccde;lti-impulse-response;bibo-stability	compute		Fibonacci recursion at rest; impulse response is the sequence; unstable
+EE 120 FA26 HW5	HW5.1b	block-diagram	design		Two-delay DAG for the Fibonacci recursion
+EE 120 FA26 HW5	HW5.1c	state-space;block-diagram	derive		Label delay outputs as states; write A, B, C, D
+EE 120 FA26 HW5	HW5.1d	state-space;inner-product-orthogonality	derive		Eigenpairs of A of the form (l,[1,-l']); why eigenvectors are orthogonal
+EE 120 FA26 HW5	HW5.1e	state-space;+internal-stability	explain		Eigenvalue magnitudes decide internal stability
+EE 120 FA26 HW5	HW5.2a	unit-impulse-ct;sifting-property	sketch		Sampling property; last item multiplies a spectrum by a frequency-domain impulse train
+EE 120 FA26 HW5	HW5.2b	sifting-property;unit-impulse-ct;impulse-train	compute		Integrals against deltas, narrow window, comb-sampled spectrum, impulse train times e^{-abs(t)}
+EE 120 FA26 HW5	HW5.3	unit-impulse-ct;time-frequency-scaling	prove		delta(at)=delta(t)/abs(a) via a test function; delta is even
+EE 120 FA26 HW6	HW6.1	convolution-ct;unit-impulse-ct;impulse-train	compute		Width-1 box with box, shifted box, delta minus delayed delta, impulse train spacing T>1
+EE 120 FA26 HW6	HW6.2a-i	differential-equation-lccde;first-order-system	derive		RC circuit with resistor voltage as output: RC y' + y = RC x'
+EE 120 FA26 HW6	HW6.2a-ii	frequency-response-ct;eigenfunction-property	derive		Frequency response H_R(w) of the high-pass output
+EE 120 FA26 HW6	HW6.2a-iii	pole-zero-geometric-evaluation;magnitude-phase	sketch		Magnitude and phase from vectors in the complex plane
+EE 120 FA26 HW6	HW6.2a-iv	filter-types;first-order-system	explain		Classify as low-pass, band-pass or high-pass for the resistor output
+EE 120 FA26 HW6	HW6.2a-v	block-diagram	design		Integrator-adder-gain diagram with the minimum number of integrators
+EE 120 FA26 HW6	HW6.2b	frequency-response-ct;first-order-system	derive		Sanity check H_R + H_C = 1 from the loop voltage law
+EE 120 FA26 HW6	HW6.3a	state-space;differential-equation-lccde	derive		Second-order RLC homogeneous ODE; states y and y'; find A
+EE 120 FA26 HW6	HW6.3b	second-order-system;resonance	design		Choose R for no oscillation: critical or overdamped condition in L and C
+EE 120 FA26 HW6	HW6.3c	state-space;+internal-stability	design		Which R, L, C make the system internally stable
+EE 120 FA26 HW7	HW7.1a	difference-equation-lccde;lti-impulse-response;bibo-stability	compute		Repeat of HW5.1a, optional; Fibonacci impulse response
+EE 120 FA26 HW7	HW7.1b	block-diagram	design		Repeat of HW5.1b, optional
+EE 120 FA26 HW7	HW7.1c	state-space;block-diagram	derive		Repeat of HW5.1c, mandatory: A, B, C, D
+EE 120 FA26 HW7	HW7.1d	state-space;inner-product-orthogonality	derive		Repeat of HW5.1d, mandatory: modes and orthogonality
+EE 120 FA26 HW7	HW7.1e	state-space;+internal-stability	explain		Repeat of HW5.1e, mandatory
+EE 120 FA26 HW7	HW7.2a	frequency-response-dt;+geometric-sum	compute		Plant with impulse response n a^n on odd n only
+EE 120 FA26 HW7	HW7.2b	lti-impulse-response;unit-impulse-dt	compute		Controller piece is a pure delay; read off g[n]
+EE 120 FA26 HW7	HW7.2c	feedback	explain		Forward gain of a negative feedback loop
+EE 120 FA26 HW7	HW7.2d	feedback	explain		Loop gain of the same loop
+EE 120 FA26 HW7	HW7.2e	feedback;frequency-response-dt	derive		Closed-loop response, derived or by Black's formula
+EE 120 FA26 HW7	HW7.2f	closed-loop-stability;bibo-stability;feedback	design		Range of tunable gain k for absolute summability, in terms of a
+EE 120 FA26 HW7	HW7.3	inner-product-orthogonality;signal-vector-space;complex-numbers	prove		Inner product axioms, conjugate on second argument; Pythagoras; orthogonal-set argument
+EE 120 FA26 HW7	HW7.4a-b	dtfs;periodicity-dt;complex-exponential	compute		Sinusoid sums at multiples of 2pi/5; find period p and w0
+EE 120 FA26 HW7	HW7.4c	dtfs;periodicity-dt	explain		Frequency not a rational multiple of pi, so no DTFS exists
+EE 120 FA26 HW7	HW7.4d	dtfs;periodicity-dt	compute		Cosine at 2pi/3 plus (-1)^n; combined period 6
+EE 120 FA26 HW7	HW7.4e	dtfs;unit-impulse-dt;impulse-train	compute		Periodic impulse train; all coefficients equal 1/p
+EE 120 FA26 HW7	HW7.4f-g	dtfs;unit-impulse-dt	compute		One period of a finite-support signal; symmetric then antisymmetric
+EE 120 FA26 HW8	HW8.1a	dtfs;unit-impulse-dt;impulse-train	compute		Periodic impulse train, repeat of HW7.4e
+EE 120 FA26 HW8	HW8.1b-c	dtfs;unit-impulse-dt	compute		Finite-support one-period signals, repeat of HW7.4f-g
+EE 120 FA26 HW8	HW8.2	dtfs;eigenfunction-property;frequency-response-dt;ft-time-shift	derive		Y_k = H(k w0) X_k; delay by n0 gives linear-phase factor
+EE 120 FA26 HW8	HW8.3	dtfs;fourier-series-properties;periodicity-dt	compute		Period-4 signal fixed by sum constraints; each constraint isolates one coefficient
+EE 120 FA26 HW8	HW8.4a	periodicity-dt;signal-vector-space	compute		Period of cos(pi n)+sin(pi n/2) and its vector in R^p
+EE 120 FA26 HW8	HW8.4b-c	inner-product-orthogonality;dtfs;complex-exponential	prove		Roots of unity: only p distinct exponentials, mutually orthogonal
+EE 120 FA26 HW8	HW8.4d-f	dtfs;signal-vector-space;inner-product-orthogonality	derive		Basis vector norm; projection coefficient equals the analysis equation
+EE 120 FA26 HW8	HW8.4g-h	dtfs;signal-vector-space	derive		Synthesis as matrix times coefficient vector; orthogonal but not orthonormal
+EE 120 FA26 HW8	HW8.4i	parseval;dtfs;energy-power	derive		Parseval from rescaling the matrix to orthonormal
+EE 120 FA26 HW8	HW8.5a-b	dft;dtfs;inner-product-orthogonality	derive		Rescale basis to get DFT; relation between X[k] and X_k
+EE 120 FA26 HW8	HW8.5c	dft;signal-vector-space	derive		DFT and inverse DFT as matrices of complex exponentials
+EE 120 FA26 HW9	HW9.1	ctfs;fourier-series-properties;parseval;periodicity-ct	compute		Eight clues pin down a period-4 real even signal: mean, power, harmonic limit
+EE 120 FA26 HW9	HW9.2a-b	inner-product-orthogonality;ctfs	derive		Harmonic cosines and sines are orthogonal; get trig analysis equations
+EE 120 FA26 HW9	HW9.2c	ctfs;fourier-series-properties	derive		A_k=2Re X_k, B_k=-2Im X_k from conjugate symmetry
+EE 120 FA26 HW9	HW9.3a	dtft;unit-step;+time-reversal	compute		Exponential growing in n but only for negative n, so summable
+EE 120 FA26 HW9	HW9.3b	dtft;even-odd-decomposition	compute		Ramp truncated at n between -3 and 3, odd and finite
+EE 120 FA26 HW9	HW9.3c	dtft;impulse-train;ft-of-periodic-signals	compute		Spectrum is alternating-sign impulses every pi/2; find the signal
+EE 120 FA26 HW9	HW9.4a	dtft;even-odd-decomposition	compute		Integral of X over a period is 2pi x[0]; real part gives even part
+EE 120 FA26 HW9	HW9.4b	even-odd-decomposition;causality;dtft	derive		Causal real signal fixed by the real part of its spectrum alone
+EE 120 FA26 HW9	HW9.4c	dtft;ft-frequency-shift	compute		Integral of X times cos(w) picks out samples at n=+-1
+EE 120 FA26 HW9	HW9.4d	parseval;dtft;energy-power	compute		Energy by Parseval from known sample values
+EE 120 FA26 HW9	HW9.4e	even-odd-decomposition;dtft;causality	derive		Imaginary part from the odd part of the causal signal
+EE 120 FA26 HW9	HW9.5a	+spectral-factorization;dtft;minimum-phase	design		Given squared magnitude 5/4-cos w; factor into causal FIR; not unique
+EE 120 FA26 HW9	HW9.5b	even-odd-decomposition;dtft;causality	derive		Imaginary part plus X(0)=1 determines causal x; uniqueness question
+EE 120 FA26 HW10	HW10.1a	ctft;ft-differentiation	derive		Signum via its derivative, which is a delta
+EE 120 FA26 HW10	HW10.1b	ctft;unit-step	derive		Step from signum plus constant; delta at zero frequency appears
+EE 120 FA26 HW10	HW10.1c	ft-of-periodic-signals;impulse-train;ctfs;ctft	derive		Impulse train transforms to impulse train; spacing 2pi/T inverts with T
+EE 120 FA26 HW10	HW10.1d	ctft	compute		Rectangular pulse height b, half-width a; sinc in frequency
+EE 120 FA26 HW10	HW10.2	ctft;ft-differentiation;+gaussian	derive		Gaussian transform by solving a first-order ODE in w
+EE 120 FA26 HW10	HW10.3a-c	ctft;ft-differentiation;+pde-solving	derive		Heat equation: spatial transform gives U(w,t)=G(w)e^{-a w^2 t}
+EE 120 FA26 HW10	HW10.3d-e	ft-convolution-property;ctft;unit-impulse-ct	derive		Gaussian kernel convolved with initial profile; delta start
+EE 120 FA26 HW10	HW10.3f	+gaussian;time-frequency-scaling;bandwidth	sketch		Spreading Gaussian at two times; heat spreads, peak drops
+EE 120 FA26 HW10	HW10.4a	amplitude-modulation;signal-operations	compute		Modulate with w0, demodulate with w1=w0+eps; sum and difference terms
+EE 120 FA26 HW10	HW10.4b	amplitude-modulation;ft-multiplication-property;ft-frequency-shift	sketch		Spectra of r and y with a triangular X
+EE 120 FA26 HW10	HW10.4c	synchronous-demodulation;ideal-filters	explain		Unknown eps leaves slow cos(eps t) factor, so x is unrecoverable
+EE 120 FA26 HW10	HW10.5a	amplitude-modulation;+quadrature-modulation	derive		QAM signal as amplitude A(t) and phase from x1, x2
+EE 120 FA26 HW10	HW10.5b	synchronous-demodulation;+quadrature-modulation;+phase-error	derive		Receiver phase error theta leaks one channel into the other
+EE 120 FA26 HW10	HW10.5c	+phase-error;synchronous-demodulation	compute		Small-angle leakage; largest theta for 1% (-40 dB) crosstalk
+EE 120 FA26 DIS1	P1	lti-impulse-response;fir-iir;step-response;+moving-average	explain		Three-point moving average on stock prices; step input shows lag
+EE 120 FA26 DIS1	P2	complex-exponential;complex-numbers	derive		Euler-based identities and De Moivre; same as HW1.6
+EE 120 FA26 DIS1	P3	convolution-dt;convolution-properties	sketch		Convolve plotted four-sample signals; figures lost in conversion
+EE 120 FA26 DIS1	P4	system-linearity;time-invariance	true-false		Affine offset b twist, difference, log, decimation; what restores linearity
+EE 120 FA26 DIS2	P1	block-diagram;difference-equation-lccde;frequency-response-dt;lti-impulse-response	compute		One-delay feedback with gain 1/2; geometric h[n]
+EE 120 FA26 DIS2	P2	frequency-response-dt;magnitude-phase;filter-types	match		Two-tap difference filter; match magnitude to plots; high- or low-pass
+EE 120 FA26 DIS2	P3	difference-equation-lccde;block-diagram;frequency-response-dt;lti-impulse-response	design		Rational H in e^{-iw}; implement with one delay; find h
+EE 120 FA26 DIS3	P1	causality;bibo-stability;lti-impulse-response	true-false		Impulse responses with growing term, two-sided term, and n times decaying exponential
+EE 120 FA26 DIS3	P2	causality;memory	true-false		Four non-LTI systems: averaging, reversal, centred window, implicit advance equation
+EE 120 FA26 DIS3	P3a-b	difference-equation-lccde;lti-impulse-response;feedback	sketch		Thermostat: proportional-only and derivative-only impulse responses; sign flip case
+EE 120 FA26 DIS3	P3c	block-diagram	design		Minimum-delay DAG for the PD-style thermostat recursion
+EE 120 FA26 DIS3	P3d-e	state-space;convolution-dt	derive		Matrices A, B, C, D; output as C A^{n-1} B u[n-1] plus D delta
+EE 120 FA26 DIS3	P3f	state-space;bibo-stability;+internal-stability	derive		BIBO stability from eigenvalues, assuming all modes observable
+EE 120 FA26 DIS3	P3g	state-space;+internal-stability;feedback	compute		Eigenvalues for general kp, kd, then 1/2 each; does it regulate
+EE 120 FA26 DIS4	P1	memory;causality;bibo-stability	true-false		Six DT systems, as in HW2.2, with affine and bounded-multiplier twists
+EE 120 FA26 DIS4	P2a	unit-impulse-ct;sifting-property;convolution-ct;unit-step	compute		Delta integrals, delta of squared argument, step convolved with step
+EE 120 FA26 DIS4	P2b	convolution-ct;unit-impulse-ct;convolution-properties	prove		Convolution with a shifted scaled delta gives a shifted scaled signal
+EE 120 FA26 DIS5	P1a	lti-impulse-response;first-order-system;differential-equation-lccde	compute		Parallel RC; impulse response from assumed form A e^{st}u(t)
+EE 120 FA26 DIS5	P1b-c	frequency-response-ct;eigenfunction-property;ctft	derive		Frequency response two ways: eigenfunction and the integral definition
+EE 120 FA26 DIS5	P1d	magnitude-phase;filter-types;first-order-system	sketch		Low-pass magnitude and phase of parallel RC
+EE 120 FA26 DIS5	P2	causality;bibo-stability;memory	true-false		CT time-warped input for three alpha values; integral with lower limit -5abs(t)
+EE 120 FA26 DIS5	P3a-b	differential-equation-lccde;frequency-response-ct;second-order-system	derive		RLC ODE from H(w) with a zero; check against KCL/KVL analysis
+EE 120 FA26 DIS5	P3c	block-diagram;second-order-system	design		IAG diagram including the derivative-of-input numerator term
+EE 120 FA26 DIS6	P1a	state-space;second-order-system	derive		Parallel RLC with inductor current and voltage as states
+EE 120 FA26 DIS6	P1b-i	state-space;+internal-stability	explain		Stability of A for positive R, L, C
+EE 120 FA26 DIS6	P1b-ii	second-order-system;resonance	explain		Overdamped, critical, underdamped conditions; what raising R does to damping
+EE 120 FA26 DIS6	P1c	frequency-response-ct;eigenfunction-property	derive		Frequency response from KCL with e^{iwt} input
+EE 120 FA26 DIS6	P1d	magnitude-phase;filter-types;resonance;frequency-response-ct	sketch		Magnitude and phase with key values; band-pass classification
+EE 120 FA26 DIS6	P1e	block-diagram;state-space	design		IAG diagram with the two states labelled
+EE 120 FA26 DIS7	P1a	feedback;frequency-response-dt	derive		Frequency response of a two-block loop with forward and feedback paths
+EE 120 FA26 DIS7	P1b	bibo-stability;feedback;lti-impulse-response	explain		A is a pure delay; B is a delay with gain -3
+EE 120 FA26 DIS7	P1c	closed-loop-stability;feedback;bibo-stability	design		Range of gain K in negative feedback; use Black's formula
+EE 120 FA26 DIS7	P2a	periodicity-dt;signal-vector-space	compute		Fundamental period and R^N vector of a two-sinusoid signal; as HW8.4a
+EE 120 FA26 DIS7	P2b	complex-exponential;signal-vector-space;periodicity-dt	explain		Frequencies giving period N; how many distinct vectors
+EE 120 FA26 DIS7	P2c-d	inner-product-orthogonality;complex-exponential	prove		Orthogonality via geometric sum; conjugate-on-first inner product; norm of v_k
+EE 120 FA26 DIS8	P1	dtfs;parseval;fourier-series-properties;periodicity-dt	derive		Period-3 real signal; zero mean; coefficient energy fixes A, B, C
+EE 120 FA26 DIS8	P2	fourier-series-properties;dtfs	prove		Conjugate symmetry iff real; real even coefficients iff real even signal
+EE 120 FA26 DIS8	P3	dtfs;dtft;frequency-response-dt;+periodic-extension	derive		Periodic replication of two-tap filter: G_k=H(k w0)/N; N to infinity
+EE 120 FA26 DIS9	P1a	ctfs;periodicity-ct	compute		Sine plus cosine at pi and 3pi; minimum period 2
+EE 120 FA26 DIS9	P1b	fourier-series-properties;ft-time-shift;ft-frequency-shift	derive		Shift gives phase factor; multiplying by a harmonic exponential shifts the index
+EE 120 FA26 DIS9	P1c	ctfs;fourier-series-properties	compute		Coefficients ik for abs(k)<3, period 4; imaginary odd gives sines
+EE 120 FA26 DIS9	P1d	ctfs	compute		Pulse train with half-width T1 inside period T
+EE 120 FA26 DIS9	P2a	ft-multiplication-property;dtft;ideal-filters	sketch		Square of a sinc-type signal gives a triangle; A<pi/2 avoids wrap
+EE 120 FA26 DIS9	P2b	dtft;frequency-response-dt;ideal-filters	compute		Filter is the squared signal; input is DC plus cosine at A
+EE 120 FA26 DIS9	P3a	dtft;ft-convolution-property;+dc-gain	prove		Area of output equals product of areas: X(0)H(0)
+EE 120 FA26 DIS9	P3b	dtft;+dc-gain;ft-convolution-property	design		Rescale impulse response so the filter preserves input area
+EE 120 FA26 DIS10	P1a	dtft;lti-impulse-response;+partial-fractions	compute		Parallel interconnection; subtract known branch from partial fractions
+EE 120 FA26 DIS10	P1b	dtft;ideal-filters	derive		Piecewise spectrum from rect pairs; part text missing from file
+EE 120 FA26 DIS10	P1c	ideal-filters;ft-time-shift;dtft	compute		Low-pass F, two delayed half-impulses in, output spectrum
+EE 120 FA26 DIS10	P2a-b	ctft;complex-exponential;ft-of-periodic-signals	compute		Complex exponential gives one impulse; cosine with phase gives two
+EE 120 FA26 DIS10	P2c	ft-duality;ctft	derive		Transform of a transform
+EE 120 FA26 DIS10	P2d-e	ctft;ft-duality;bandwidth	compute		Rect to sinc and sinc back to rect with parameter T
+EE 120 FA26 DIS10	P3	ft-differentiation;ft-frequency-shift;frequency-response-ct;ctft	compute		Frequency-shifted sinc through a differentiator-like H; plot lost
+EE 120 FA26 DIS11	P1	ft-multiplication-property;ctft;bandwidth	sketch		sinc squared transform is a triangle of doubled width
+EE 120 FA26 DIS11	P2a	time-frequency-scaling;ctft	derive		Amplitude-and-time-scaled x; transform in terms of X
+EE 120 FA26 DIS11	P2b	ft-convolution-property;ctft	derive		n-fold convolution becomes the nth power of the transform
+EE 120 FA26 DIS11	P2c-d	ctft;+gaussian;+central-limit-theorem	derive		Limit of (1-w^2/2n)^n is a Gaussian; invert to get z_n
+EE 120 FA26 DIS11	P3a	amplitude-modulation;ft-multiplication-property;ft-frequency-shift	sketch		Modulate, filter, modulate again; spectra plots missing from file
+EE 120 FA26 DIS11	P3b	ideal-filters;lti-impulse-response;ft-frequency-shift	compute		Impulse response of a bandpass around the carrier

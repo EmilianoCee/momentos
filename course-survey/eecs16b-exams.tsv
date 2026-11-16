@@ -1,0 +1,4 @@
+source_id	item	tags	task	points	note
+EECS 16B FA25 MT1	Q1	+fourier-series;+signal-symmetry	compute	10	Two periodic waveforms: read period, even or odd, which coefficients vanish
+EECS 16B FA25 MT1	Q2a	+power-dissipation;+resistance-resistivity	compute	5	Resistance of a wire from I and P: 2 A, 16 W
+EECS 16B FA25 MT1	Q2b	+resistance-resistivity	compute	5	Resistivity from R, length 10 m, area; unit trap mm^2 to m^2
