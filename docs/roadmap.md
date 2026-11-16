@@ -45,7 +45,7 @@ The owner's record exists and EE 120 is fully mapped. The user can run `onboard 
     `old-exams-only`; they stay at target 4 because the course text treats them as core. EE 105 symbols: `V_T` is
     the MOS threshold and kT/q is the thermal voltage; "saturation" means opposite things for MOS and BJT;
     PMOS is written with source-high quantities (`V_SG`, `V_SD`, `|V_T|`).
-  - Done: `curricula/ee-105.json` exists, every concept points at a map topic, `python3 scripts/learner.py report`
+  - Done: the file curricula/ee-105.json exists, every concept points at a map topic, `python3 scripts/learner.py report`
     shows an EE 105 section, and the map reads well in a headless Chrome screenshot of `devices`.
 
 - [ ] **2. Rubrics for the 30 heaviest EE 120 and EE 105 topics.** Model: Opus writes five as models; Sonnet
@@ -75,7 +75,7 @@ The owner's record exists and EE 120 is fully mapped. The user can run `onboard 
     conversation.
   - Watch where it struggles. Fix `plans/TEMPLATE.md`, `docs/plans.md` and the `build-tool` skill to match.
     Keep the tool only if every check and every check case passes and it looks right in light and dark.
-  - Done: `docs/decisions/0013-pilot.md` records what the subagent got wrong, what was changed, and why.
+  - Done: a new decision record, docs/decisions/0013-pilot.md, records what the subagent got wrong, what was changed, and why.
 
 - [ ] **6. Build tools, in backlog order.** Model: Sonnet, one tool per session. Skill: `build-tool`.
   - Done per tool: the plan's acceptance checklist holds and the plan's status is `built`.
@@ -91,7 +91,7 @@ The owner's record exists and EE 120 is fully mapped. The user can run `onboard 
     `state-modes`, `internal-stability`, `eigenvectors`.
   - In `notes`: the book writes state feedback as u = Lx + v (closed loop A + BL); the homework writes u = −Kx.
   - `assessed` from `python3 scripts/assessed.py "EE 128" <tags> --tier 2`, scope `FA26`.
-  - Done: `curricula/ee-128.json` exists and passes. Then tasks 2 to 4 apply to it, after tier 1.
+  - Done: the file curricula/ee-128.json exists and passes. Then tasks 2 to 4 apply to it, after tier 1.
 
 ## Tier 3: EECS 16B
 
