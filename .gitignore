@@ -33,3 +33,9 @@ slprj/
 __pycache__/
 .ipynb_checkpoints/
 .venv/
+
+# Each learner's own record (see docs/learner-record.md). Never tracked here.
+learner/
+
+# Local notes derived from course materials (survey tables). Never tracked.
+course-survey/

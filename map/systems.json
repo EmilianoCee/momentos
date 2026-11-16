@@ -1,0 +1,339 @@
+{
+  "topics": [
+    {
+      "id": "frequency-response",
+      "title": "frequency response",
+      "essence": "An LTI system can only scale a sinusoid and shift it in time. H(jω) says by how much at each frequency.",
+      "check": "A sinusoid at 1 kHz goes into an LTI system. Which frequencies can come out, and which two numbers describe the change?",
+      "later": [
+        {
+          "course": "EE 140",
+          "how": "An amplifier's gain is a function of frequency, and its bandwidth is where that gain falls."
+        }
+      ]
+    },
+    {
+      "id": "system-linearity",
+      "title": "linearity",
+      "essence": "Scale the input and the output scales by the same factor. Add two inputs and the outputs add. This is what lets a complicated input be handled one piece at a time.",
+      "check": "Is y(t) = x(t) + 1 linear? Test it with the input that is zero everywhere."
+    },
+    {
+      "id": "time-invariance",
+      "title": "time invariance",
+      "essence": "Delay the input and the output is the same shape, delayed by the same amount. The system has no clock of its own.",
+      "check": "Is y(t) = x(2t) time-invariant? Delay the input by 1 s and compare with delaying the output by 1 s."
+    },
+    {
+      "id": "causality",
+      "title": "causality",
+      "essence": "A causal system's output depends only on the input now and earlier. For an LTI system that means the impulse response is zero before t = 0.",
+      "check": "A system averages each sample with the one after it. Is it causal? What one change would make it causal?"
+    },
+    {
+      "id": "bibo-stability",
+      "title": "BIBO stability",
+      "essence": "A stable system gives a bounded output for every bounded input. For an LTI system that happens exactly when the total area under |h| is finite.",
+      "check": "An integrator has h(t) = 1 for t ≥ 0. Find a bounded input that makes its output grow without limit."
+    },
+    {
+      "id": "invertibility",
+      "title": "invertibility",
+      "essence": "A system is invertible when different inputs always give different outputs, so the input can be recovered. An LTI system loses a frequency for good wherever its frequency response is zero.",
+      "check": "A two-point averager y[n] = (x[n] + x[n − 1])/2 removes one frequency completely. Which one, and why can no second system bring it back?"
+    },
+    {
+      "id": "impulse-response",
+      "title": "impulse response",
+      "essence": "The impulse response h is what comes out when a unit impulse goes in. For an LTI system it is the whole story: every output is built from shifted, scaled copies of h.",
+      "check": "h[n] is 1 for n = 0, 1, 2 and zero elsewhere. Without computing a convolution, say in words what the system does to its input."
+    },
+    {
+      "id": "convolution",
+      "title": "convolution",
+      "essence": "Flip one signal, slide it across the other, and at each shift record the area of their overlap. The output of an LTI system is its input convolved with h.",
+      "check": "A 2 s wide pulse is convolved with a 5 s wide pulse. How wide is the result, what is its shape, and for how long is it flat?",
+      "later": [
+        {
+          "course": "EE 123",
+          "how": "Designing an FIR filter is choosing the impulse response that the signal is convolved with."
+        }
+      ]
+    },
+    {
+      "id": "convolution-properties",
+      "title": "properties of convolution",
+      "essence": "The order does not matter, and a cascade of two systems is one system whose impulse response is h₁ ∗ h₂. Convolving with a shifted impulse just shifts.",
+      "check": "Two LTI systems are connected one after the other. Does swapping them change the output? What does that say about convolution?"
+    },
+    {
+      "id": "step-response",
+      "title": "step response",
+      "essence": "The step response is the output for a unit step: the running integral of h. Where it settles is the system's gain for a constant input.",
+      "check": "A system's impulse response has total area 3. Where does its step response settle?"
+    },
+    {
+      "id": "difference-equations",
+      "title": "difference equations",
+      "essence": "A difference equation computes each output sample from recent inputs and past outputs. Started from rest, it is an LTI system that you can run by hand, one step at a time.",
+      "check": "y[n] = 0.5 y[n − 1] + x[n], started from rest. What are the first four samples of its impulse response?"
+    },
+    {
+      "id": "differential-equations-lti",
+      "title": "differential equations as systems",
+      "essence": "A circuit or a mass on a spring obeys a linear differential equation with constant coefficients. Started from rest, that equation is an LTI system, and the roots of its characteristic equation are the frequencies the system rings at by itself.",
+      "check": "The characteristic roots of a system are −1 ± j5 per second. With no input, what does its response look like, and how long does it last?"
+    },
+    {
+      "id": "fir-iir",
+      "title": "FIR and IIR",
+      "essence": "With no feedback, the impulse response ends after a few samples: finite impulse response. With feedback of past outputs, it rings on forever: infinite impulse response.",
+      "check": "y[n] = x[n] − x[n − 3] and y[n] = 0.9 y[n − 1] + x[n]. Which is FIR, which is IIR, and which one could become unstable if a coefficient changed?"
+    },
+    {
+      "id": "block-diagrams",
+      "title": "block diagrams",
+      "essence": "Delays or integrators, gains and adders wired together are a picture of the equation. Each feedback path is a past output being used again.",
+      "check": "A diagram has two delays in a row with a path from each delay's output back to the input adder. What is the order of the difference equation?"
+    },
+    {
+      "id": "magnitude-and-phase",
+      "title": "magnitude and phase",
+      "essence": "A real sinusoid goes in and the same frequency comes out: its amplitude multiplied by |H|, its phase advanced by the angle of H. For a real system H at −ω is the conjugate of H at ω, which keeps the output real.",
+      "check": "H(jω) = 1/(1 + jω). A cosine at ω = 1 rad/s with amplitude 2 goes in. What are the amplitude and the phase of the output?"
+    },
+    {
+      "id": "dt-frequency-response",
+      "title": "frequency response in discrete time",
+      "essence": "In discrete time the frequency response repeats every 2π in ω. Only −π to π matters: ω = 0 is a constant and ω = π is the fastest alternation.",
+      "check": "A filter has H = 1 at ω = 0 and H = 0 at ω = π. What does it do to a constant sequence, and to +1, −1, +1, −1?"
+    },
+    {
+      "id": "ideal-filters",
+      "title": "ideal filters",
+      "essence": "An ideal low-pass filter keeps every frequency below its cutoff untouched and removes every one above. Its impulse response is a sinc that starts before t = 0, so it can only be approximated.",
+      "check": "Why can an ideal low-pass filter not be built as a causal system? What is given up in every real approximation?"
+    },
+    {
+      "id": "filter-types",
+      "title": "low-pass, high-pass, band-pass, notch",
+      "essence": "A filter is named for what its magnitude response does: which frequencies pass and which are stopped. Averaging neighbours smooths, which is low-pass. Differencing neighbours sharpens, which is high-pass.",
+      "check": "y[n] = x[n] − x[n − 1]. Without any algebra, is this low-pass or high-pass? What does it do to a constant input?"
+    },
+    {
+      "id": "first-order-system",
+      "title": "first-order systems",
+      "essence": "One energy store gives one pole and one time constant τ. The step response covers 63% of what is left every τ seconds, and the gain starts to fall near ω = 1/τ.",
+      "check": "A first-order system's time constant is halved. What happens to how fast its step response settles, and to where its gain begins to fall?"
+    },
+    {
+      "id": "second-order-system",
+      "title": "second-order systems",
+      "essence": "Two energy stores trade energy back and forth. The natural frequency ω₀ sets how fast, and the damping ratio ζ sets whether the response rings (ζ < 1) or creeps (ζ > 1).",
+      "check": "The damping of a second-order system is reduced while ω₀ stays the same. What changes in its step response, and what changes in its frequency response?",
+      "later": [
+        {
+          "course": "EE 128",
+          "how": "Step-response specifications are stated as the ω₀ and ζ of the dominant pair of poles."
+        }
+      ]
+    },
+    {
+      "id": "resonance",
+      "title": "resonance",
+      "essence": "Drive a lightly damped system near its natural frequency and each push arrives in step with the motion, so the response builds up. The peak gain is about Q times the low-frequency gain.",
+      "check": "A system has Q = 20. Roughly how much larger is its response at resonance than at low frequency, and how narrow is the peak?",
+      "later": [
+        {
+          "course": "EE 142",
+          "how": "Tuned LC loads and matching networks select a band by resonance."
+        }
+      ]
+    },
+    {
+      "id": "linear-phase",
+      "title": "linear phase is delay",
+      "essence": "A phase that falls in a straight line with frequency delays every frequency by the same time, so the shape of the signal survives. The slope of the phase is the delay.",
+      "check": "A filter's phase is −3ω for all ω (discrete time). What does it do to the shape of a pulse, and by how many samples?"
+    },
+    {
+      "id": "all-pass",
+      "title": "all-pass systems",
+      "essence": "An all-pass system leaves every magnitude alone and changes only the phase. Each of its poles is matched by a zero at the mirror-image point.",
+      "check": "If an all-pass system passes every frequency at full strength, how can its output look different from its input?"
+    },
+    {
+      "id": "feedback",
+      "title": "feedback",
+      "essence": "Feed a fraction of the output back and subtract it from the input: the closed-loop gain is G/(1 + GH). When the loop gain GH is large, the result is close to 1/H, whatever G is.",
+      "check": "An amplifier with gain 1000 is put in a loop with H = 0.1. What is the closed-loop gain? What is it if the amplifier's gain drops to 500?",
+      "later": [
+        {
+          "course": "EE 140",
+          "how": "Every op-amp circuit trades open-loop gain for accuracy, bandwidth and impedance through this loop."
+        },
+        {
+          "course": "EE 128",
+          "how": "State feedback and observers are feedback designed on the state-space model."
+        }
+      ]
+    },
+    {
+      "id": "transfer-function",
+      "title": "transfer function",
+      "essence": "With the system at rest beforehand, H(s) is the ratio of the output's transform to the input's: a ratio of two polynomials that can be read straight off the differential equation.",
+      "check": "y″ + 3y′ + 2y = x′. Write H(s) without solving anything. Where are its poles and its zero?"
+    },
+    {
+      "id": "laplace-transform",
+      "title": "Laplace transform",
+      "essence": "The Laplace transform writes a signal as a sum of phasors e^(st) that grow or decay as they turn. X(s) says how much of each is in the signal. The jω axis is the special case of no growth.",
+      "check": "Why can the Laplace transform describe e^(2t) switched on at t = 0, when the Fourier transform cannot?"
+    },
+    {
+      "id": "region-of-convergence",
+      "title": "region of convergence",
+      "essence": "The region of convergence is the set of s (or z) for which the transform's sum settles. It carries what the formula alone cannot say: whether the signal runs forwards or backwards in time, and whether the system is stable.",
+      "check": "Two different signals share the transform 1/(s + 1). What distinguishes them, and which one decays?"
+    },
+    {
+      "id": "poles-and-zeros",
+      "title": "poles and zeros",
+      "essence": "A pole is a value of s where H blows up, and it is a natural response the system can produce by itself. A zero is a value of s where H vanishes, an input e^(st) that the system blocks completely.",
+      "check": "A system has a zero at s = j10 rad/s. What happens to a 10 rad/s sinusoid that goes in?",
+      "later": [
+        {
+          "course": "EE 140",
+          "how": "Whether an amplifier in a loop is stable is read from where its poles sit."
+        }
+      ]
+    },
+    {
+      "id": "pole-zero-geometry",
+      "title": "frequency response from the pole-zero plot",
+      "essence": "Walk a point up the jω axis. The magnitude of H there is the product of the distances to the zeros divided by the product of the distances to the poles. A pole close to the axis makes a peak.",
+      "check": "A pole sits at −0.1 + j5. Near which frequency does the gain peak, and why is the peak tall and narrow?"
+    },
+    {
+      "id": "stability-from-poles",
+      "title": "stability from poles",
+      "essence": "A causal LTI system is stable exactly when every pole lies in the left half of the s-plane, or inside the unit circle of the z-plane. Each pole's position is the decay rate of one natural response.",
+      "check": "A causal system has poles at −2 and +0.5 per second. Is it stable? Which pole decides, and what does its natural response do?"
+    },
+    {
+      "id": "inverse-by-partial-fractions",
+      "title": "inverse transforms by partial fractions",
+      "essence": "Split a rational transform into one-pole pieces. Each piece is one exponential, and the region of convergence says whether it runs forwards or backwards in time.",
+      "check": "H(s) = 1/((s + 1)(s + 2)) for a causal system. Without finishing the algebra, what two exponentials make up h(t)?"
+    },
+    {
+      "id": "zero-input-zero-state",
+      "title": "zero-input and zero-state response",
+      "essence": "The total response is two parts added: what the stored energy does with no input, and what the input does starting from rest. Only the second part is linear in the input.",
+      "check": "A charged capacitor is connected to a source through a resistor. Which part of the response would still be there if the source were zero?"
+    },
+    {
+      "id": "z-transform",
+      "title": "z-transform",
+      "essence": "The z-transform is the discrete-time counterpart of the Laplace transform: X(z) = Σ x[n] z^(−n). Multiplying by z^(−1) is a delay of one sample, and the unit circle plays the part of the jω axis.",
+      "check": "What does multiplying a transform by z^(−2) do to the sequence? Where on the z-plane do you read off the frequency response?",
+      "later": [
+        {
+          "course": "EE 123",
+          "how": "Digital filters are designed by placing poles and zeros in the z-plane."
+        }
+      ]
+    },
+    {
+      "id": "state-space-model",
+      "title": "state-space model",
+      "essence": "The state is the smallest set of numbers that, with the input from now on, fixes the future. The model is ẋ = Ax + Bu, y = Cx + Du (or x[n + 1] = Ax[n] + Bu[n]).",
+      "check": "A circuit has two capacitors and one inductor, all independent. How many state variables does it need, and what is a natural choice for them?",
+      "later": [
+        {
+          "course": "EE 128",
+          "how": "Every design method in the course starts from this model."
+        },
+        {
+          "course": "EECS C106A",
+          "how": "A robot's dynamics are written and linearised in state-space form."
+        }
+      ]
+    },
+    {
+      "id": "state-modes",
+      "title": "modes of a state-space system",
+      "essence": "Start the state along an eigenvector of A and it stays on that line, scaling by e^(λt). Every free response is a sum of such modes, one per eigenvector.",
+      "check": "A has eigenvalues −1 and −10 per second. The state starts on the eigenvector of −10. What does the trajectory look like, and how long does it last?"
+    },
+    {
+      "id": "internal-stability",
+      "title": "internal stability",
+      "essence": "Every eigenvalue of A has a negative real part (or lies inside the unit circle), so every state decays from any start. This is stricter than BIBO stability: an unstable mode can hide by cancelling out of the transfer function.",
+      "check": "A system's transfer function is 1/(s + 1), but its A matrix also has an eigenvalue at +2. Is it BIBO stable? Is it internally stable? What could go wrong?"
+    },
+    {
+      "id": "state-space-to-transfer-function",
+      "title": "from state space to transfer function",
+      "essence": "H(s) = C(sI − A)⁻¹B + D. Every pole of H is an eigenvalue of A. An eigenvalue that cancels is a mode the input cannot excite or the output cannot see.",
+      "check": "A has eigenvalues −1 and −3 but H(s) has a pole only at −1. What happened to the mode at −3?"
+    }
+  ],
+  "links": [
+    { "from": "complex-exponential", "to": "frequency-response", "why": "Put e^(jωt) into an LTI system and the same phasor comes out, scaled and turned by H(jω)." },
+    { "from": "eigenvectors", "to": "frequency-response", "why": "e^(jωt) is to an LTI system what an eigenvector is to a matrix, and H(jω) is its eigenvalue." },
+    { "from": "phasors-impedance", "to": "frequency-response", "why": "Solve the circuit with impedances, sweep ω, and V_out/V_in traces out H(jω)." },
+    { "from": "system-linearity", "to": "impulse-response", "why": "Linearity is what lets the response to a sum of impulses be the sum of the responses." },
+    { "from": "time-invariance", "to": "impulse-response", "why": "Time invariance makes the response to a shifted impulse the same h, shifted." },
+    { "from": "impulse-decomposition", "to": "convolution", "why": "Write the input as a sum of impulses and replace each one with a copy of h: that sum is the convolution." },
+    { "from": "impulse-response", "to": "convolution", "why": "The output is the input convolved with h, so h is all you need to know about the system." },
+    { "from": "convolution", "to": "convolution-properties", "why": "Because convolution commutes and associates, a cascade of systems is one system and their order does not matter." },
+    { "from": "impulse-response", "to": "causality", "why": "An LTI system is causal exactly when h is zero before time zero." },
+    { "from": "impulse-response", "to": "bibo-stability", "why": "An LTI system is stable exactly when the area under |h| is finite." },
+    { "from": "impulse-response", "to": "step-response", "why": "The step response is the running integral of the impulse response." },
+    { "from": "unit-step", "to": "step-response", "why": "The step is the input that defines it." },
+    { "from": "system-linearity", "to": "difference-equations", "why": "A linear difference equation started from rest obeys superposition." },
+    { "from": "impulse-response", "to": "fir-iir", "why": "FIR and IIR describe whether h ends or goes on forever." },
+    { "from": "difference-equations", "to": "fir-iir", "why": "Feeding back past outputs is what makes the impulse response infinite." },
+    { "from": "difference-equations", "to": "block-diagrams", "why": "Each delay, gain and adder in the diagram is one term of the equation." },
+    { "from": "kvl", "to": "differential-equations-lti", "why": "KVL round a loop with a capacitor or an inductor in it is a differential equation." },
+    { "from": "differential-equations-lti", "to": "first-order-system", "why": "One energy store gives a first-order equation with one characteristic root, −1/τ." },
+    { "from": "differential-equations-lti", "to": "second-order-system", "why": "Two energy stores give a second-order equation whose two roots set ω₀ and ζ." },
+    { "from": "frequency-response", "to": "magnitude-and-phase", "why": "Write H(jω) in polar form: its length scales the sinusoid and its angle shifts it." },
+    { "from": "frequency-response", "to": "dt-frequency-response", "why": "The same eigenvalue idea with e^(jωn), where ω and ω + 2π are the same input." },
+    { "from": "dt-frequency", "to": "dt-frequency-response", "why": "Because the inputs repeat every 2π in ω, so does the frequency response." },
+    { "from": "impulse-response", "to": "frequency-response", "why": "H(jω) is the Fourier transform of h: the same system seen in frequency." },
+    { "from": "frequency-response", "to": "filter-types", "why": "A filter is named for the shape of |H|." },
+    { "from": "frequency-response", "to": "ideal-filters", "why": "An ideal filter is a frequency response that is exactly 1 or 0." },
+    { "from": "causality", "to": "ideal-filters", "why": "The ideal filter's sinc impulse response starts before time zero, which is why it cannot be causal." },
+    { "from": "frequency-response", "to": "invertibility", "why": "A frequency where H is zero is lost, and no inverse can restore it." },
+    { "from": "first-order-system", "to": "second-order-system", "why": "Two first-order stores exchanging energy make the second-order response." },
+    { "from": "second-order-system", "to": "resonance", "why": "With light damping the gain near ω₀ rises to about Q." },
+    { "from": "magnitude-and-phase", "to": "linear-phase", "why": "A phase proportional to frequency shifts every component by the same time." },
+    { "from": "magnitude-and-phase", "to": "all-pass", "why": "An all-pass system is the case where only the phase changes." },
+    { "from": "differential-equations-lti", "to": "transfer-function", "why": "Replace each derivative by s and the differential equation becomes a ratio of polynomials." },
+    { "from": "frequency-response", "to": "transfer-function", "why": "Set s = jω and the transfer function is the frequency response." },
+    { "from": "complex-exponential", "to": "laplace-transform", "why": "Let the phasor grow or decay as it turns, e^(st) with s = σ + jω, and more signals can be built from it." },
+    { "from": "laplace-transform", "to": "region-of-convergence", "why": "The transform only exists where its integral settles, and where that is tells which signal it came from." },
+    { "from": "transfer-function", "to": "poles-and-zeros", "why": "The roots of the denominator are the poles and the roots of the numerator are the zeros." },
+    { "from": "poles-and-zeros", "to": "pole-zero-geometry", "why": "Evaluating H at a point on the jω axis is multiplying and dividing distances to the zeros and poles." },
+    { "from": "poles-and-zeros", "to": "stability-from-poles", "why": "Each pole is a natural response e^(pt), which decays only if the pole is in the left half-plane." },
+    { "from": "region-of-convergence", "to": "stability-from-poles", "why": "Stable means the region of convergence contains the jω axis. Causal means it lies to the right of every pole." },
+    { "from": "bibo-stability", "to": "stability-from-poles", "why": "A finite area under |h| is the same condition, read off the pole positions." },
+    { "from": "poles-and-zeros", "to": "inverse-by-partial-fractions", "why": "Each pole contributes one exponential term to the time signal." },
+    { "from": "laplace-transform", "to": "z-transform", "why": "The same idea for sequences, with z in place of e^(s)." },
+    { "from": "difference-equations", "to": "z-transform", "why": "A delay of one sample becomes multiplication by z^(−1), so the equation becomes algebra." },
+    { "from": "differential-equations-lti", "to": "zero-input-zero-state", "why": "The homogeneous solution is the zero-input part and the particular solution from rest is the zero-state part." },
+    { "from": "system-linearity", "to": "feedback", "why": "The closed-loop formula comes from adding signals round the loop, which needs superposition." },
+    { "from": "transfer-function", "to": "feedback", "why": "With G and H as transfer functions the loop closes to G/(1 + GH)." },
+    { "from": "differential-equations-lti", "to": "state-space-model", "why": "Any nth-order equation can be rewritten as n first-order equations in n state variables." },
+    { "from": "linear-systems", "to": "state-space-model", "why": "A state-space model is a linear map applied at every instant." },
+    { "from": "eigenvectors", "to": "state-modes", "why": "Along an eigenvector the matrix only scales, so the state stays on that line." },
+    { "from": "state-space-model", "to": "state-modes", "why": "The free response ẋ = Ax splits into one mode per eigenvector of A." },
+    { "from": "state-modes", "to": "internal-stability", "why": "Every mode decays exactly when every eigenvalue has a negative real part." },
+    { "from": "bibo-stability", "to": "internal-stability", "why": "Internal stability implies BIBO stability, but not the other way round." },
+    { "from": "state-space-model", "to": "state-space-to-transfer-function", "why": "Transforming the state equations and eliminating the state gives H(s)." },
+    { "from": "poles-and-zeros", "to": "state-space-to-transfer-function", "why": "The poles of H are among the eigenvalues of A." },
+    { "from": "rect-and-sinc", "to": "ideal-filters", "why": "The ideal low-pass filter is a rectangle in frequency, so its impulse response is a sinc." }
+  ]
+}

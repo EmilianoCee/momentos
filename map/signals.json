@@ -1,0 +1,149 @@
+{
+  "topics": [
+    {
+      "id": "complex-exponential",
+      "title": "complex exponential",
+      "essence": "e^(jωt) is a point going round the unit circle, ω radians every second. Cosine and sine are its two shadows.",
+      "check": "The phasor turns clockwise instead. Which of its two shadows can tell the difference?",
+      "tools": ["signals/complex-periodicity.html"]
+    },
+    {
+      "id": "periodicity",
+      "title": "periodicity",
+      "essence": "A signal repeats when its phasor comes back to where it started. In continuous time it always does. In discrete time it does only if a whole number of steps makes a whole number of turns.",
+      "check": "Is e^(jn), one radian per step, periodic? What about e^(j2πn·3/8)?",
+      "tools": ["signals/complex-periodicity.html"]
+    },
+    {
+      "id": "signal-operations",
+      "title": "shift, flip, scale",
+      "essence": "Operations on the time axis move a signal without changing its shape: x(t − 2) is the same shape arriving 2 s later, x(−t) is it played backwards, x(2t) is it played twice as fast.",
+      "check": "You want x(3 − 2t) from x(t). Where does the point that was at t = 0 end up, and is the result wider or narrower?"
+    },
+    {
+      "id": "even-odd-parts",
+      "title": "even and odd parts",
+      "essence": "Every signal is the sum of an even part, which is its own mirror image about t = 0, and an odd part, whose mirror image has the sign flipped.",
+      "check": "What are the even and odd parts of a unit step? Sketch both in words."
+    },
+    {
+      "id": "energy-and-power",
+      "title": "energy and power",
+      "essence": "Energy is the total of |x|² over all time. Power is its average per unit time. A pulse has finite energy. A sinusoid that never stops has infinite energy and finite power.",
+      "check": "Is e^(−t) switched on at t = 0 an energy signal or a power signal? What about a cosine that never ends?"
+    },
+    {
+      "id": "unit-impulse",
+      "title": "unit impulse",
+      "essence": "An impulse puts all of its unit area at one instant. In discrete time it is a single sample of height 1. Multiplying a signal by an impulse and adding up picks out one value of the signal.",
+      "check": "Why does only the area of an impulse matter, and never its height or its width?"
+    },
+    {
+      "id": "unit-step",
+      "title": "unit step",
+      "essence": "The step switches on at zero and stays on. It is the running total of the impulse, and the impulse is the step's rate of change.",
+      "check": "Build a pulse that is 1 from t = 2 s to t = 5 s out of two steps. Then say what its derivative looks like."
+    },
+    {
+      "id": "impulse-decomposition",
+      "title": "signals as sums of impulses",
+      "essence": "Any signal is a sum of shifted, scaled impulses, one for each instant: x[n] = Σ x[k] δ[n − k]. Once you see a signal this way, a linear time-invariant system has no choice about what it does.",
+      "check": "A sequence has values 2, −1, 3 at n = 0, 1, 2. Write it as three shifted impulses. What would an LTI system with impulse response h do to each one?"
+    },
+    {
+      "id": "dt-frequency",
+      "title": "discrete-time frequency",
+      "essence": "In discrete time the frequencies ω and ω + 2π give exactly the same samples. So the fastest a sequence can wiggle is ω = π rad per sample: +1, −1, +1, −1.",
+      "check": "Which sequence oscillates faster, cos(0.9πn) or cos(1.1πn)? Why?"
+    },
+    {
+      "id": "signal-inner-product",
+      "title": "signals as vectors",
+      "essence": "A signal is a vector with one coordinate per sample. The inner product ⟨x, y⟩ = Σ x[n] y*[n] says how much of one signal lies along another. When it is zero the two are orthogonal.",
+      "check": "Over one period, what is the inner product of e^(j2πn/8) and e^(j2π3n/8)? What does that say about them as vectors?"
+    },
+    {
+      "id": "orthogonal-expansion",
+      "title": "orthogonal bases for signals",
+      "essence": "When the basis signals are orthogonal to each other, each coefficient is found alone, by one inner product. There are no simultaneous equations to solve.",
+      "check": "You expand a signal in a basis that is not orthogonal. What goes wrong when you try to find one coefficient by projecting?"
+    },
+    {
+      "id": "correlation",
+      "title": "correlation",
+      "essence": "Slide one signal past another and take the inner product at each shift. A peak in the result says: here is where the two line up.",
+      "check": "A radar sends a pulse and receives a noisy, delayed copy. Where does the correlation of the two peak, and what does that position tell you?",
+      "later": [
+        {
+          "course": "EE 121",
+          "how": "A matched filter correlates what was received with the pulse it expects."
+        },
+        {
+          "course": "EECS 126",
+          "how": "The autocorrelation describes a random process, and its transform is the power spectrum."
+        }
+      ]
+    },
+    {
+      "id": "amplitude-modulation",
+      "title": "amplitude modulation",
+      "essence": "Multiply a message by a carrier cos(ω_c t) and its spectrum moves from around zero to around ±ω_c, where an antenna or a shared cable can carry it.",
+      "check": "A message 4 kHz wide is modulated onto a 100 kHz carrier. Which band of frequencies does the result occupy?",
+      "later": [
+        {
+          "course": "EE 121",
+          "how": "Digital communication moves a stream of symbols up to a carrier in the same way."
+        }
+      ]
+    },
+    {
+      "id": "synchronous-demodulation",
+      "title": "synchronous demodulation",
+      "essence": "Multiply the received signal by the same carrier again and low-pass filter: one copy of the message lands back at zero frequency. A phase error φ in the local carrier scales the result by cos φ.",
+      "check": "The receiver's carrier is 90° out of phase with the transmitter's. What comes out of the demodulator?"
+    },
+    {
+      "id": "quadrature-modulation",
+      "title": "quadrature modulation",
+      "essence": "A cosine carrier and a sine carrier at the same frequency are orthogonal, so two messages can share one band and still be separated.",
+      "check": "Two messages ride on cosine and sine carriers of the same frequency. What does the receiver multiply by to get each one alone, and what must be accurate for that to work?",
+      "later": [
+        {
+          "course": "EE 121",
+          "how": "QAM sends two symbol streams at once on cosine and sine carriers."
+        },
+        {
+          "course": "EE 142",
+          "how": "The I and Q mixers of a radio front end are this multiplication, built from transistors."
+        }
+      ]
+    },
+    {
+      "id": "frequency-division-multiplexing",
+      "title": "frequency-division multiplexing",
+      "essence": "Give each message its own carrier frequency and the spectra sit side by side without overlapping. A band-pass filter picks one out.",
+      "check": "Ten messages, each 4 kHz wide, share a cable using ordinary AM. What is the least total bandwidth they need?"
+    }
+  ],
+  "links": [
+    { "from": "eulers-formula", "to": "complex-exponential", "why": "Let the angle grow with time, θ = ωt, and the point on the circle starts to turn." },
+    { "from": "complex-exponential", "to": "periodicity", "why": "The signal repeats each time the phasor completes a whole number of turns: ωT = 2π." },
+    { "from": "unit-impulse", "to": "unit-step", "why": "The step is the running total of the impulse, so the impulse is the step's rate of change." },
+    { "from": "unit-impulse", "to": "impulse-decomposition", "why": "Each sample of the signal is one shifted impulse, scaled by the signal's value there." },
+    { "from": "complex-exponential", "to": "dt-frequency", "why": "Sampling the turning phasor once per step means a whole extra turn between samples cannot be seen." },
+    { "from": "periodicity", "to": "dt-frequency", "why": "The same counting of turns per step that decides whether a sequence repeats also decides which frequencies are distinct." },
+    { "from": "dot-product", "to": "signal-inner-product", "why": "The inner product of two signals is the dot product with one coordinate per sample, and a conjugate on the second signal." },
+    { "from": "projection", "to": "orthogonal-expansion", "why": "Each coefficient is the projection of the signal onto one basis signal." },
+    { "from": "signal-inner-product", "to": "orthogonal-expansion", "why": "Orthogonality, defined by the inner product, is what lets each coefficient be found by itself." },
+    { "from": "signal-inner-product", "to": "correlation", "why": "Correlation is the inner product of one signal with a shifted copy of the other, as a function of the shift." },
+    { "from": "signal-operations", "to": "even-odd-parts", "why": "The even and odd parts are built from x(t) and its flipped copy x(−t)." },
+    { "from": "signal-operations", "to": "energy-and-power", "why": "Shifting and flipping leave the energy alone. Squeezing in time by a changes it by 1/a." },
+    { "from": "ft-frequency-shift", "to": "amplitude-modulation", "why": "Multiplying by a cosine is the frequency-shift property used twice, once up and once down." },
+    { "from": "amplitude-modulation", "to": "synchronous-demodulation", "why": "Shifting again by the same frequency puts one copy back at zero and another at twice the carrier." },
+    { "from": "filter-types", "to": "synchronous-demodulation", "why": "A low-pass filter keeps the copy at zero and removes the one at twice the carrier." },
+    { "from": "amplitude-modulation", "to": "quadrature-modulation", "why": "It is amplitude modulation done twice in the same band, on two carriers." },
+    { "from": "signal-inner-product", "to": "quadrature-modulation", "why": "Cosine and sine at the same frequency have zero inner product over a period, which is what keeps the messages apart." },
+    { "from": "amplitude-modulation", "to": "frequency-division-multiplexing", "why": "Each message is moved to its own carrier." },
+    { "from": "filter-types", "to": "frequency-division-multiplexing", "why": "A band-pass filter selects one of the side-by-side spectra." }
+  ]
+}

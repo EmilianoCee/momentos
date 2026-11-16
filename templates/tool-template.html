@@ -4,14 +4,16 @@
   Course:       Where it shows up
   Play with:    What to drag or change
   Should click: The thing you should be able to picture afterwards
-  Checked:      The hand calculation or textbook case you compared it with. Leave this out until you have done it.
+  Plan:         plans/the-plan-id.md  (leave this line out if the tool was not built from a plan)
+  Checked:      What was compared with what, with the numbers. Leave this line out until it has been done.
 
-  HOW TO USE THIS TEMPLATE
+  HOW TO USE THIS TEMPLATE (the full rules are in docs/tools.md)
   1. Copy it into the topic folder under a kebab-case name, for example circuits/rc-step-response.html.
-  2. Keep the first <style> block exactly as it is: it is the shared look of every tool.
+  2. Keep the house-style block, between its two marker comments, exactly as it is.
   3. Fix the two links to the map: the path depth (../ or ../../) and the #topic-id.
-  4. Add the tool to the map data at the top of index.html and to the tool index in README.md,
-     then run:  python3 scripts/check-map.py
+  4. Put the maths in the "maths" script block and its check cases in the "check-cases" block.
+  5. Add the tool's path to its topics in map/<folder>.json, then run:
+       python3 scripts/build.py   and   python3 scripts/check.py
   One file, no dependencies, no fetch, no modules: it must work opened from disk.
 -->
 <html lang="en">
@@ -27,7 +29,8 @@
   } catch (e) { /* no storage in some previews: follow the system setting */ }
 </script>
 <style>
-  /* ---- momentos house style (the same block in every tool) ---- */
+  /* ---- momentos house style: begin (the same block in every tool. Change it only in
+     templates/tool-template.html, then run scripts/sync-house-style.py) ---- */
   :root {
     color-scheme: light dark;
     --bg: light-dark(#f6f4ee, #131312);          /* the page */
@@ -121,6 +124,7 @@
     .bench, .pair, .notes { grid-template-columns: 1fr; }
     .notes { gap: 28px; }
   }
+  /* ---- momentos house style: end ---- */
 
   /* ---- this tool: everything below is yours ---- */
   var { font-style: italic; font-family: var(--serif); }
@@ -183,6 +187,24 @@
   </section>
 </main>
 
+<script id="maths">
+// ---- the maths: plain functions with no page behind them. scripts/test-tools.js runs this block on
+// its own and compares it with the check cases below, so nothing in here may touch the DOM.
+var MATHS = (function () {
+  "use strict";
+
+  // length of the arrow from the origin to (x, y), in grid units
+  function length(x, y) { return Math.hypot(x, y); }
+
+  return { length: length };
+})();
+</script>
+<script type="application/json" id="check-cases">
+[
+  { "fn": "length", "args": [3, 4], "expect": 5, "tol": 1e-12, "units": "grid units", "note": "the 3-4-5 triangle" },
+  { "fn": "length", "args": [0, 0], "expect": 0, "tol": 1e-12, "units": "grid units", "note": "a point at the origin has no length" }
+]
+</script>
 <script>
 (function () {
   "use strict";
@@ -214,12 +236,12 @@
     return { x: p.x, y: p.y };
   }
 
-  // ---- the maths: plain functions with no drawing in them, so they can be tested on their own
+  // ---- state: what the reader has set. Everything shown is worked out from it by MATHS.
 
   const START = { x: 3, y: 2 };
   const point = { x: START.x, y: START.y };
   function measure() {
-    return { length: Math.hypot(point.x, point.y) };
+    return { length: MATHS.length(point.x, point.y) };
   }
 
   // ---- the figure: build it once, then only move things

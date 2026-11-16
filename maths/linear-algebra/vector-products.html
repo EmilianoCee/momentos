@@ -20,21 +20,24 @@
   } catch (e) { /* no storage in this preview: follow the system setting */ }
 </script>
 <style>
-  /* ---- momentos house style (same block in every tool; see templates/tool-template.html) ---- */
+  /* ---- momentos house style: begin (the same block in every tool. Change it only in
+     templates/tool-template.html, then run scripts/sync-house-style.py) ---- */
   :root {
     color-scheme: light dark;
-    --bg: light-dark(#f6f4ee, #131312);
-    --surface: light-dark(#fbfaf6, #1b1b19);
-    --ink: light-dark(#1d1c1a, #ebe8e1);
-    --ink-2: light-dark(#5f5c55, #b1ada3);
-    --ink-3: light-dark(#77736b, #8a867d);
-    --line: light-dark(rgba(29, 28, 26, 0.16), rgba(235, 232, 225, 0.18));
-    --grid: light-dark(rgba(29, 28, 26, 0.07), rgba(235, 232, 225, 0.08));
-    --accent: light-dark(#c2410c, #ff8f5a);
-    --c1: light-dark(#2458c4, #7aa7ff);
-    --c2: light-dark(#c2410c, #ff9a62);
-    --c3: light-dark(#0f7f6b, #4fd3b4);
-    --c4: light-dark(#9d3fb0, #d78be6);
+    --bg: light-dark(#f6f4ee, #131312);          /* the page */
+    --surface: light-dark(#fbfaf6, #1b1b19);     /* figures and inputs */
+    --ink: light-dark(#1d1c1a, #ebe8e1);         /* text and the main strokes */
+    --ink-2: light-dark(#5f5c55, #b1ada3);       /* secondary text */
+    --ink-3: light-dark(#77736b, #8a867d);       /* labels, axis numbers */
+    --line: light-dark(rgba(29, 28, 26, 0.16), rgba(235, 232, 225, 0.18));   /* hairlines and borders */
+    --grid: light-dark(rgba(29, 28, 26, 0.07), rgba(235, 232, 225, 0.08));   /* grid lines */
+    --accent: light-dark(#c2410c, #ff8f5a);      /* the one thing being pointed at */
+    /* Colour is for quantities, never for decoration. Give each quantity one of these and keep it
+       the same in the figure, the numbers and the prose. */
+    --c1: light-dark(#2458c4, #7aa7ff);          /* blue */
+    --c2: light-dark(#c2410c, #ff9a62);          /* orange */
+    --c3: light-dark(#0f7f6b, #4fd3b4);          /* teal */
+    --c4: light-dark(#9d3fb0, #d78be6);          /* purple */
     --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
     --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
   }
@@ -72,6 +75,7 @@
   }
   button:hover { color: var(--ink); border-color: var(--ink-2); }
   button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  button:disabled { opacity: 0.4; cursor: default; }
   :focus-visible { outline: 1px dashed var(--ink); outline-offset: 2px; }
 
   main { max-width: 1120px; margin: 0 auto; padding: 4px 22px 72px; }
@@ -99,19 +103,22 @@
   .notes p { margin: 0 0 14px; max-width: 62ch; }
   .notes p b { font-weight: 600; }
   .notes ul { margin: 0 0 26px; padding: 0; list-style: none; }
-  .notes li { margin: 0 0 10px; padding-left: 14px; border-left: 1px solid var(--line); font-size: 16px; line-height: 1.45; }
+  .notes li { margin: 0 0 12px; padding-left: 14px; border-left: 1px solid var(--line); font-size: 16px; line-height: 1.45; }
   .notes li a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--line); }
   .notes li a:hover { color: var(--accent); border-color: var(--accent); }
   details { margin-top: 4px; }
   summary { font: 11.5px/1.4 var(--mono); color: var(--ink-3); cursor: pointer; }
-  details p, details span { color: var(--ink-2); font-size: 15px; }
+  details span { color: var(--ink-2); font-size: 15px; }
+  sup, sub { font-size: 0.72em; line-height: 0; }
 
   @media (max-width: 860px) {
     .bench, .pair, .notes { grid-template-columns: 1fr; }
     .notes { gap: 28px; }
   }
+  /* ---- momentos house style: end ---- */
 
   /* ---- this tool ---- */
+  details p { color: var(--ink-2); font-size: 15px; }
   .ca { color: var(--c1); } .cb { color: var(--c2); } .cd { color: var(--c3); } .cx { color: var(--c4); }
   var { font-style: italic; font-family: var(--serif); }
 
@@ -274,6 +281,40 @@
   </section>
 </main>
 
+<script id="maths">
+// ---- the maths: plain functions with no page behind them. scripts/test-tools.js runs this block on
+// its own and compares it with the check cases below, so nothing in here may touch the DOM.
+var MATHS = (function () {
+  "use strict";
+
+  // Everything the page shows about two plane vectors a = {x, y} and b = {x, y}, in grid units and radians.
+  function measure(a, b) {
+    const la = Math.hypot(a.x, a.y), lb = Math.hypot(b.x, b.y);
+    const dot = a.x * b.x + a.y * b.y;
+    const cross = a.x * b.y - a.y * b.x;
+    const ok = la > 1e-9 && lb > 1e-9;
+    const ux = la > 1e-9 ? a.x / la : 1, uy = la > 1e-9 ? a.y / la : 0;   // unit vector along a
+    const along = la > 1e-9 ? dot / la : 0;      // signed length of the shadow of b on a
+    const across = la > 1e-9 ? cross / la : 0;   // signed stand-off of b from the line of a
+    return {
+      la: la, lb: lb, dot: dot, cross: cross, ok: ok, ux: ux, uy: uy, along: along, across: across,
+      theta: ok ? Math.atan2(cross, dot) : 0,     // signed angle from a round to b
+      foot: { x: ux * along, y: uy * along }
+    };
+  }
+
+  return { measure: measure };
+})();
+</script>
+<script type="application/json" id="check-cases">
+[
+  {"fn": "measure", "args": [{"x": 4, "y": 1}, {"x": 2, "y": 3}], "expect": {"dot": 11, "cross": 10, "theta": 0.7378150601204649, "along": 2.6678918753996625, "across": 2.42535625036333, "la": 4.123105625617661, "lb": 3.605551275463989}, "tol": 1e-09, "units": "grid units, radians", "note": "a = (4, 1), b = (2, 3): a·b = 11, a×b = 10, θ = 42.27° (0.7378 rad), shadow 2.668, height 2.425"},
+  {"fn": "measure", "args": [{"x": 3, "y": 0}, {"x": 0, "y": 2}], "expect": {"dot": 0, "cross": 6, "theta": 1.5707963267948966}, "tol": 1e-09, "units": "grid units, radians", "note": "perpendicular vectors: the dot product is 0 and the cross product is the whole area, 6"},
+  {"fn": "measure", "args": [{"x": 2, "y": 3}, {"x": 4, "y": 1}], "expect": {"dot": 11, "cross": -10}, "tol": 1e-09, "units": "grid units", "note": "swapping a and b keeps a·b and flips the sign of a×b"},
+  {"fn": "measure", "args": [{"x": 2, "y": 1}, {"x": 4, "y": 2}], "expect": {"dot": 10, "cross": 0, "theta": 0, "across": 0}, "tol": 1e-09, "units": "grid units, radians", "note": "parallel vectors: no part of b lies across a"},
+  {"fn": "measure", "args": [{"x": 0, "y": 0}, {"x": 2, "y": 3}], "expect": {"ok": false, "theta": 0, "along": 0, "across": 0}, "tol": 1e-09, "units": "grid units, radians", "note": "a has no length, so there is no direction to measure against"}
+]
+</script>
 <script>
 (function () {
   "use strict";
@@ -307,21 +348,8 @@
   const START = { a: { x: 4, y: 1 }, b: { x: 2, y: 3 } };
   let a = { x: START.a.x, y: START.a.y }, b = { x: START.b.x, y: START.b.y };
 
-  // Everything the page shows is derived here, once, from a and b.
-  function measure() {
-    const la = Math.hypot(a.x, a.y), lb = Math.hypot(b.x, b.y);
-    const dot = a.x * b.x + a.y * b.y;
-    const cross = a.x * b.y - a.y * b.x;
-    const ok = la > 1e-9 && lb > 1e-9;
-    const ux = la > 1e-9 ? a.x / la : 1, uy = la > 1e-9 ? a.y / la : 0;   // unit vector along a
-    const along = la > 1e-9 ? dot / la : 0;      // signed length of the shadow of b on a
-    const across = la > 1e-9 ? cross / la : 0;   // signed stand-off of b from the line of a
-    return {
-      la: la, lb: lb, dot: dot, cross: cross, ok: ok, ux: ux, uy: uy, along: along, across: across,
-      theta: ok ? Math.atan2(cross, dot) : 0,     // signed angle from a round to b
-      foot: { x: ux * along, y: uy * along }
-    };
-  }
+  // Everything the page shows is derived in MATHS.measure, once, from a and b.
+  function measure() { return MATHS.measure(a, b); }
 
   // ------------------------------------------------------------ the plane
 

@@ -1,0 +1,50 @@
+{
+  "topics": [
+    {
+      "id": "dot-product",
+      "title": "dot product",
+      "essence": "How much of one vector lies along another: |a||b|cos θ. Zero when they are perpendicular.",
+      "check": "a·b is negative. Without computing anything, what does the picture look like?",
+      "tools": ["maths/linear-algebra/vector-products.html"]
+    },
+    {
+      "id": "projection",
+      "title": "projection",
+      "essence": "The shadow one vector casts on another. Any b splits into a part along a and a part across it.",
+      "check": "You double the length of a. What happens to the shadow of b on a, and what happens to a·b?",
+      "tools": ["maths/linear-algebra/vector-products.html"]
+    },
+    {
+      "id": "cross-product",
+      "title": "cross product",
+      "essence": "How much of one vector lies across another: |a||b|sin θ, the signed area the two span. Zero when they are parallel.",
+      "check": "Swap a and b. What changes in the picture, and why does the sign flip?",
+      "tools": ["maths/linear-algebra/vector-products.html"]
+    },
+    {
+      "id": "determinant",
+      "title": "determinant",
+      "essence": "The factor by which a matrix scales area. Zero means it flattens the plane onto a line.",
+      "check": "A matrix has determinant −2. What does it do to the area of a shape, and what does the minus sign do to it?"
+    },
+    {
+      "id": "linear-systems",
+      "title": "linear systems",
+      "essence": "Ax = b asks which mix of the columns of A lands on b.",
+      "check": "The two columns of A point along the same line and b is off that line. How many solutions does Ax = b have, and why?"
+    },
+    {
+      "id": "eigenvectors",
+      "title": "eigenvectors",
+      "essence": "The directions a matrix only stretches and never turns.",
+      "check": "A matrix turns every vector by 90°. Can it have a real eigenvector? What would that vector have to do?"
+    }
+  ],
+  "links": [
+    { "from": "dot-product", "to": "projection", "why": "Divide a·b by |a| and what is left is the length of the shadow of b on a." },
+    { "from": "projection", "to": "cross-product", "why": "The part of b that projection leaves behind, the part across a, is exactly what the cross product measures." },
+    { "from": "cross-product", "to": "determinant", "why": "In two dimensions a × b is det[a b]: the signed area of the parallelogram on a and b." },
+    { "from": "determinant", "to": "linear-systems", "why": "A non-zero determinant means the columns still span the space, so Ax = b has exactly one answer." },
+    { "from": "determinant", "to": "eigenvectors", "why": "Eigenvalues are the λ that make det(A − λI) vanish." }
+  ]
+}

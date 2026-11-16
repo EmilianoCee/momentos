@@ -1,0 +1,20 @@
+{
+  "topics": [
+    {
+      "id": "work",
+      "title": "work",
+      "essence": "Force times the distance moved along it: W = F·d.",
+      "check": "You carry a box across a level floor at constant speed. How much work does gravity do on it, and why?"
+    },
+    {
+      "id": "magnetic-force",
+      "title": "magnetic force",
+      "essence": "A moving charge in a magnetic field is pushed sideways: F = qv × B.",
+      "check": "A charge moves parallel to a magnetic field. What force does it feel? What if it moves across the field instead?"
+    }
+  ],
+  "links": [
+    { "from": "dot-product", "to": "work", "why": "W = F·d: only the part of the force along the motion does work." },
+    { "from": "cross-product", "to": "magnetic-force", "why": "F = qv × B: the push is at right angles to both the velocity and the field." }
+  ]
+}
