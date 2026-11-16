@@ -21,6 +21,8 @@ of the rules. `CLAUDE.md` only imports it.
 | write a plan: "write the next plan" | `docs/plans.md`, `plans/BACKLOG.md` | `write-plan` |
 | build a tool: "build the next tool" | `docs/tools.md`, the plan itself | `build-tool` |
 | add a course, or extend a curriculum | `docs/curricula.md` | `add-course` |
+| continue building the repo: "what's next", "carry on" | `docs/roadmap.md` | the skill the task names |
+| add a learner's own courses | `prompts/add-my-courses.md` | `add-course` |
 | change how the repo itself works | `docs/decisions/` | none: write a new decision record |
 
 Skills are plain markdown in `.claude/skills/<name>/SKILL.md`. Each gives its steps, its checks and what done
@@ -65,8 +67,8 @@ looks like. An agent that cannot load skills reads the file and follows it.
 | `plans/` | one plan per tool, a reference script per plan in `plans/checks/`, and the generated backlog |
 | `prompts/` | the learning pre-prompt, and the quiz protocol for a chat with no repo access |
 | `templates/` | the starting point for a tool, and for a learner's record |
-| `scripts/` | `build.py`, `check.py`, `learner.py`, `sync-house-style.py`, `test-tools.js` |
-| `docs/` | the charter, the conventions, and the decision records |
+| `scripts/` | `build.py`, `check.py`, `learner.py`, `assessed.py`, `sync-house-style.py`, `test-tools.js` |
+| `docs/` | the charter, the conventions, the decision records, and the roadmap of work left |
 | `learner/` | **not in the shared repo.** This checkout's learner record. |
 | `course-materials/`, `course-survey/` | **not in the shared repo.** Local course files and notes about them. |
 
