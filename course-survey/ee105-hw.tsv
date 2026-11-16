@@ -1,0 +1,62 @@
+source_id	item	tags	task	points	note
+EE 105 SP24 HW1	Q1	+kcl-kvl-nodal-analysis	compute	20	Three resistors, two supplies; loop equations versus single node equation, then preference
+EE 105 SP24 HW1	Q2	+thevenin-norton;+kcl-kvl-nodal-analysis	compute	40	Source with series and parallel resistors; load power; Norton conversion
+EE 105 SP24 HW1	Q3	step-response;+rl-circuit	derive	15	Switch closes on series RL; mark initial and final values and a 36.8 percent time
+EE 105 SP24 HW1	Q4	+capacitor-charging;ic-capacitor	sketch	25	Switched current source on capacitor; ramp staircase; series-resistance model adds steps
+EE 105 SP24 HW2	Q1	step-response;impulse-response;complex-exponential-technique;transfer-function	derive	30	Series RL, output across L; step, impulse, then exp(jwt) drive; filter type
+EE 105 SP24 HW2	Q2	lti-system;step-response;impulse-response	derive	30	RL with step and delayed impulse sources; superposition for inductor current
+EE 105 SP24 HW2	Q3	rlc-resonance;quality-factor;transfer-function;phasors-impedance	derive	40	Series RLC resonator with load resistor; loaded Q, standard bandpass form, sense charge
+EE 105 SP24 HW3	Q1	+laplace-transform;transfer-function	compute	30	ODE with step by Laplace; partial fractions; inverse of two given F(s)
+EE 105 SP24 HW3	Q2	+power-distribution-decoupling;impulse-response;rc-lowpass;+laplace-transform	derive	40	Two loads on shared wire resistance; bypass capacitors low-pass the disturbance
+EE 105 SP24 HW3	Q3	bode-plot;poles-zeros;transfer-function	design	30	Read pole and zero from measured Bode plot; build R-L-L model, find values
+EE 105 SP24 HW4	Q1	+convolution;impulse-response;lti-system	compute	15	Pulse convolved with decaying exponential; derivative of input; check via Laplace
+EE 105 SP24 HW4	Q2	input-output-resistance;ideal-opamp-circuits;feedback;+opamp-nonideal-model	derive	40	Finite gain, Rin, Rout op-amp model in feedback; take limits to recover ideal
+EE 105 SP24 HW4	Q3	ideal-opamp-circuits;transfer-function;bode-plot;poles-zeros	derive	30	Unity-gain two-pole active filter; Bode under a resistor-ratio assumption; filter type
+EE 105 SP24 HW5	Q1	energy-bands;+fermi-dirac-statistics;intrinsic-carriers	explain	30	Metal versus insulator bands; free carriers; occupation probability 3kT above Ef
+EE 105 SP24 HW5	Q2	drift-current;energy-bands;intrinsic-carriers	explain	30	Current in silicon at 0 K, at 300 K, and in equilibrium with a field
+EE 105 SP24 HW5	Q3	mobility;intrinsic-carriers;drift-current	explain	40	Derive mobility; ni at 1000 K from gap; does current rise with temperature
+EE 105 SP24 HW5	Q4a	opamp-offset;opamp-bias-current;ideal-opamp-circuits	compute		Offset voltage and two bias currents together give numeric output equation; question total 15 pts
+EE 105 SP24 HW5	Q4b	slew-rate;output-swing	sketch		2 V per us slew with 8 us pulse; output triangular rather than rectangular
+EE 105 SP24 HW6	Q1	doping;mobility;resistivity;drift-current;velocity-saturation	compute	30	Compensated As and B bar; mobility read from curve; does current saturate
+EE 105 SP24 HW6	Q2	diffusion-current;einstein-relation;drift-current	derive	30	Diffusion velocity of exponential hole profile; field giving equal drift velocity
+EE 105 SP24 HW6	Q3a	ic-capacitor	compute		MIM capacitor, 25 fF per um2 density; solve for dielectric thickness; question total 20 pts
+EE 105 SP24 HW6	Q3b	sheet-resistance;ic-resistor	compute		Serpentine-like layout in squares with ideal contacts; some strips float and do not count
+EE 105 SP24 HW6	Q4	depletion-region;electrostatics-gauss;built-in-potential;poisson-equation	sketch	20	Asymmetric abrupt junction; charge and field plots with labelled width and peak field
+EE 105 SP24 HW7	Q1a	built-in-potential;pn-equilibrium	compute		Heavily asymmetric junction, 1e20 and 1e17 doping; kT/q 26 mV; question total 60 pts
+EE 105 SP24 HW7	Q1b	depletion-region;poisson-equation	compute		Total width at zero bias, nearly all on lightly doped side
+EE 105 SP24 HW7	Q1c	electrostatics-gauss;depletion-region	sketch		Field profile with computed peak; n side on left, which is unusual
+EE 105 SP24 HW7	Q1d	depletion-capacitance;pn-reverse-bias	compute		Capacitance at minus 1 V for 1 um2 area
+EE 105 SP24 HW7	Q1e	diode-iv;pn-forward-bias;minority-carrier-injection	compute		Current at 1 V from diffusion lengths and mobilities; Einstein relation needed for D
+EE 105 SP24 HW7	Q1f	diode-small-signal;diffusion-capacitance	compute		Small-signal resistance and diffusion capacitance at 1 V, given transit lifetime
+EE 105 SP24 HW7	Q2	depletion-capacitance;doping;built-in-potential	compute	20	Extract both dopings from 1/C^2 line slope and intercept; assume one-sided
+EE 105 SP24 HW7	Q3a	pn-forward-bias;minority-carrier-injection;diffusion-current	explain		Qualitative forward-bias current mechanism; question total 20 pts
+EE 105 SP24 HW7	Q3b	depletion-capacitance;depletion-region	explain		Physical origin of junction capacitance
+EE 105 SP24 HW8	Q1a	mos-accumulation-depletion-inversion;threshold-voltage	explain		Inversion condition more precisely than Vgs above Vt; p-substrate; question total 70 pts
+EE 105 SP24 HW8	Q1b-d	mos-accumulation-depletion-inversion;mos-capacitor;electrostatics-gauss	sketch		Charge, field, potential plots in accumulation, depletion, inversion
+EE 105 SP24 HW8	Q1e	threshold-voltage;mass-action-law	compute		Surface potential at threshold, two times Fermi potential, from NA and ni
+EE 105 SP24 HW8	Q1f	depletion-region;mos-capacitor	compute		Depletion width and charge density at threshold
+EE 105 SP24 HW8	Q1g	threshold-voltage;flatband-voltage	compute		Sum flatband, oxide drop, surface potential; 3 nm oxide
+EE 105 SP24 HW8	Q2	mos-accumulation-depletion-inversion;mos-capacitor;pmos	sketch	30	Same three-regime sketches for n-type substrate; polarities reverse
+EE 105 SP24 HW9	Q1	mosfet-regions;pmos;threshold-voltage	compute	30	Six biased devices; classify region; PMOS polarity trap; Vt 0.9 V
+EE 105 SP24 HW9	Q2a	threshold-voltage;flatband-voltage	compute		p-substrate NA 1e16, 5 nm oxide; question total 40 pts
+EE 105 SP24 HW9	Q2b-c	mos-cv-curve;depletion-capacitance	compute		Inversion capacitance and minimum capacitance as oxide in series with depletion
+EE 105 SP24 HW9	Q2d-e	mos-cv-curve;flatband-voltage;threshold-voltage	sketch		Charge-voltage and C-V plots marking VFB, VT, Cox, Cmin
+EE 105 SP24 HW9	Q2f	mos-accumulation-depletion-inversion;threshold-voltage	compute		Inversion charge density at Vg 1.5 V
+EE 105 SP24 HW9	Q3a	threshold-voltage;mosfet-structure	compute		W/L 100, 10 nm oxide, NA 1e15; question total 30 pts
+EE 105 SP24 HW9	Q3b	pinch-off;mosfet-regions	compute		Minimum Vds for saturation at Vgs 2 V
+EE 105 SP24 HW9	Q3c	square-law;mosfet-regions	compute		Channel resistance at tiny Vds in the linear region
+EE 105 SP24 HW9	Q3d-e	square-law;mosfet-regions;channel-length-modulation	compute		Id at Vds 1 V (triode) versus 3 V (saturation)
+EE 105 SP24 HW10	Q1a	transconductance;square-law	compute		gm at Vgs 1 V with Vt 0.5 V; W/L 10; two Vds values
+EE 105 SP24 HW10	Q1b	output-resistance;channel-length-modulation	compute		ro from lambda 0.01 per V at the same bias points
+EE 105 SP24 HW10	Q1c	common-source;operating-point;small-signal-approximation	compute		CS gain, RD 1 kohm; ignore lambda for bias only; question total 35 pts
+EE 105 SP24 HW10	Q2a	pmos;mosfet-regions;operating-point	derive		Largest load resistor keeping PMOS saturated, symbolic; question total 35 pts
+EE 105 SP24 HW10	Q2b	common-source;pmos;mos-small-signal-model;output-resistance	derive		Small-signal circuit and gain with ro, body grounded
+EE 105 SP24 HW10	Q2c	body-effect;mos-small-signal-model;common-source	derive		Body tied to output; gmb term feeds back into gain
+EE 105 SP24 HW10	Q3	mos-capacitances;transconductance;body-effect	compute	30	Cgs Cgd Cdb Csb plus gm and gmb; reader formulas, slide errors; junction caps
+EE 105 SP24 HW11	Q1	common-gate;amplifier-two-port;input-output-resistance;mos-small-signal-model	compute	30	CG stage with source resistor, gm 15 mA/V; Norton source; Zin includes source resistor
+EE 105 SP24 HW11	Q2a-c	common-drain;pmos;mos-small-signal-model	derive		PMOS source-follower identification, small-signal model, gain from Rs RL gm; question total 35 pts
+EE 105 SP24 HW11	Q2d	operating-point;square-law;pmos	compute		Solve VS and ISD with VTp minus 3 V, kp 0.75 mA per V2
+EE 105 SP24 HW11	Q2e	output-swing;pinch-off	compute		Largest output voltage with device still saturated; matching RL
+EE 105 SP24 HW11	Q3a	common-source;common-gate;body-effect	explain		Name two biasing-divider circuits; second drives the body input; question total 35 pts
+EE 105 SP24 HW11	Q3b-c	body-effect;mos-small-signal-model;transconductance	compute		Gate-driven versus body-driven gain using gmb at VB minus 1.5 V
+EE 105 SP24 HW11	Q3d	body-effect;transconductance	explain		Qualitative change in gain when VB lowered to minus 2 V
