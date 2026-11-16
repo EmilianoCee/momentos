@@ -90,5 +90,5 @@ A concept that appears only in old exams, or only in the text, is kept and flagg
 
 Follow the `add-course` skill. In short: open the catalog entry and add the course to the registry; list the
 units; for each concept, find or add its map topic (one idea is one topic across all courses); record where it is
-assessed; set the target; run `python3 scripts/build.py` and `python3 scripts/check.py`. For a course with no
+assessed (`python3 scripts/assessed.py` reads the local survey tables in `course-survey/` and prints the identifiers, the weight, the target and the flags); set the target; run `python3 scripts/build.py` and `python3 scripts/check.py`. To add courses to your own fork, paste `prompts/add-my-courses.md` into an agent. For a course with no
 local materials, build the outline from the official course site and the catalog, and cite them in `sources`.

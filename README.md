@@ -112,7 +112,7 @@ AGENTS.md          the rules every LLM follows in this repo (CLAUDE.md imports i
 learner/           yours alone, never shared (created by the command above)
 ```
 
-To add a course of your own, see [docs/curricula.md](docs/curricula.md).
+To add a course of your own, paste [prompts/add-my-courses.md](prompts/add-my-courses.md) into an agent. The work left on the shared content is in [docs/roadmap.md](docs/roadmap.md).
 
 ## Accuracy
 
