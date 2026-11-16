@@ -1,0 +1,79 @@
+source_id	item	tags	task	points	note
+EE 128 FA26 HW1	Q1a	transfer-function-model;laplace-transform;dc-motor-model	derive		Two-input motor model; poles from quadratic in s; disturbance path has a zero
+EE 128 FA26 HW1	Q1b	dc-motor-model;step-response;disturbance-rejection	code		Open loop versus proportional gain K=10000; load-torque step of -0.1 N m
+EE 128 FA26 HW1	Q2	+surjective-injective-maps;+determinant;+matrix-inverse	explain		Domain and codomain choice matters; det onto C, inverse maps GL(n) onto itself
+EE 128 FA26 HW1	Q3	+determinant;+matrix-inverse	compute		Triangular determinant, column swap via F with det -1, 3x3 with entries i
+EE 128 FA26 HW1	Q4	+matrix-inverse	compute		3x3 complex inverse, plus proof that left and right inverses coincide
+EE 128 FA26 HW1	Q5	+rotation-matrix;+unitary-matrix;adjoint	derive		Rotation by theta is unitary; unit-modulus determinant; inverse by reasoning
+EE 128 FA26 HW1	Q6	adjoint;hermitian-matrix;+matrix-transpose	prove		Transpose versus conjugate transpose; Hermitian diagonal must be real
+EE 128 FA26 HW1	Q7	change-of-basis;+similarity-invariants	prove		Trace and determinant invariant under similarity via cyclic property
+EE 128 FA26 HW1	Q8	+block-matrix;+determinant	prove		Block inverse; det formula fails unless blocks commute; trace of block matrix
+EE 128 FA26 HW2	Q1a	+linearity-time-invariance	true-false		Five systems: exponential, affine, time reversal, convolution with decaying exponential
+EE 128 FA26 HW2	Q1b	linearization;+linearity-time-invariance	derive		Squaring amplifier vo=8vi^2 linearized about an operating point
+EE 128 FA26 HW2	Q2	transfer-function-model;laplace-transform;+rc-network	derive		Two RC networks from a figure; impedance or KCL route
+EE 128 FA26 HW2	Q3	+linearity-time-invariance;equilibrium	explain		Gravity and buoyancy make it affine; shifting input by nominal restores linearity
+EE 128 FA26 HW2	Q4	equilibrium;inverted-pendulum	compute		All equilibria of LTI system and cart-pole, with and without input
+EE 128 FA26 HW2	Q5	equilibrium;linearization;solution-of-state-equations	compute		Lotka-Volterra; scalar solutions when one species absent; Jacobian at each equilibrium
+EE 128 FA26 HW2	Q6	linearization;equilibrium;+satellite-orbit-model	derive		Verify circular orbit with p^3 w^2 = k, then linearize about it
+EE 128 FA26 HW3	Q1	linearization;ltv-systems;equilibrium	derive		Error system about a trajectory is LTV; A(t), B(t), C(t), D(t) as Jacobians
+EE 128 FA26 HW3	Q2a	linearization;inverted-pendulum	compute		Cart-pole Jacobian at pole-down and pole-up equilibria with F=0
+EE 128 FA26 HW3	Q2b	internal-stability;inverted-pendulum;eigenvalues-eigenvectors	explain		Sign of x3 coupling decides hanging versus inverted by reading the dynamics
+EE 128 FA26 HW3	Q3	transfer-function-model;state-space-model;+frequency-response	compute		Book 1.2 with B changed to (0,1); exponential response formula; simulate sinusoids
+EE 128 FA26 HW3	Q4	second-order-system;+frequency-response;bode-plot	prove		Resonance peak exists exactly for zeta below 1/sqrt2; find peak frequency
+EE 128 FA26 HW3	Q5	eigenvalues-eigenvectors	compute		Eigenpairs of symmetric 2x2 with off-diagonal sigma
+EE 128 FA26 HW3	Q6	eigenvalues-eigenvectors;+block-matrix	prove		Spectrum of block diagonal matrix is union of block spectra
+EE 128 FA26 HW4	Q1	change-of-basis;eigenvalues-eigenvectors	prove		Similar matrices share eigenvalues; map eigenvectors with T inverse
+EE 128 FA26 HW4	Q2	eigenvalues-eigenvectors;change-of-basis;+block-matrix	prove		Symmetric block matrix; similarity turns it block triangular, giving A1+A2 and A1-A2
+EE 128 FA26 HW4	Q3	matrix-exponential	compute		Nilpotent A,B: exponentials do not commute and e^(A+B) differs from product
+EE 128 FA26 HW4	Q4	functions-of-a-matrix;matrix-exponential;eigenvalues-eigenvectors	prove		Singular A still gives invertible e^A; counterexample with zero matrix
+EE 128 FA26 HW4	Q5	cayley-hamilton;functions-of-a-matrix	prove		Diagonal case product of factors vanishes; high powers reduce to degree n-1
+EE 128 FA26 HW4	Q6	matrix-exponential;jordan-form	derive		Power series of 2x2 Jordan block gives t e^(lambda t) entry
+EE 128 FA26 HW5	Q1	internal-stability;jordan-form;state-transition-matrix	prove		Double zero eigenvalue in one Jordan block; state grows linearly in t
+EE 128 FA26 HW5	Q2	internal-stability;jordan-form;eigenvalues-eigenvectors	compute		Classify four systems; repeated imaginary-axis eigenvalues hinge on block size
+EE 128 FA26 HW5	Q3	internal-stability;modes;+bloch-equation	compute		Block-diagonal magnetization model; complex pair is precession, real pole is relaxation
+EE 128 FA26 HW5	Q4	discrete-time-systems;internal-stability;eigenvalues-eigenvectors	prove		Eigenvalue magnitude at least 1 blocks convergence; diagonalizable converse
+EE 128 FA26 HW5	Q5	discretization;state-space-model;matrix-exponential	derive		Zero-order hold formulas; stable A gives stable discrete A; double integrator example
+EE 128 FA26 HW6	Q1	transfer-function-model;realization;state-space-model	compute		Fourth and third order ODEs with input derivatives; feedthrough when relative degree zero
+EE 128 FA26 HW6	Q2	controllability;controllability-matrix;+quadcopter-model	prove		Four-state attitude model after propeller loss; needs two nonzero parameters
+EE 128 FA26 HW6	Q3a	controllability;controllability-matrix;+magnetic-levitation	compute		2x2 ball model with A=[0 1;195.9 0], B=(0,-16.1)
+EE 128 FA26 HW6	Q3b	state-feedback;eigenvalue-placement	design		Place both poles at -5; gain F=[-13.72 -0.621] with u=-Fx
+EE 128 FA26 HW6	Q3c	+region-of-attraction;linearization;state-feedback	code		Nonlinear ball simulation from growing initial offsets; ueq=1.212, xeq=0.1
+EE 128 FA26 HW6	Q4	discretization;discrete-time-systems;state-feedback	derive		Scalar integrator with zero-order hold; gain must satisfy gamma below 2/T
+EE 128 FA26 HW6	Q5	eigenvalue-placement;controllability;+controllable-canonical-form;change-of-basis	compute		Place poles at -2,-2 directly and via canonical form; compare gains
+EE 128 FA26 HW7	Q1	observability;observability-matrix;linearization	compute		Satellite model: radius and angle observable, radius alone is not
+EE 128 FA26 HW7	Q2	pid-control;integral-control;disturbance-rejection;bibo-stability	design		PD then PID on double integrator; disturbance step at t=10
+EE 128 FA26 HW7	Q3	equilibrium;linearization;controllability;state-feedback	design		Cruise control with v^2 drag; equilibrium at 29 m/s; poles at -0.2
+EE 128 FA26 HW7	Q4	observer;discrete-time-systems;internal-stability	derive		Discrete observer error dynamics A+KC; eigenvalues inside unit circle
+EE 128 FA26 HW7	Q5	observability;observer;output-feedback;separation-principle	design		Ball observer poles -10 against controller -5; K has negative entries
+EE 128 FA26 HW7	Q6	integral-control;disturbance-rejection;eigenvalue-placement;state-feedback	design		Cruise control with acceleration bias; augmented integrator, zero steady-state gain
+EE 128 FA26 HW8	Q1	second-order-system;step-response;poles-zeros	compute		Overshoot from pole angle, settling from real part; sketch acceptance region
+EE 128 FA26 HW8	Q2	root-locus;second-order-system;step-response	explain		Gain moves poles vertically at real part -1; settling time stuck at 4.6 s
+EE 128 FA26 HW8	Q3	root-locus;poles-zeros	code		Four loci: asymptotes, real-axis segments, breakaway points; check with rlocus
+EE 128 FA26 HW8	Q4a	dc-motor-model;transfer-function-model;laplace-transform	derive		Motor J=0.01,L=0.5,R=1,k=0.1 reduces to 20/(s^2+2s+2)
+EE 128 FA26 HW8	Q4b	steady-state-error;second-order-system;step-response	compute		Gain K=1.9 for 95 percent tracking gives 60 percent overshoot
+EE 128 FA26 HW8	Q4c	root-locus;pid-control;steady-state-error	design		Integral control: zero error but slower and unstable above K=0.2
+EE 128 FA26 HW8	Q4d	lead-lag-compensation;root-locus;steady-state-error	design		Integrator plus lead for overshoot and settling specs; many valid answers
+EE 128 FA26 HW8	Q5	steady-state-error;disturbance-rejection;second-order-system;poles-zeros	compute		Tape drive: K for 0.01 rad/s error leaves zeta 0.13; trade-off
+EE 128 FA26 HW9	Q1	quadratic-form;positive-definite-matrix;eigenvalues-eigenvectors	prove		Symmetrize quadratic; PSD iff eigenvalues nonnegative; X^T X; sketch ellipse
+EE 128 FA26 HW9	Q2	+unitary-matrix;eigenvalues-eigenvectors;norm	prove		Unitary eigenvalues have modulus one; determinant modulus one
+EE 128 FA26 HW9	Q3	positive-definite-matrix;quadratic-form	prove		Zero diagonal entry forces zero row; PSD versus PD diagonal
+EE 128 FA26 HW9	Q4	positive-definite-matrix;eigenvalues-eigenvectors	compute		Four symmetric matrices classified by eigenvalue test; indefinite and semidefinite cases
+EE 128 FA26 HW9	Q5	lqr-finite-horizon;dynamic-programming	derive		Scalar two-step LQR by backward Bellman recursion in a, r, s
+EE 128 FA26 HW9	Q6	lqr-finite-horizon;dynamic-programming;riccati-equation	derive		Cross-term cost; guess quadratic value function; Riccati recursion with Z
+EE 128 FA26 MTP	A1	equilibrium;linearization;+epidemic-model	compute		SIR model; equilibria constrained to [0,1]; Jacobian at disease-free point
+EE 128 FA26 MTP	A2	equilibrium;linearization	compute		Exponential nonlinearity; solve for unique equilibrium then Jacobian
+EE 128 FA26 MTP	A3	transfer-function-model;state-space-model	compute		Given as block matrix with D=3; also write input-output ODE
+EE 128 FA26 MTP	A4	equilibrium;linearization;state-space-model	compute		Planar quadrotor; equilibria force angle and thrust; linearize each
+EE 128 FA26 MTP	B5	jordan-form;eigenvalues-eigenvectors	prove		All eigenvalues zero does not force A=0; nilpotent counterexample
+EE 128 FA26 MTP	B6	range-nullspace;subspace	prove		Range of [A B] is the sum of ranges, not the union
+EE 128 FA26 MTP	B7	cayley-hamilton;eigenvalues-eigenvectors	compute		Choose alpha, beta so cubic annihilates A with eigenvalues 1 and -1
+EE 128 FA26 MTP	B8	functions-of-a-matrix;diagonalization;eigenvalues-eigenvectors	compute		sin of pi times swap matrix via eigendecomposition
+EE 128 FA26 MTP	B9	eigenvalues-eigenvectors;jordan-form	compute		Upper triangular all-ones 4x4; one eigenvalue, defective
+EE 128 FA26 MTP	B10	range-nullspace;basis-dimension	prove		Outer product v w* has rank one
+EE 128 FA26 MTP	B11	eigenvalues-eigenvectors;functions-of-a-matrix	prove		I+A invertible when spectrum in closed right half plane; part b as printed trivial
+EE 128 FA26 MTP	C12	internal-stability;jordan-form;eigenvalues-eigenvectors	compute		Imaginary-axis matrices: diagonal versus Jordan block, plus real 2x2 case
+EE 128 FA26 MTP	C13	controllability;controllability-matrix;matrix-exponential	compute		Three-state system, repeated eigenvalue; matrix garbled, reconstructed as A=-I, B=(0,1,1)
+EE 128 FA26 MTP	C14	block-diagram;state-space-model;+well-posedness	derive		Feedback of two systems; invertibility of I+D1D2 for unique loop solution
+EE 128 FA26 MTP	C15	state-space-model;solution-of-state-equations;bibo-stability;+heat-exchanger	compute		Hot and cold compartments; free response then BIBO question; f=0.1, beta=0.2
+EE 128 FA26 MTP	C16	stabilizability;controllability;state-feedback;pbh-test	design		Not controllable but uncontrollable mode is stable; feedback still exists
+EE 128 FA26 MTP	C17	eigenvalue-placement;change-of-basis;+controllable-canonical-form	design		Needs a not equal 1; sign here is u=Kx, no minus
