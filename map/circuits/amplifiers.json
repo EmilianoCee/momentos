@@ -4,13 +4,15 @@
       "id": "operating-point",
       "title": "operating point",
       "essence": "An amplifier is a nonlinear device held at a fixed DC point, its bias or Q point, with a small signal riding on top. The bias fixes the region and every small-signal parameter, so it is found first, with all signals set to zero.",
-      "check": "A common-source stage's drain is biased only 0.1 V above the edge of saturation. What goes wrong when a large signal arrives, and which way should the bias move?"
+      "check": "A common-source stage's drain is biased only 0.1 V above the edge of saturation. What goes wrong when a large signal arrives, and which way should the bias move?",
+      "tools": ["circuits/amplifiers/small-signal-analysis.html"]
     },
     {
       "id": "small-signal-analysis",
       "title": "small-signal analysis",
       "essence": "Find the bias, swap each device for its tangent (its small-signal model), turn DC voltage sources into shorts and DC current sources into opens, and solve the linear circuit. It holds while signals are small: v_gs ≪ V_OV for a MOSFET, v_be ≪ kT/q for a BJT.",
-      "check": "Why does a DC supply rail become ground in the small-signal circuit?"
+      "check": "Why does a DC supply rail become ground in the small-signal circuit?",
+      "tools": ["circuits/amplifiers/small-signal-analysis.html"]
     },
     {
       "id": "amplifier-two-port",

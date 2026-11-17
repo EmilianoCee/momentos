@@ -109,7 +109,8 @@ The owner's record exists and EE 120 is fully mapped. The user can run `onboard 
     the plan's check cases are its output, pasted unchanged.
   - Done per plan: status `planned`, and `python3 scripts/check.py plans` passes.
   - Started 2026-11-17: `bode-plot`, `ideal-op-amp` and `rc-rl-step-response` are full plans with reference
-    scripts, and their topics have rubric entries. Next: `small-signal-analysis`.
+    scripts, and their topics have rubric entries. `small-signal-analysis` followed the same day. Next:
+    `resistance-looking-in`.
 
 - [ ] **5. The pilot.** Model: Opus runs it, a Sonnet subagent builds. Skill: `build-tool`.
   - Once one full plan exists, start a Sonnet subagent with only: "Work in the repo at <path>. Follow
@@ -186,3 +187,4 @@ The owner's record exists and EE 120 is fully mapped. The user can run `onboard 
 - 2026-11-17: the first three EE 105 and EE 120 tools, from full plans: `systems/bode-plot.html`,
   `circuits/amplifiers/ideal-op-amp.html`, `systems/rc-rl-step-response.html`, with 65 check cases between them
   and rubric entries for their seven topics.
+  Then `circuits/amplifiers/small-signal-analysis.html` (20 check cases) and rubric entries for its four topics.

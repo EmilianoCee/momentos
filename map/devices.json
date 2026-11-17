@@ -28,7 +28,8 @@
       "id": "transconductance",
       "title": "transconductance",
       "essence": "Transconductance g_m is how much output current changes per volt at the input: the slope at the bias point. A MOSFET gives g_m = 2I_D/V_OV and a BJT g_m = I_C/(kT/q), so at the same current the BJT gives more.",
-      "check": "A MOSFET with V_OV = 0.2 V and a BJT each carry 1 mA. Which has the larger g_m, and by about how much?"
+      "check": "A MOSFET with V_OV = 0.2 V and a BJT each carry 1 mA. Which has the larger g_m, and by about how much?",
+      "tools": ["circuits/amplifiers/small-signal-analysis.html"]
     }
   ],
   "links": [

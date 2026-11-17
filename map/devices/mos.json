@@ -82,7 +82,8 @@
       "id": "mos-small-signal-model",
       "title": "MOS small-signal model",
       "essence": "Around its bias point a saturated MOSFET is a current source g_m·v_gs from drain to source, with r_o across it and no current into the gate. That one picture replaces the square law in every small-signal problem.",
-      "check": "In the small-signal model, why is there no resistor between gate and source?"
+      "check": "In the small-signal model, why is there no resistor between gate and source?",
+      "tools": ["circuits/amplifiers/small-signal-analysis.html"]
     },
     {
       "id": "mos-capacitances",

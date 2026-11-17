@@ -17,5 +17,40 @@
       "limit": "Raise v_in until the output reaches a rail: what happens to v₋, and why does the recipe stop working?",
       "transfer": "A summing amplifier with two inputs through two resistors into one node: find v_out with the recipe."
     }
+  },
+  "operating-point": {
+    "L1": "States that the bias (Q) point is the DC solution with all signals off, and that it fixes the small-signal parameters.",
+    "L2": "Finds I_D, V_GS and V_DS of a common-source stage with the square law and checks the region.",
+    "L3": "Explains why the bias is found first and how it sets g_m and r_o; predicts what moving V_GS or W/L does to I_D, V_DS and the region; sees when the drain sits too close to the edge of saturation for the swing it must carry.",
+    "L4": "Chooses a bias for gain and swing together: low V_OV for gain per current, enough V_DS headroom, and a signal small next to V_OV; knows the bias drifts with V_T and temperature and why circuits fix the current instead.",
+    "missteps": [
+      "uses the small-signal model without checking that the transistor is in saturation",
+      "solves the bias with the signal still applied",
+      "assumes saturation without checking V_DS ≥ V_OV"
+    ],
+    "seeds": {
+      "predict": "A common-source stage biased in saturation; V_GS is raised by 0.2 V. What happens to I_D, V_DS and the region?",
+      "explain": "Why the bias point has to be found before any small-signal number can be written down.",
+      "limit": "Raise V_GS until the stage leaves saturation: at which V_GS, and what happens to the gain?",
+      "transfer": "A sensor that drifts the DC level on the gate by 50 mV: what does that do to g_m and to the gain, and how would you bias to make it matter less?"
+    }
+  },
+  "small-signal-analysis": {
+    "L1": "Lists the steps: find the bias, replace each device by its model, turn DC sources off, solve the linear circuit.",
+    "L2": "Carries out the steps on a common-source stage: draws the small-signal circuit and writes A_v = −g_m(r_o ∥ R_D).",
+    "L3": "Explains the model as the tangent to the device curve at the bias point; says why a DC voltage source becomes a short and a DC current source an open; says what \"small\" is measured against and estimates the error from v̂/(4V_OV).",
+    "L4": "Knows when the method fails (large signals, a bias near a region edge, a signal that crosses into cut-off) and switches to large-signal analysis there; uses superposition of bias and signal knowing it holds only for the linearised circuit.",
+    "missteps": [
+      "uses the small-signal model without checking that the transistor is in saturation",
+      "treats g_m as a constant of the transistor instead of a function of the bias",
+      "leaves a DC source in the small-signal circuit, or turns a DC current source into a short",
+      "measures \"small\" against V_DD instead of V_OV"
+    ],
+    "seeds": {
+      "predict": "A stage with A_v = −6; the input amplitude goes from 10 mV to 200 mV with V_OV = 0.3 V. Is the output still 6 times the input, and which half of the wave suffers?",
+      "explain": "Why a DC supply is a ground in the small-signal circuit.",
+      "limit": "The signal amplitude raised toward V_OV: which way does the output wave distort, and why?",
+      "transfer": "A circuit with a DC current source as the load: draw its small-signal circuit and say what the source becomes."
+    }
   }
 }

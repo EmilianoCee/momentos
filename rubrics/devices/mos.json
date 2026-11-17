@@ -1,0 +1,20 @@
+{
+  "mos-small-signal-model": {
+    "L1": "Draws the saturated MOSFET model: a current source g_m·v_gs from drain to source, r_o across it, and no gate current.",
+    "L2": "Substitutes the model into a single-transistor circuit and solves it, with g_m and r_o computed from the bias.",
+    "L3": "Explains each part: g_m·v_gs is the tangent's slope, r_o = 1/(λI_D) the slope of i_D against v_DS, and the open gate the insulating oxide; says why the model is the same for every circuit while its numbers change with the bias.",
+    "L4": "Adds g_mb for a source not at the body potential and the capacitances for high frequency; knows the model holds only in saturation and for v_gs ≪ V_OV.",
+    "missteps": [
+      "adds a resistor between gate and source in the MOSFET model",
+      "uses the small-signal model without checking that the transistor is in saturation",
+      "draws the current source pointing the wrong way for v_gs",
+      "uses r_o = 1/(λI_D) with λ = 0 and gets zero instead of infinity"
+    ],
+    "seeds": {
+      "predict": "Two transistors carry the same current, one at twice the V_OV of the other. Compare their g_m and r_o.",
+      "explain": "Why there is no resistor between gate and source in the MOSFET model.",
+      "limit": "λ made smaller and smaller: what does r_o become, and what is the transistor then?",
+      "transfer": "A PMOS common-source stage with its source on V_DD: draw its small-signal circuit and compare it with the NMOS one."
+    }
+  }
+}

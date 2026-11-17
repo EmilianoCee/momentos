@@ -1,0 +1,19 @@
+{
+  "transconductance": {
+    "L1": "States that g_m is the change in output current per volt of input, and the formulas 2I_D/V_OV for a MOSFET and I_C/(kT/q) for a BJT.",
+    "L2": "Computes g_m from I_D and V_OV, or from k and V_OV, for a given bias.",
+    "L3": "Explains g_m as the slope of i_D against v_GS at the bias point; predicts how it moves with I_D, V_OV and W/L (at fixed I_D, larger W/L means smaller V_OV and larger g_m); compares a MOSFET and a BJT at the same current.",
+    "L4": "Uses g_m/I_D = 2/V_OV as a design knob for efficiency; knows the square-law value fails in weak inversion and at short channels, and that the BJT's kT/q sets a ceiling no MOSFET passes.",
+    "missteps": [
+      "treats g_m as a constant of the transistor instead of a function of the bias",
+      "uses g_m = 2I_D/V_OV in triode",
+      "forgets that the BJT's g_m uses kT/q, not the MOS threshold V_T"
+    ],
+    "seeds": {
+      "predict": "A MOSFET at fixed I_D has its W/L quadrupled. What happens to V_OV and to g_m?",
+      "explain": "Why g_m is a property of the bias point and not of the transistor.",
+      "limit": "V_OV made smaller and smaller at fixed current: where does 2I_D/V_OV stop being believable?",
+      "transfer": "A BJT and a MOSFET both at 1 mA: which gives more g_m, by how much, and what does each pay for it?"
+    }
+  }
+}
