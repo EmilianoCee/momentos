@@ -57,13 +57,16 @@ subscripts are totals (v_GS = V_GS + v_gs, i_D = I_D + i_d).
   y = 100 at x = 200, labelled "R_D = 10 kΩ"; the drain node at (200, 110) labelled "V_DS = 1.93 V"; the NMOS with its
   drain at the top, its source to ground at y = 210 and its gate on the left at x = 160; a `--c2` arrow down beside R_D
   labelled "I_D = 107 µA". From the gate, a wire left to x = 60 and down through a DC source labelled
-  "V_GS = 0.80 V" (`--c1`) and a sine source labelled "v_gs" (`--c1`) in series, to ground, with both labels to the right of their sources.
+  "V_GS = 0.80 V" (`--c1`), drawn as a battery with its long plate (+) on top, and a sine source labelled "v_gs"
+  (`--c1`) in series, to ground, with both labels to the right of their sources.
 - Right, from x = 300 to x = 636, headed "the small-signal circuit": the sine source "v_gs" at x = 345 from the
   gate node (380, 110) to ground; the gate node labelled "gate" above it and "no current in" below and to its right; from the drain node to
   ground, a current source at x = 480 (a circle with a downward arrow) labelled "g_m·v_gs" and, lower left,
   "g_m = 716 µS" in `--c3`; r_o at x = 575 and R_D at x = 620 from the drain node (575, 50) to ground, their values
   "r_o = 93.2 kΩ" and "R_D = 10 kΩ" at the bottom right, with "V_DD → ground" under them; the drain node labelled
-  "v_ds = A_v·v_gs".
+  "v_ds = A_v·v_gs". The gate node, the controlled source and r_o sit inside a dashed `--ink-3` box from (366, 60) to
+  (590, 176) labelled "transistor model" at its top left; the drain wire leaves through its top and the source (ground)
+  wires through its bottom, and the T-junctions on the ground rail have dots.
 - When "small-signal circuit alone" is ticked, the left circuit's DC sources (the V_DD rail and the V_GS source) are
   drawn at opacity 0.25 and the note "DC sources hold still: zero signal" appears under the left circuit.
 

@@ -442,6 +442,8 @@ var MATHS = (function () {
     if (st.r2on) { W("M500 70V120M500 200V250"); resistorV(500, 120, 200); Tx(512, 164, "t0", "R₂ = " + eng(R2(), "Ω")); }
     // the store, in the chosen view
     W("M400 70V120M400 200V250");
+    const dots = [[120, 250]].concat(st.r2on ? [[400, 70], [400, 250]] : []);
+    dots.forEach((q) => S("circle", { cx: q[0], cy: q[1], r: 2.5, fill: "var(--ink)" }, layer));
     const x0 = toSI(st.x0), in0 = st.mode === "square" ? st.VS : inputStep();
     if (st.view === "circuit") {
       if (cap) {
@@ -461,8 +463,8 @@ var MATHS = (function () {
       Tx(400, 272, "t1", xName() + "(0⁺) = " + eng(shown(x0), xUnit()), "middle");
       Tx(400, 290, "t2", jName() + "(0⁺) = " + eng(jShown(MATHS.jumpAt(st.store, in0, R1(), R2(), x0)), jUnit()), "middle");
     } else {
-      if (cap) { W("M400 120V150M400 170V200"); Tx(412, 164, "t2", "open: i_C = 0"); }
-      else { W("M400 120V200"); Tx(412, 164, "t2", "short: v_L = 0"); }
+      if (cap) { W("M400 120V150M400 170V200"); Tx(390, 164, "t2", "open: i_C = 0", "end"); }
+      else { W("M400 120V200"); Tx(390, 164, "t2", "short: v_L = 0", "end"); }
       Tx(400, 278, "t1", xName() + "(∞) = " + eng(shown(MATHS.finalValue(st.store, in0, R1(), R2())), xUnit()), "middle");
     }
   }

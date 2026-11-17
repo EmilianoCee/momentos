@@ -11,8 +11,8 @@ The order is fixed by the curricula: course tier first, then how heavily the pla
 | 2 | [Ideal op-amp and the virtual short](ideal-op-amp.md) | built | tool | EE 105, EE 120 | 29.626 | M |
 | 3 | [RC and RL step response](rc-rl-step-response.md) | built | tool | EE 105, EE 120 | 21.964 | M |
 | 4 | [Bias point and small-signal analysis](small-signal-analysis.md) | built | tool | EE 105 | 9.362 | M |
-| 5 | [Resistance looking in](resistance-looking-in.md) | stub | tool | EE 105 | 8.229 | L |
-| 6 | [Common-source stage: gain and swing](common-source.md) | stub | tool | EE 105 | 6.74 | M |
+| 5 | [Common source, common gate and common drain](single-stage-amplifiers.md) | built | tool | EE 105 | 9.343 | L |
+| 6 | [Resistance looking in](resistance-looking-in.md) | stub | tool | EE 105 | 8.229 | L |
 | 7 | [Loop gain, bandwidth and phase margin](loop-gain.md) | stub | tool | EE 105 | 4.523 | M |
 | 8 | [Current mirror](current-mirror.md) | stub | tool | EE 105 | 2.244 | M |
 | 9 | [Amplifier as a two-port, and loading](amplifier-two-port.md) | stub | tool | EE 105 | 1.028 | S |

@@ -36,25 +36,29 @@
       "id": "intrinsic-gain",
       "title": "intrinsic gain",
       "essence": "A transistor driving only its own r_o gives a gain g_m·r_o, the most one stage can deliver. For a MOSFET it is 2/(λV_OV), often 10 to 100. For a BJT it is V_A/(kT/q), often over 1000.",
-      "check": "You lower a MOSFET's overdrive while keeping its current fixed. What happens to its intrinsic gain, and what does that cost you?"
+      "check": "You lower a MOSFET's overdrive while keeping its current fixed. What happens to its intrinsic gain, and what does that cost you?",
+      "tools": ["circuits/amplifiers/single-stage-amplifiers.html"]
     },
     {
       "id": "common-source",
       "title": "common-source stage",
       "essence": "Signal on the gate, output at the drain. The transistor turns v_in into a current g_m·v_in and the load turns it back into an inverted voltage: gain −g_m times the resistance at the drain. A BJT common-emitter stage is the same, with r_π at the input.",
-      "check": "A common-source stage has g_m = 2 mS, R_D = 10 kΩ and r_o = 10 kΩ. What is its gain, and what happens if R_D is replaced by an ideal current source?"
+      "check": "A common-source stage has g_m = 2 mS, R_D = 10 kΩ and r_o = 10 kΩ. What is its gain, and what happens if R_D is replaced by an ideal current source?",
+      "tools": ["circuits/amplifiers/single-stage-amplifiers.html"]
     },
     {
       "id": "common-gate",
       "title": "common-gate stage",
       "essence": "Signal into the source, output at the drain, gate held still. The input looks like 1/g_m, so the stage takes in a current and hands it to a high-resistance drain almost unchanged: a current buffer. The BJT version is the common-base stage.",
-      "check": "A photodiode with 10 pF of capacitance drives a common-gate stage with g_m = 10 mS. Why is the bandwidth much wider than if it fed a 10 kΩ resistor directly?"
+      "check": "A photodiode with 10 pF of capacitance drives a common-gate stage with g_m = 10 mS. Why is the bandwidth much wider than if it fed a 10 kΩ resistor directly?",
+      "tools": ["circuits/amplifiers/single-stage-amplifiers.html"]
     },
     {
       "id": "source-follower",
       "title": "source follower",
       "essence": "Signal on the gate, output at the source. The source follows the gate one V_GS lower, with a gain a little under 1. It presents a huge input resistance and drives its load from about 1/g_m: a voltage buffer. The emitter follower is the BJT version.",
-      "check": "A follower with g_m = 5 mS drives a 200 Ω load. Roughly what is its gain, and why is it well below 1?"
+      "check": "A follower with g_m = 5 mS drives a 200 Ω load. Roughly what is its gain, and why is it well below 1?",
+      "tools": ["circuits/amplifiers/single-stage-amplifiers.html"]
     },
     {
       "id": "source-degeneration",
@@ -96,7 +100,8 @@
       "id": "output-swing",
       "title": "output swing",
       "essence": "The output can only move while every transistor in its path stays in saturation and inside the supply rails. Each saturated device needs at least V_OV across it, so stacking devices for gain eats into the swing.",
-      "check": "A stage on a 1.8 V supply stacks four transistors between the rails, each needing V_OV = 0.2 V. Roughly how much room is left for the output to swing?"
+      "check": "A stage on a 1.8 V supply stacks four transistors between the rails, each needing V_OV = 0.2 V. Roughly how much room is left for the output to swing?",
+      "tools": ["circuits/amplifiers/single-stage-amplifiers.html"]
     },
     {
       "id": "amplifier-frequency-response",

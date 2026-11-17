@@ -52,5 +52,89 @@
       "limit": "The signal amplitude raised toward V_OV: which way does the output wave distort, and why?",
       "transfer": "A circuit with a DC current source as the load: draw its small-signal circuit and say what the source becomes."
     }
+  },
+  "common-source": {
+    "L1": "States that the common-source stage takes its input at the gate and its output at the drain, with gain −g_m R_D.",
+    "L2": "Finds the bias of a common-source stage, checks saturation, and computes A_v = −g_m (r_o ∥ R_D), R_in = ∞ and R_out = r_o ∥ R_D.",
+    "L3": "Reads the gain as the slope of the v_OUT–v_IN curve at the bias point; explains the inversion; predicts what R_D, W/L and λ do to the gain and to the DC output; says why the gain stops growing with R_D (r_o, then triode).",
+    "L4": "Designs the bias for a required gain and swing on a given supply; knows the ceiling g_m·r_o and what a current-source load buys and costs; knows when source degeneration is worth the gain it costs.",
+    "missteps": [
+      "uses −g_m R_D without r_o, or outside saturation",
+      "thinks a bigger R_D always means a bigger swing",
+      "forgets that V_DD is a small-signal ground, so R_D goes to ground in the small-signal circuit"
+    ],
+    "seeds": {
+      "predict": "A common-source stage at a given bias; R_D is raised by half. What happens to the gain, the DC output and the room below it?",
+      "explain": "Why the common-source output moves down when the input moves up.",
+      "limit": "R_D made very large at a fixed bias current: what does the gain approach, and what does it need from the supply?",
+      "transfer": "A microphone signal of a few millivolts must be raised to about a volt on a 3 V supply: how far does one common-source stage get, and what limits it?"
+    }
+  },
+  "common-gate": {
+    "L1": "States that the common-gate stage takes its input at the source with the gate held still, and that its input resistance is about 1/g_m.",
+    "L2": "Computes A_v ≈ g_m R_D, R_in ≈ 1/g_m and R_out = r_o ∥ R_D from given values.",
+    "L3": "Explains why the input looks like 1/g_m (the source moves all of v_GS) and why the gain is positive; uses the exact R_in = (r_o + R_D)/(1 + g_m r_o) and says when the approximation fails; says why the stage is a current buffer.",
+    "L4": "Picks a common-gate stage to take in a current from a high-impedance or capacitive source; knows how a source resistance cuts its gain and how it becomes the top of a cascode.",
+    "missteps": [
+      "takes the common-gate input resistance as infinite, like a gate",
+      "gives the gain a minus sign",
+      "ignores the source resistance driving the input"
+    ],
+    "seeds": {
+      "predict": "A common-gate stage's bias current is doubled at fixed V_OV: what happens to R_in and to the gain?",
+      "explain": "Why the resistance looking into a source is about 1/g_m.",
+      "limit": "R_D made large compared with r_o: what does R_in become, and why is that surprising?",
+      "transfer": "A photodiode with a large capacitance must feed an amplifier with a wide bandwidth: why does a common-gate input help?"
+    }
+  },
+  "source-follower": {
+    "L1": "States that the source follower takes its input at the gate and its output at the source, with a gain just under 1.",
+    "L2": "Computes A_v = g_m R/(1 + g_m R) with R = r_o ∥ R_S, and R_out = 1/g_m ∥ r_o ∥ R_S.",
+    "L3": "Explains why the source stays one V_GS below the gate and why the gain is below 1; explains the low output resistance as about 1/g_m; predicts what a heavier load does to the gain; uses the follower as a voltage buffer between a high-resistance source and a low-resistance load.",
+    "L4": "Knows the body effect pulls the gain further below 1 unless the body is tied to the source; knows the follower costs a V_GS of headroom and can cut off on a large negative swing with a resistor load.",
+    "missteps": [
+      "takes the follower's gain as exactly 1",
+      "takes its output resistance as R_S instead of about 1/g_m",
+      "forgets the V_GS drop when finding the DC output"
+    ],
+    "seeds": {
+      "predict": "A follower with g_m = 2 mS drives first 10 kΩ, then 500 Ω: compare the two gains.",
+      "explain": "Why the source follower's gain is less than 1, and what would have to be true for it to reach 1.",
+      "limit": "A large negative input swing with a resistor R_S to ground: where does the follower stop following, and why?",
+      "transfer": "A sensor with a 1 MΩ output resistance must drive a 1 kΩ input: what goes between them, and roughly what gain survives?"
+    }
+  },
+  "output-swing": {
+    "L1": "States that the output can move only while the transistors stay in saturation and inside the supply rails.",
+    "L2": "Finds the highest and lowest output of a common-source stage from cut-off (V_DD) and the edge of triode (v_OUT = v_IN − V_T).",
+    "L3": "Reads the swing as the saturated stretch of the transfer curve; computes the room above and below a bias point and the largest symmetric swing; predicts how R_D and the bias move the limits.",
+    "L4": "Budgets the supply across stacked devices, each needing V_OV; places the bias for the largest symmetric swing; trades gain against swing and headroom.",
+    "missteps": [
+      "takes the swing as rail to rail",
+      "forgets that the edge of triode moves with v_IN",
+      "thinks a bigger R_D always means a bigger swing"
+    ],
+    "seeds": {
+      "predict": "A common-source stage biased with its drain 0.4 V above the edge of triode receives a 0.6 V output swing: which half of the wave is damaged?",
+      "explain": "Why the lower limit of a common-source output depends on the input voltage at that moment.",
+      "limit": "Stack transistors between the rails for more gain: how many fit on 1.8 V with V_OV = 0.2 V each, and what is left for the signal?",
+      "transfer": "A stage must deliver ±1 V on a 3 V supply: where must its DC output sit, and what does that demand of R_D and I_D?"
+    }
+  },
+  "intrinsic-gain": {
+    "L1": "States that the intrinsic gain is g_m·r_o, the gain of a transistor driving only its own r_o.",
+    "L2": "Computes g_m·r_o from a bias point, and as 2/(λ V_OV) for a MOSFET.",
+    "L3": "Explains it as the ceiling on a single stage's gain, reached as R_D → ∞; predicts what lowering V_OV or lengthening the channel does to it.",
+    "L4": "Knows the cost of each way to raise it (lower V_OV means bigger devices or less speed; longer L means more capacitance) and that a cascode multiplies it.",
+    "missteps": [
+      "thinks a larger R_D can raise the gain without limit",
+      "uses g_m·R_D where r_o is comparable to R_D"
+    ],
+    "seeds": {
+      "predict": "A MOSFET's V_OV is halved at fixed current: what happens to its intrinsic gain?",
+      "explain": "Why no resistor load can push a single common-source stage past g_m·r_o.",
+      "limit": "λ made smaller and smaller: what happens to the intrinsic gain, and what else limits the stage?",
+      "transfer": "An amplifier needs a gain of 1000 from transistors with g_m r_o = 40: how many stages, or what structure?"
+    }
   }
 }

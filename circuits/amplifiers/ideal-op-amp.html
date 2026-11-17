@@ -419,6 +419,7 @@ var MATHS = (function () {
     W("M440 190H560"); S("circle", { class: "term", cx: 560, cy: 190, r: 4 }, layer);
     // feedback path from N over the top to the output
     W("M220 165H330M220 165V80H" + (fol ? "500" : "340") + (fol ? "" : "M420 80H500") + "M500 80V190");
+    [[220, 165], [500, 190]].forEach((q) => S("circle", { cx: q[0], cy: q[1], r: 2.5, fill: "var(--ink)" }, layer));
     if (!fol) { resistorH(340, 420, 80); T(380, 62, "t4", "R₂ = " + eng(R2(), "Ω"), "middle"); }
     if (inv) {
       S("circle", { class: "term", cx: 70, cy: 165, r: 4 }, layer);

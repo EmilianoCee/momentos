@@ -514,8 +514,9 @@ var MATHS = (function () {
     S("path", { class: "a2", d: "M184 50V82" }, layer); S("path", { class: "h2c", d: "M184 90l-4 -8h8Z" }, layer);
     T(178, 70, "t2", "I_D = " + eng(m.bp.ID, "A"), "end");
     W("M176 150H60V160M60 186V190M60 216V222"); ground(60, 222);
-    S("rect", { x: 46, y: 160, width: 28, height: 26, class: "src" + (fade ? " fade" : "") }, layer);
-    T(60, 177, "t1" + (fade ? " fade" : ""), "DC", "middle");
+    // V_GS as a battery, + on top (the long plate)
+    S("path", { class: "w" + (fade ? " fade" : ""), d: "M60 160V168M47 168H73M53 177H67M60 177V186", stroke: "var(--c1)" }, layer);
+    T(42, 172, "t1" + (fade ? " fade" : ""), "+", "end");
     sine(60, 203);
     T(82, 177, "t1" + (fade ? " fade" : ""), "V_GS = " + num(st.VGS, 2) + " V");
     T(82, 207, "t1", "v_gs");
@@ -533,6 +534,10 @@ var MATHS = (function () {
     S("path", { class: "a2", d: "M480 101V114", stroke: "var(--c3)" }, layer); S("path", { class: "h3c", d: "M480 121l-4 -8h8Z" }, layer);
     T(498, 94, "t3", "g_m·v_gs"); T(472, 170, "t3", "g_m = " + eng(m.gm, "S"), "end");
     W("M480 50H620M575 50V70M575 150V186M620 50V70M620 150V186M480 186H620");
+    // the transistor's model: gate, controlled source and r_o, with its source at ground
+    S("rect", { x: 366, y: 60, width: 224, height: 116, rx: 4, fill: "none", stroke: "var(--ink-3)", "stroke-width": 1, "stroke-dasharray": "4 3" }, layer);
+    T(372, 74, "tick", "transistor model");
+    [[480, 186], [575, 186]].forEach((q) => S("circle", { cx: q[0], cy: q[1], r: 2.5, fill: "var(--ink)" }, layer));
     resistorV(575, 70, 150); resistorV(620, 70, 150);
     T(566, 114, "tick", "r_o", "end"); T(611, 114, "tick", "R_D", "end");
     T(636, 202, "t0", "r_o = " + eng(m.ro, "Ω"), "end"); T(636, 218, "t0", "R_D = 10 kΩ", "end");

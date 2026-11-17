@@ -1,0 +1,740 @@
+<!doctype html>
+<!--
+  Concept:      One transistor, three ways to connect it: the small-signal gain of each stage is the slope of its
+                own large-signal curve at the bias point, and it lasts only while the transistor stays saturated.
+  Course:       EE 105 (common source, common gate and common drain stages; output swing; intrinsic gain)
+  Play with:    The stage, the bias point on its transfer curve, R_D or R_S, W/L, λ and the signal amplitude
+  Should click: Common source inverts and amplifies, common gate takes its input at 1/g_m, the follower gives
+                just under 1 from a low output resistance; each gain is a slope, and the swing ends where
+                saturation ends.
+  Plan:         plans/single-stage-amplifiers.md
+  Checked:      23 check cases pass (node scripts/test-tools.js). Headless Chrome, light and dark, no console errors:
+                common source at v_IN = 0.8 V reads V_OUT = 1.93 V, A_v = −6.57 from the formula and from the curve's
+                slope, room 1.44 V below and 1.07 V above, intrinsic gain 79.5; R_D near 20 kΩ gives −11.2 and 663 mV
+                below; near 40 kΩ reads triode with a slope of −1.02 and A_v withheld; λ = 0 gives −6 and r_o = ∞.
+                Common gate at 0.3 V reads +7.69, R_in = 1.30 kΩ, R_out = 8.62 kΩ; the follower at 1.5 V reads 0.752 V,
+                +0.851, R_out = 1.40 kΩ, and at v̂ = 0.3 V its output stays on the tangent. Arrow keys move the bias
+                0.01 V, Shift 0.1 V; stage buttons and reset restore their start values.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>single-transistor stages · momentos</title>
+<script>
+  // apply a saved light/dark choice before anything is painted
+  try {
+    var saved = localStorage.getItem("momentos-theme");
+    if (saved === "light" || saved === "dark") document.documentElement.dataset.theme = saved;
+  } catch (e) { /* no storage in some previews: follow the system setting */ }
+</script>
+<style>
+  /* ---- momentos house style: begin (the same block in every tool. Change it only in
+     templates/tool-template.html, then run scripts/sync-house-style.py) ---- */
+  :root {
+    color-scheme: light dark;
+    --bg: light-dark(#f6f4ee, #131312);          /* the page */
+    --surface: light-dark(#fbfaf6, #1b1b19);     /* figures and inputs */
+    --ink: light-dark(#1d1c1a, #ebe8e1);         /* text and the main strokes */
+    --ink-2: light-dark(#5f5c55, #b1ada3);       /* secondary text */
+    --ink-3: light-dark(#77736b, #8a867d);       /* labels, axis numbers */
+    --line: light-dark(rgba(29, 28, 26, 0.16), rgba(235, 232, 225, 0.18));   /* hairlines and borders */
+    --grid: light-dark(rgba(29, 28, 26, 0.07), rgba(235, 232, 225, 0.08));   /* grid lines */
+    --accent: light-dark(#c2410c, #ff8f5a);      /* the one thing being pointed at */
+    /* Colour is for quantities, never for decoration. Give each quantity one of these and keep it
+       the same in the figure, the numbers and the prose. */
+    --c1: light-dark(#2458c4, #7aa7ff);          /* blue */
+    --c2: light-dark(#c2410c, #ff9a62);          /* orange */
+    --c3: light-dark(#0f7f6b, #4fd3b4);          /* teal */
+    --c4: light-dark(#9d3fb0, #d78be6);          /* purple */
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+    --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  }
+  :root[data-theme="light"] { color-scheme: light; }
+  :root[data-theme="dark"] { color-scheme: dark; }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 17px/1.55 var(--serif);
+    -webkit-font-smoothing: antialiased;
+  }
+  .bar {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 22px;
+    font: 12px/1 var(--mono);
+    letter-spacing: 0.06em;
+    color: var(--ink-3);
+  }
+  .bar a { color: var(--ink-2); text-decoration: none; border-bottom: 1px solid var(--line); padding-bottom: 2px; }
+  .bar a:hover { color: var(--accent); border-color: var(--accent); }
+  .bar .grow { flex: 1; }
+  button {
+    font: 12px/1 var(--mono);
+    color: var(--ink-2);
+    background: transparent;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 7px 10px;
+    cursor: pointer;
+  }
+  button:hover { color: var(--ink); border-color: var(--ink-2); }
+  button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  button:disabled { opacity: 0.4; cursor: default; }
+  :focus-visible { outline: 1px dashed var(--ink); outline-offset: 2px; }
+
+  main { max-width: 1120px; margin: 0 auto; padding: 4px 22px 72px; }
+  h1 { font: 400 clamp(30px, 4.6vw, 44px)/1.08 var(--serif); letter-spacing: -0.015em; margin: 14px 0 10px; }
+  .lede { max-width: 62ch; margin: 0 0 26px; color: var(--ink-2); font-size: 18px; }
+  h2 {
+    font: 500 10.5px/1.4 var(--mono);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin: 0 0 10px;
+  }
+  .bench { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(280px, 1fr); gap: 28px; align-items: start; }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-top: 28px; }
+  figure { margin: 0; }
+  .stage { border: 1px solid var(--line); border-radius: 4px; background: var(--surface); overflow: hidden; }
+  .stage svg { display: block; width: 100%; height: auto; touch-action: none; user-select: none; -webkit-user-select: none; }
+  figcaption { padding: 9px 12px; border-top: 1px solid var(--line); font: 11.5px/1.5 var(--mono); color: var(--ink-3); }
+  .controls { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 12px; }
+  .controls label { font: 12px/1 var(--mono); color: var(--ink-2); display: inline-flex; align-items: center; gap: 6px; margin-left: 6px; }
+  input[type="range"] { accent-color: var(--ink); }
+  input[type="checkbox"] { accent-color: var(--ink); }
+
+  .notes { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 44px; margin-top: 46px; padding-top: 28px; border-top: 1px solid var(--line); }
+  .notes p { margin: 0 0 14px; max-width: 62ch; }
+  .notes p b { font-weight: 600; }
+  .notes ul { margin: 0 0 26px; padding: 0; list-style: none; }
+  .notes li { margin: 0 0 12px; padding-left: 14px; border-left: 1px solid var(--line); font-size: 16px; line-height: 1.45; }
+  .notes li a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--line); }
+  .notes li a:hover { color: var(--accent); border-color: var(--accent); }
+  details { margin-top: 4px; }
+  summary { font: 11.5px/1.4 var(--mono); color: var(--ink-3); cursor: pointer; }
+  details span { color: var(--ink-2); font-size: 15px; }
+  sup, sub { font-size: 0.72em; line-height: 0; }
+
+  @media (max-width: 860px) {
+    .bench, .pair, .notes { grid-template-columns: 1fr; }
+    .notes { gap: 28px; }
+  }
+  /* ---- momentos house style: end ---- */
+
+  /* ---- this tool: everything below is yours ---- */
+  var { font-style: italic; font-family: var(--serif); }
+  .grid line { stroke: var(--grid); stroke-width: 1; }
+  .grid .axis { stroke: var(--line); }
+  .shade { fill: var(--grid); }
+  .tick { font: 10.5px var(--mono); fill: var(--ink-3); }
+  .w { fill: none; stroke: var(--ink); stroke-width: 1.6; stroke-linejoin: round; stroke-linecap: round; }
+  .curve { fill: none; stroke: var(--c2); stroke-width: 2.4; stroke-linejoin: round; }
+  .tangent { stroke: var(--c3); stroke-width: 1.6; }
+  .limit { stroke: var(--c4); stroke-width: 1.2; stroke-dasharray: 6 4; }
+  .proj { fill: none; stroke: var(--ink-3); stroke-width: 1; stroke-dasharray: 1 3; }
+  .br1 { fill: none; stroke: var(--c1); stroke-width: 1.6; }
+  .bias { fill: var(--ink); }
+  .handle { fill: transparent; stroke: transparent; stroke-width: 1.5; cursor: ew-resize; outline: none; }
+  .handle:hover, .handle:focus-visible { stroke: var(--ink-2); stroke-dasharray: 3 3; }
+  .hit { fill: transparent; cursor: ew-resize; }
+  .vin { fill: none; stroke: var(--c1); stroke-width: 1.6; }
+  .vout { fill: none; stroke: var(--c2); stroke-width: 2.4; }
+  .lin { fill: none; stroke: var(--c3); stroke-width: 1.6; stroke-dasharray: 5 4; }
+  .mid { stroke: var(--line); stroke-width: 1; }
+  .t0 { font: 11.5px var(--mono); fill: var(--ink-2); }
+  .t1 { font: 11.5px var(--mono); fill: var(--c1); }
+  .t2 { font: 11.5px var(--mono); fill: var(--c2); }
+  .t3 { font: 11.5px var(--mono); fill: var(--c3); }
+  .t4 { font: 11px var(--mono); fill: var(--c4); }
+  .src { fill: var(--surface); stroke: var(--c1); stroke-width: 1.6; }
+  .src3 { fill: var(--surface); stroke: var(--c3); stroke-width: 1.8; }
+  .h3c { fill: var(--c3); } .hk { fill: var(--ink-2); }
+  .model { fill: none; stroke: var(--ink-3); stroke-width: 1; stroke-dasharray: 4 3; }
+  .ar { stroke: var(--ink-2); stroke-width: 1.2; fill: none; }
+  .read { font: 13px/1.6 var(--mono); font-variant-numeric: tabular-nums; }
+  .read p { margin: 0 0 4px; }
+  .read .big { font: 400 30px/1.15 var(--serif); color: var(--c3); margin: 6px 0 2px; }
+  .read .role { font: 15px/1.4 var(--serif); color: var(--ink-2); margin-bottom: 10px; }
+  .q1 { color: var(--c1); } .q2 { color: var(--c2); } .q3 { color: var(--c3); } .q4 { color: var(--c4); } .q0 { color: var(--ink-2); }
+  .warn { color: var(--accent); }
+  table.cmp { border-collapse: collapse; width: 100%; font: 11.5px/1.45 var(--mono); margin-top: 6px; }
+  table.cmp th { text-align: left; font-weight: 500; color: var(--ink-3); border-bottom: 1px solid var(--line); padding: 4px 6px 4px 0; }
+  table.cmp td { color: var(--ink-2); border-bottom: 1px solid var(--line); padding: 5px 6px 5px 0; vertical-align: top; }
+  table.cmp tr.on td { color: var(--ink); font-weight: 600; }
+  .controls output { font: 12px/1 var(--mono); color: var(--ink-2); min-width: 10ch; display: inline-block; }
+  .stack { display: grid; gap: 18px; }
+</style>
+</head>
+<body>
+
+<header class="bar">
+  <a href="../../index.html#common-source">← map</a>
+  <span>circuits / amplifiers</span>
+  <span class="grow"></span>
+  <button type="button" id="theme" aria-label="Switch between light and dark">◐</button>
+</header>
+
+<main>
+  <h1>Common source, common gate and common drain</h1>
+  <p class="lede">Ground one terminal of a transistor for the signal, drive a second and take the output from the third.
+    Common source amplifies and inverts, common gate takes in a current at a low resistance, and the source follower
+    copies a voltage. Drag the bias point along each stage's curve: the gain is its slope, and it lasts only while the
+    transistor stays saturated.</p>
+
+  <div class="bench">
+    <div class="stack">
+      <figure class="stage">
+        <svg id="transfer" viewBox="0 0 640 360" role="group" aria-label="Output voltage against input voltage for the chosen stage, with the bias point and its tangent"></svg>
+        <figcaption>Drag the dot (or press anywhere in the plot); focused, ← → move it 0.01 V, with Shift 0.1 V. The
+          shaded stretches are cut-off and triode; the dashed lines are the limits of the swing.</figcaption>
+      </figure>
+      <div>
+        <div class="controls">
+          <button type="button" data-stage="cs">common source</button>
+          <button type="button" data-stage="cg">common gate</button>
+          <button type="button" data-stage="cd">common drain (follower)</button>
+        </div>
+        <div class="controls">
+          <label><span id="lR">R_D</span> <input type="range" id="sR" min="3" max="5" step="0.05" value="4" aria-label="the resistor, log scale"></label><output id="oR"></output>
+          <label>W/L <input type="range" id="sW" min="0" max="2" step="0.05" value="1" aria-label="W over L, log scale"></label><output id="oW"></output>
+        </div>
+        <div class="controls">
+          <label>λ <input type="range" id="sL" min="0" max="0.2" step="0.01" value="0.1" aria-label="channel-length modulation lambda"></label><output id="oL"></output>
+          <label>v̂ <input type="range" id="sA" min="0" max="0.5" step="0.005" value="0.05" aria-label="signal amplitude"></label><output id="oA"></output>
+          <button type="button" id="reset">reset</button>
+        </div>
+      </div>
+      <figure class="stage">
+        <svg id="wave" viewBox="0 0 640 220" role="group" aria-label="Input and output signals against time"></svg>
+        <figcaption>The input signal, the output from the curve itself, and the dashed output the tangent predicts.</figcaption>
+      </figure>
+      <figure class="stage">
+        <svg id="smallsig" viewBox="0 0 640 240" role="group" aria-label="The small-signal circuit of the chosen stage"></svg>
+        <figcaption>The stage as the signal sees it, with what the source and the load look into.</figcaption>
+      </figure>
+    </div>
+    <aside class="read">
+      <h2 id="r-name"></h2>
+      <div class="role" id="r-role"></div>
+      <h2>Bias</h2>
+      <p class="q1" id="r-vin"></p>
+      <p class="q2" id="r-vout"></p>
+      <p id="r-id"></p>
+      <p id="r-v"></p>
+      <p class="warn" id="r-warn"></p>
+      <h2 style="margin-top:14px">Small signal</h2>
+      <p id="r-gm"></p>
+      <p id="r-ro"></p>
+      <div class="big" id="r-av"></div>
+      <p class="q3" id="r-form"></p>
+      <p class="q3" id="r-slope"></p>
+      <p id="r-rin"></p>
+      <p id="r-rout"></p>
+      <p class="q4" id="r-room"></p>
+      <p class="q0" id="r-intr"></p>
+      <h2 style="margin-top:16px">The three stages</h2>
+      <table class="cmp">
+        <thead><tr><th>Stage</th><th>A_v</th><th>R_in</th><th>R_out</th></tr></thead>
+        <tbody>
+          <tr data-row="cs"><td>common source</td><td>−g_m (r_o ∥ R_D)</td><td>∞</td><td>r_o ∥ R_D</td></tr>
+          <tr data-row="cg"><td>common gate</td><td>(1 + g_m r_o) R_D/(R_D + r_o) ≈ g_m R_D</td><td>(r_o + R_D)/(1 + g_m r_o) ≈ 1/g_m</td><td>r_o ∥ R_D</td></tr>
+          <tr data-row="cd"><td>common drain</td><td>g_m (r_o ∥ R_S)/(1 + g_m (r_o ∥ R_S))</td><td>∞</td><td>1/g_m ∥ r_o ∥ R_S</td></tr>
+        </tbody>
+      </table>
+    </aside>
+  </div>
+
+  <section class="notes">
+    <div>
+      <h2>What should click</h2>
+      <p><b>The gain is a slope.</b> For a small signal the curve is as good as its tangent at the bias point, and the
+        tangent's slope is A_v. The small-signal formulas compute that slope without drawing the curve.</p>
+      <p><b>One transistor, three jobs.</b> Input on the gate and output at the drain: an inverting voltage amplifier.
+        Input on the source: the source moves all of V_GS, so the input looks like 1/g_m, a current buffer. Output at the
+        source: it follows the gate one V_GS lower, a voltage buffer with a gain just under 1.</p>
+      <p><b>Swing ends where saturation ends.</b> The output can move only while the transistor stays saturated. Cut-off
+        on one side and triode on the other bound the swing; more R_D steepens the curve but moves the bias toward
+        triode.</p>
+      <p><b>The ceiling is g_m·r_o.</b> With λ &gt; 0, even an infinite R_D gives only the intrinsic gain g_m·r_o.</p>
+    </div>
+    <div>
+      <h2>Predict, then try</h2>
+      <ul>
+        <li>Common source at its start. Double R_D. Does the gain double?
+          <details><summary>why</summary><span>Nearly: it goes from −6.57 to −11.2, short of double because r_o is in parallel. But the drain drops from 1.93 V to 1.02 V, and the room below shrinks from 1.44 V to 0.66 V.</span></details></li>
+        <li>Now make R_D 40 kΩ. What happens to the gain?
+          <details><summary>why</summary><span>It collapses to about −1. The same current would drop more than V_DD, so the drain falls into triode, where the transistor is no longer a current source. Gain from R_D only works while the stage stays saturated.</span></details></li>
+        <li>Switch to common gate. Which way does the output move when the input rises?
+          <details><summary>why</summary><span>Up. Raising the source lowers V_GS, so less current flows and R_D drops less: the gain is positive, about +7.7.</span></details></li>
+        <li>In common gate, what does the input source see?
+          <details><summary>why</summary><span>About 1/g_m, here 1.30 kΩ: the source moves the whole V_GS, so a small input voltage changes the current a lot. That low input resistance is why the stage is a current buffer.</span></details></li>
+        <li>Switch to the follower. Why is the gain below 1?
+          <details><summary>why</summary><span>The output is the source, which has to stay one V_GS below the gate; for v_GS to change at all, the source must lag the gate a little. A_v = g_m R/(1 + g_m R), here 0.85.</span></details></li>
+        <li>Set λ = 0 in common source. What sets the ceiling on the gain now?
+          <details><summary>why</summary><span>Nothing in the transistor: r_o is infinite and A_v = −g_m R_D. With λ back, the ceiling is the intrinsic gain g_m·r_o, reached only as R_D → ∞, where the swing is gone.</span></details></li>
+      </ul>
+      <h2>Where this shows up</h2>
+      <ul>
+        <li><a href="../../index.html#common-source">common source</a>: the inverting voltage amplifier, gain −g_m (r_o ∥ R_D).</li>
+        <li><a href="../../index.html#common-gate">common gate</a>: the input at the source, R_in ≈ 1/g_m: a current buffer.</li>
+        <li><a href="../../index.html#source-follower">source follower</a>: the output at the source, gain just under 1 and R_out ≈ 1/g_m: a voltage buffer.</li>
+        <li><a href="../../index.html#output-swing">output swing</a>: the swing ends where the transistor leaves saturation, at cut-off or at the edge of triode.</li>
+        <li><a href="../../index.html#intrinsic-gain">intrinsic gain</a>: g_m·r_o, the most one transistor gives.</li>
+        <li><a href="../../index.html#small-signal-analysis">small-signal analysis</a>: each stage's A_v, R_in and R_out come from the same model at the bias point.</li>
+        <li><a href="../../index.html#resistance-looking-in">resistance looking in</a>: the 1/g_m into a source and r_o ∥ R_D into a drain are the rules this tool shows at work.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<script id="maths">
+// ---- the maths: plain functions with no page behind them. scripts/test-tools.js runs this block on
+// its own and compares it with the check cases below, so nothing in here may touch the DOM.
+// One NMOS (body tied to source), three stages. p = { k, VT, lam, VDD, R, VB }.
+//   cs: v_IN on the gate, source grounded, R from VDD to the drain, output at the drain
+//   cg: gate at VB, v_IN on the source, R from VDD to the drain, output at the drain
+//   cd: v_IN on the gate, drain on VDD, R from the source to ground, output at the source
+var MATHS = (function () {
+  "use strict";
+
+  function drainCurrent(k, VT, lam, VGS, VDS) {
+    var vov = VGS - VT;
+    if (vov <= 0 || VDS <= 0) return 0;
+    if (VDS >= vov) return 0.5 * k * vov * vov * (1 + lam * VDS);
+    return k * (vov * VDS - 0.5 * VDS * VDS) * (1 + lam * VDS);
+  }
+  // V_GS and V_DS for an input and an output voltage
+  function terminals(stage, p, vin, vout) {
+    if (stage === "cs") return [vin, vout];
+    if (stage === "cg") return [p.VB - vin, vout - vin];
+    return [vin - vout, p.VDD - vout];
+  }
+  // resistor current minus transistor current at output v; falls as v rises
+  function mismatch(stage, p, vin, v) {
+    var t = terminals(stage, p, vin, v), I = drainCurrent(p.k, p.VT, p.lam, t[0], t[1]);
+    return stage === "cd" ? I - v / p.R : (p.VDD - v) / p.R - I;
+  }
+  function solveOut(stage, p, vin) {
+    var lo = stage === "cg" ? vin : 0, hi = p.VDD;
+    for (var i = 0; i < 100; i++) {
+      var mid = 0.5 * (lo + hi);
+      if (mismatch(stage, p, vin, mid) > 0) lo = mid; else hi = mid;
+    }
+    return 0.5 * (lo + hi);
+  }
+  function regionOf(VGS, VDS, VT) {
+    if (VGS - VT <= 0) return "cut-off";
+    return VDS >= VGS - VT ? "saturation" : "triode";
+  }
+  function bias(stage, p, vin) {
+    var vout = solveOut(stage, p, vin), t = terminals(stage, p, vin, vout);
+    return { vout: vout, ID: drainCurrent(p.k, p.VT, p.lam, t[0], t[1]), VGS: t[0], VDS: t[1], VOV: t[0] - p.VT,
+      region: regionOf(t[0], t[1], p.VT) };
+  }
+  function gm(k, VT, lam, VGS, VDS) {
+    var vov = VGS - VT;
+    if (vov <= 0) return 0;
+    if (VDS >= vov) return k * vov * (1 + lam * VDS);
+    return k * VDS * (1 + lam * VDS);
+  }
+  // exact slope of the saturated law: (1 + lam VDS)/(lam ID)
+  function ro(lam, ID, VDS) { return lam * ID === 0 ? Infinity : (1 + lam * VDS) / (lam * ID); }
+  function par(a, b) { if (a === Infinity) return b; if (b === Infinity) return a; return a * b / (a + b); }
+  function smallSignal(stage, g, r, R) {
+    if (stage === "cs") return { Av: -g * par(r, R), Rin: Infinity, Rout: par(r, R) };
+    if (stage === "cg") {
+      if (r === Infinity) return { Av: g * R, Rin: 1 / g, Rout: R };
+      return { Av: (1 + g * r) * R / (R + r), Rin: (r + R) / (1 + g * r), Rout: par(r, R) };
+    }
+    var rr = par(r, R);
+    return { Av: rr === Infinity ? 1 : g * rr / (1 + g * rr), Rin: Infinity, Rout: par(1 / g, rr) };
+  }
+  // the slope of the large-signal curve itself
+  function slope(stage, p, vin) {
+    var h = 1e-4;
+    return (solveOut(stage, p, vin + h) - solveOut(stage, p, vin - h)) / (2 * h);
+  }
+  // where the transistor is saturated, in v_IN, and the output range that maps to
+  function satRange(stage, p) {
+    var N = 600, xs = [], sat = [], i;
+    var reg = function (v) { return bias(stage, p, v).region; };
+    for (i = 0; i <= N; i++) { xs.push(p.VDD * i / N); sat.push(reg(xs[i]) === "saturation"); }
+    var first = sat.indexOf(true);
+    if (first < 0) return null;
+    var last = sat.lastIndexOf(true);
+    function edge(a, b) {
+      var inB = reg(b) === "saturation";
+      for (var n = 0; n < 60; n++) {
+        var m = 0.5 * (a + b);
+        if ((reg(m) === "saturation") === inB) b = m; else a = m;
+      }
+      return 0.5 * (a + b);
+    }
+    var lo = first === 0 ? xs[0] : edge(xs[first - 1], xs[first]);
+    var hi = last === N ? xs[N] : edge(xs[last + 1], xs[last]);
+    var o1 = solveOut(stage, p, lo), o2 = solveOut(stage, p, hi);
+    return { inLo: lo, inHi: hi, outLo: Math.min(o1, o2), outHi: Math.max(o1, o2) };
+  }
+  // how far the output can move down and up before the transistor leaves saturation
+  function room(stage, p, vin) {
+    var v = solveOut(stage, p, vin), s = satRange(stage, p);
+    return { down: v - s.outLo, up: s.outHi - v };
+  }
+  function intrinsicGain(g, r) { return g * r; }
+
+  return { drainCurrent: drainCurrent, solveOut: solveOut, bias: bias, gm: gm, ro: ro, smallSignal: smallSignal,
+    slope: slope, satRange: satRange, room: room, intrinsicGain: intrinsicGain };
+})();
+</script>
+<script type="application/json" id="check-cases">
+[
+  {"fn": "solveOut", "args": ["cs", {"k": 0.002, "VT": 0.5, "lam": 0.1, "VDD": 3, "R": 10000, "VB": 1.2}, 0.8], "expect": 1.926605504587156, "tol": 1e-12, "units": "V", "tag": "typical", "note": "common source, W/L = 10 (k = 2 mA/V²), λ = 0.1 /V, R_D = 10 kΩ, V_DD = 3 V, v_IN = 0.8 V: the drain sits at 1.93 V"},
+  {"fn": "bias", "args": ["cg", {"k": 0.002, "VT": 0.5, "lam": 0.1, "VDD": 3, "R": 10000, "VB": 1.2}, 0.3], "expect": {"vout": 1.248275862068966, "ID": 0.00017517241379310337, "VGS": 0.8999999999999999, "VDS": 0.948275862068966, "VOV": 0.3999999999999999, "region": "saturation"}, "tol": 1e-12, "units": "V, A", "tag": "typical", "note": "common gate, gate at 1.2 V, source driven to 0.3 V: V_GS = 0.9 V, I_D = 175 µA, the drain at 1.25 V, saturated"},
+  {"fn": "bias", "args": ["cd", {"k": 0.002, "VT": 0.5, "lam": 0.1, "VDD": 3, "R": 10000, "VB": 1.2}, 1.5], "expect": {"vout": 0.7521823602060467, "ID": 7.521823602060468e-05, "VGS": 0.7478176397939533, "VDS": 2.2478176397939533, "VOV": 0.24781763979395333, "region": "saturation"}, "tol": 1e-12, "units": "V, A", "tag": "typical", "note": "source follower, R_S = 10 kΩ, gate at 1.5 V: the source sits at 0.752 V, one V_GS = 0.748 V below the gate, with 75.2 µA"},
+  {"fn": "gm", "args": [0.002, 0.5, 0.1, 0.8, 1.926605504587156], "expect": 0.0007155963302752293, "tol": 1e-12, "units": "S", "tag": "typical", "note": "the common-source bias: g_m = k·V_OV·(1 + λV_DS) = 0.716 mS"},
+  {"fn": "ro", "args": [0.1, 0.00010733944954128442, 1.926605504587156], "expect": 111111.1111111111, "tol": 1e-09, "units": "Ω", "tag": "typical", "note": "the common-source bias: r_o = (1 + λV_DS)/(λI_D) = 111 kΩ; the usual 1/(λI_D) gives 93.2 kΩ"},
+  {"fn": "smallSignal", "args": ["cs", 0.0007155963302752293, 111111.1111111111, 10000], "expect": {"Av": -6.565103947479168, "Rin": "Infinity", "Rout": 9174.311926605504}, "tol": 1e-09, "units": "", "tag": "typical", "note": "common source: A_v = −g_m (r_o ∥ R_D) = −6.57, R_in infinite, R_out = r_o ∥ R_D = 9.17 kΩ"},
+  {"fn": "slope", "args": ["cs", {"k": 0.002, "VT": 0.5, "lam": 0.1, "VDD": 3, "R": 10000, "VB": 1.2}, 0.8], "expect": -6.565103846909448, "tol": 1e-07, "units": "", "tag": "typical", "note": "the slope of the large-signal curve at the same bias: −6.57, the small-signal gain"},
+  {"fn": "smallSignal", "args": ["cg", 0.000875862068965517, 62500.00000000003, 10000], "expect": {"Av": 7.688466111771699, "Rin": 1300.649551500155, "Rout": 8620.689655172413}, "tol": 1e-09, "units": "", "tag": "sign", "note": "common gate at its bias (g_m = 0.876 mS, r_o = 62.5 kΩ): A_v = +7.69, no inversion; R_in = 1.30 kΩ, near 1/g_m = 1.14 kΩ; R_out = 8.62 kΩ"},
+  {"fn": "slope", "args": ["cg", {"k": 0.002, "VT": 0.5, "lam": 0.1, "VDD": 3, "R": 10000, "VB": 1.2}, 0.3], "expect": 7.688466020832063, "tol": 1e-07, "units": "", "tag": "sign", "note": "the slope of the common-gate curve: positive, +7.69. Raising the source lowers V_GS, so less current and a higher drain"},
+  {"fn": "smallSignal", "args": ["cd", 0.0006070450520240971, 162830.42899914435, 10000], "expect": {"Av": 0.8511730499503954, "Rin": "Infinity", "Rout": 1402.1579569955995}, "tol": 1e-09, "units": "", "tag": "typical", "note": "source follower at its bias (g_m = 0.607 mS, r_o = 163 kΩ): A_v = 0.851, under 1; R_out = 1/g_m ∥ r_o ∥ R_S = 1.40 kΩ, near 1/g_m = 1.65 kΩ"},
+  {"fn": "intrinsicGain", "args": [0.0007155963302752293, 111111.1111111111], "expect": 79.51070336391436, "tol": 1e-09, "units": "", "tag": "typical", "note": "common-source bias: g_m·r_o = 79.5, the ceiling on this transistor's gain at this bias, whatever R_D"},
+  {"fn": "solveOut", "args": ["cs", {"k": 0.002, "VT": 0.5, "lam": 0.1, "VDD": 3, "R": 10000, "VB": 1.2}, 0.4], "expect": 3.0, "tol": 1e-12, "units": "V", "tag": "limit-zero", "note": "common source with v_IN = 0.4 V, below V_T = 0.5 V: no current, the drain sits at V_DD = 3 V"},
+  {"fn": "smallSignal", "args": ["cg", 0.001, "Infinity", 10000], "expect": {"Av": 10.0, "Rin": 1000.0, "Rout": 10000.0}, "tol": 1e-09, "units": "", "tag": "limit-infinity", "note": "common gate with r_o infinite, g_m = 1 mS, R_D = 10 kΩ: R_in = 1/g_m = 1 kΩ exactly, A_v = g_m·R_D = 10"},
+  {"fn": "smallSignal", "args": ["cd", 0.001, "Infinity", "Infinity"], "expect": {"Av": 1.0, "Rin": "Infinity", "Rout": 1000.0}, "tol": 1e-09, "units": "", "tag": "limit-infinity", "note": "follower with r_o and R_S both infinite: A_v = 1 exactly and R_out = 1/g_m = 1 kΩ"},
+  {"fn": "smallSignal", "args": ["cs", 0.001, 100000, "Infinity"], "expect": {"Av": -100.0, "Rin": "Infinity", "Rout": 100000.0}, "tol": 1e-09, "units": "", "tag": "limit-infinity", "note": "common source with R_D → ∞ (an ideal current-source load), g_m = 1 mS, r_o = 100 kΩ: the gain is the intrinsic gain, −100"},
+  {"fn": "solveOut", "args": ["cs", {"k": 0.002, "VT": 0.5, "lam": 0.1, "VDD": 3, "R": 10000, "VB": 1.2}, 1.1], "expect": 0.2892770587007364, "tol": 1e-12, "units": "V", "tag": "breaks", "note": "common source pushed 0.3 V above its 0.8 V bias: the tangent predicts 1.93 − 6.57·0.3 = −0.04 V, below ground; the curve says 0.289 V, in triode"},
+  {"fn": "satRange", "args": ["cs", {"k": 0.002, "VT": 0.5, "lam": 0.1, "VDD": 3, "R": 10000, "VB": 1.2}], "expect": {"inLo": 0.5, "inHi": 0.9892486763152886, "outLo": 0.48924867631528923, "outHi": 3.0}, "tol": 1e-09, "units": "V", "tag": "typical", "note": "common source: saturated for v_IN from 0.5 V to 0.989 V, where v_OUT = v_IN − V_T = 0.489 V; the output can sit anywhere from 0.489 V to 3 V"},
+  {"fn": "satRange", "args": ["cd", {"k": 0.002, "VT": 0.5, "lam": 0.1, "VDD": 3, "R": 10000, "VB": 1.2}], "expect": {"inLo": 0.5, "inHi": 3.0, "outLo": 1.1832913578315177e-30, "outHi": 2.0653902924432295}, "tol": 1e-09, "units": "V", "tag": "typical", "note": "follower: saturated over the whole input range above V_T, so its output runs from 0 V to 2.07 V at v_IN = 3 V"},
+  {"fn": "satRange", "args": ["cs", {"k": 0.002, "VT": 0.5, "lam": 0.1, "VDD": 3, "R": 100000, "VB": 1.2}], "expect": {"inLo": 0.5, "inHi": 0.6669297564687011, "outLo": 0.16692975646870178, "outHi": 3.0}, "tol": 1e-09, "units": "V", "tag": "other", "note": "common source with R_D = 100 kΩ: the saturated input window shrinks from 0.489 V wide to 0.167 V wide; the steeper curve crosses the same output range in a narrower input range"},
+  {"fn": "room", "args": ["cs", {"k": 0.002, "VT": 0.5, "lam": 0.1, "VDD": 3, "R": 10000, "VB": 1.2}, 0.8], "expect": {"down": 1.4373568282718667, "up": 1.073394495412844}, "tol": 1e-09, "units": "V", "tag": "typical", "note": "common source at v_IN = 0.8 V: the output can fall 1.44 V before triode and rise 1.07 V before it reaches V_DD, so a symmetric swing is at most 1.07 V"},
+  {"fn": "room", "args": ["cs", {"k": 0.002, "VT": 0.5, "lam": 0.1, "VDD": 3, "R": 20000, "VB": 1.2}, 0.8], "expect": {"down": 0.659760889107428, "up": 1.9830508474576276}, "tol": 1e-09, "units": "V", "tag": "typical", "note": "the same bias with R_D = 20 kΩ: the gain grows from −6.57 to −11.2, but the drain drops to 1.02 V and the room below shrinks from 1.44 V to 0.66 V"},
+  {"fn": "room", "args": ["cs", {"k": 0.002, "VT": 0.5, "lam": 0.1, "VDD": 3, "R": 40000, "VB": 1.2}, 0.8], "expect": {"down": -0.10013300396453068, "up": 2.8416545425002475}, "tol": 1e-09, "units": "V", "tag": "breaks", "note": "R_D = 40 kΩ at the same bias: the drain falls to 0.158 V, below the edge of saturation (the room below is negative): the transistor is in triode"},
+  {"fn": "slope", "args": ["cs", {"k": 0.002, "VT": 0.5, "lam": 0.1, "VDD": 3, "R": 40000, "VB": 1.2}, 0.8], "expect": -1.0059958667529845, "tol": 1e-07, "units": "", "tag": "breaks", "note": "there the curve's slope is only −1.01: more R_D bought less gain, because the transistor left saturation"}
+]
+</script>
+<script>
+(function () {
+  "use strict";
+
+  const NS = "http://www.w3.org/2000/svg";
+  function S(name, attrs, parent) {
+    const el = document.createElementNS(NS, name);
+    for (const k in attrs) el.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(el);
+    return el;
+  }
+  const $ = (id) => document.getElementById(id);
+  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+  const f1 = (v) => v.toFixed(1);
+  // three significant figures and an SI prefix: eng(9174, "Ω") is "9.17 kΩ"
+  function eng(v, unit) {
+    if (!isFinite(v)) return "∞" + (unit ? " " + unit : "");
+    if (Math.abs(v) < 1e-15) return "0 " + unit;
+    const pre = { "-15": "f", "-12": "p", "-9": "n", "-6": "µ", "-3": "m", "0": "", "3": "k", "6": "M", "9": "G" };
+    let e = clamp(Math.floor(Math.log10(Math.abs(v)) / 3) * 3, -15, 9);
+    let s = Math.abs(v / Math.pow(10, e)).toPrecision(3);
+    if (Number(s) >= 1000 && e < 9) { e += 3; s = Math.abs(v / Math.pow(10, e)).toPrecision(3); }
+    return (v < 0 ? "−" : "") + s + " " + pre[String(e)] + unit;
+  }
+  const sig = (v) => (v < 0 ? "−" : v > 0 ? "+" : "") + Number(Math.abs(v).toPrecision(3));
+  const num = (v, d) => v.toFixed(d).replace("-", "−");
+  function svgPoint(svg, e) {
+    const ctm = svg.getScreenCTM();
+    if (!ctm) return { x: 0, y: 0 };
+    const p = new DOMPoint(e.clientX, e.clientY).matrixTransform(ctm.inverse());
+    return { x: p.x, y: p.y };
+  }
+
+  // ------------------------------------------------------------ state
+
+  const UNCOX = 200e-6, VT = 0.5, VDD = 3, VB = 1.2;
+  const VIN0 = { cs: 0.8, cg: 0.3, cd: 1.5 };
+  const START = { stage: "cs", vin: 0.8, lR: 4, lW: 1, lam: 0.1, vhat: 0.05 };
+  const st = Object.assign({}, START);
+  const P = () => ({ k: UNCOX * Math.pow(10, st.lW), VT: VT, lam: st.lam, VDD: VDD, R: Math.pow(10, st.lR), VB: VB });
+  const NAMES = { cs: "Common source", cg: "Common gate", cd: "Common drain (source follower)" };
+  const ROLES = { cs: "voltage amplifier, inverting", cg: "current buffer: low R_in, high R_out",
+    cd: "voltage buffer: high R_in, low R_out, gain just under 1" };
+  const RNAME = () => (st.stage === "cd" ? "R_S" : "R_D");
+
+  function model() {
+    const p = P(), b = MATHS.bias(st.stage, p, st.vin);
+    const g = MATHS.gm(p.k, VT, p.lam, b.VGS, b.VDS), r = MATHS.ro(p.lam, b.ID, b.VDS);
+    return { p: p, b: b, gm: g, ro: r, ss: MATHS.smallSignal(st.stage, g, r, p.R), slope: MATHS.slope(st.stage, p, st.vin),
+      sat: MATHS.satRange(st.stage, p) };
+  }
+
+  // ------------------------------------------------------------ figure 1: the transfer curve
+
+  const F = $("transfer");
+  const X0 = 64, X1 = 604, Y0 = 20, Y1 = 320;
+  const X = (v) => X0 + (v / VDD) * (X1 - X0), Y = (v) => Y1 - (v / VDD) * (Y1 - Y0);
+  const shade = S("g", {}, F), grid = S("g", { class: "grid" }, F), labels = S("g", {}, F);
+  for (let v = 0; v <= VDD + 1e-9; v += 0.5) {
+    S("line", { x1: X(v), x2: X(v), y1: Y0, y2: Y1, class: v === 0 ? "axis" : "" }, grid);
+    S("line", { x1: X0, x2: X1, y1: Y(v), y2: Y(v), class: v === 0 ? "axis" : "" }, grid);
+    S("text", { x: X(v), y: Y1 + 16, "text-anchor": "middle", class: "tick" }, labels).textContent = num(v, 1);
+    S("text", { x: X0 - 6, y: Y(v) + 3.5, "text-anchor": "end", class: "tick" }, labels).textContent = num(v, 1);
+  }
+  S("text", { x: X1, y: Y1 + 34, "text-anchor": "end", class: "t1" }, F).textContent = "v_IN (V)";
+  S("text", { x: 4, y: 12, class: "t2" }, F).textContent = "v_OUT (V)";
+  const limits = S("g", {}, F);
+  S("clipPath", { id: "tr-clip" }, F).appendChild(S("rect", { x: X0, y: Y0, width: X1 - X0, height: Y1 - Y0 }));
+  const clip = S("g", { "clip-path": "url(#tr-clip)" }, F);
+  const proj = S("path", { class: "proj" }, clip);
+  const curve = S("path", { class: "curve" }, clip);
+  const tangent = S("line", { class: "tangent" }, clip);
+  const hit = S("rect", { class: "hit", x: X0, y: Y0, width: X1 - X0, height: Y1 - Y0 }, F);
+  const br = S("path", { class: "br1" }, F);
+  const dot = S("circle", { class: "bias", r: 6 }, F);
+  const handle = S("circle", { class: "handle", r: 16, tabindex: 0, role: "slider", "aria-label": "bias point v_IN" }, F);
+
+  function drawTransfer(m) {
+    const p = m.p;
+    // regions along v_IN, from the bias at 301 points
+    shade.textContent = "";
+    let runStart = 0, runReg = null;
+    const regs = [];
+    for (let i = 0; i <= 300; i++) regs.push(MATHS.bias(st.stage, p, (VDD * i) / 300).region);
+    for (let i = 0; i <= 301; i++) {
+      const r = i <= 300 ? regs[i] : null;
+      if (r !== runReg) {
+        if (runReg !== null) {
+          const a = X((VDD * runStart) / 300), b = X((VDD * (i - 1)) / 300);
+          if (runReg !== "saturation") S("rect", { class: "shade", x: f1(a), y: Y0, width: f1(Math.max(1, b - a)), height: Y1 - Y0 }, shade);
+          if (b - a > 40) S("text", { x: f1((a + b) / 2), y: Y0 + 12, "text-anchor": "middle", class: "tick" }, shade).textContent = runReg;
+        }
+        runStart = i; runReg = r;
+      }
+    }
+    // swing limits
+    limits.textContent = "";
+    if (m.sat) {
+      // each limit is named by what ends the saturated stretch there: cut-off, triode, or the end of the v_IN axis
+      [[m.sat.inLo, -1], [m.sat.inHi, 1]].forEach((end) => {
+        const vin = end[0], v = MATHS.solveOut(st.stage, p, vin);
+        const outside = vin <= 1e-9 || vin >= VDD - 1e-9 ? null : MATHS.bias(st.stage, p, vin + end[1] * 1e-3).region;
+        const what = outside === null ? "end of the v_IN axis" : "edge of " + outside;
+        S("line", { class: "limit", x1: X0, x2: X1, y1: f1(Y(v)), y2: f1(Y(v)) }, limits);
+        S("text", { x: X1 - 4, y: f1(Y(v) + (v > 2.85 ? 13 : -5)), "text-anchor": "end", class: "t4" }, limits).textContent = what + ", " + num(v, 2) + " V";
+      });
+    }
+    let d = "";
+    for (let i = 0; i <= 300; i++) { const v = (VDD * i) / 300; d += (i ? "L" : "M") + f1(X(v)) + " " + f1(Y(MATHS.solveOut(st.stage, p, v))); }
+    curve.setAttribute("d", d);
+    // tangent: 120 px each side along the line
+    const bx = X(st.vin), by = Y(m.b.vout), sx = (Y1 - Y0) / VDD / ((X1 - X0) / VDD) * m.slope;   // screen slope, y down
+    const len = 120 / Math.sqrt(1 + sx * sx);
+    tangent.setAttribute("x1", f1(bx - len)); tangent.setAttribute("y1", f1(by + sx * len));
+    tangent.setAttribute("x2", f1(bx + len)); tangent.setAttribute("y2", f1(by - sx * len));
+    // the input swing and its projections
+    let pr = "";
+    if (st.vhat > 0) [-1, 1].forEach((s) => {
+      const v = st.vin + s * st.vhat, o = MATHS.solveOut(st.stage, p, v);
+      pr += "M" + f1(X(v)) + " " + Y1 + "V" + f1(Y(o)) + "H" + X0;
+    });
+    proj.setAttribute("d", pr);
+    br.setAttribute("d", st.vhat > 0 ? "M" + f1(X(st.vin - st.vhat)) + " " + (Y1 + 22) + "v-4H" + f1(X(st.vin + st.vhat)) + "v4" : "");
+    dot.setAttribute("cx", f1(bx)); dot.setAttribute("cy", f1(by));
+    handle.setAttribute("cx", f1(bx)); handle.setAttribute("cy", f1(by));
+    handle.setAttribute("aria-valuetext", "v_IN = " + num(st.vin, 2) + " V");
+  }
+
+  // ------------------------------------------------------------ figure 2: the signals
+
+  const Wv = $("wave");
+  const WX0 = 64, WX1 = 604, WY = 122;
+  S("line", { class: "mid", x1: WX0, x2: WX1, y1: WY, y2: WY }, Wv);
+  const wIn = S("path", { class: "vin" }, Wv), wOut = S("path", { class: "vout" }, Wv), wLin = S("path", { class: "lin" }, Wv);
+  const lab = S("text", { x: WX0, y: 16, class: "t0" }, Wv);
+  const lIn = S("tspan", { class: "t1" }, lab), lOut = S("tspan", { class: "t2", dx: 18 }, lab), lLin = S("tspan", { class: "t3", dx: 18 }, lab);
+  S("text", { x: WX1, y: 212, "text-anchor": "end", class: "tick" }, Wv).textContent = "t, two periods";
+
+  function drawWave(m) {
+    const p = m.p, N = 240, outs = [];
+    let up = 0, down = 0;
+    for (let i = 0; i <= N; i++) {
+      const s = Math.sin((4 * Math.PI * i) / N), o = MATHS.solveOut(st.stage, p, st.vin + st.vhat * s) - m.b.vout;
+      outs.push(o); up = Math.max(up, o); down = Math.max(down, -o);
+    }
+    const lin = Math.abs(m.slope) * st.vhat;
+    const big = Math.max(st.vhat, up, down, lin, 1e-6), sc = 84 / big;
+    let a = "", b = "", c = "";
+    for (let i = 0; i <= N; i++) {
+      const s = Math.sin((4 * Math.PI * i) / N), x = f1(WX0 + ((WX1 - WX0) * i) / N), k = i ? "L" : "M";
+      a += k + x + " " + f1(WY - sc * st.vhat * s);
+      b += k + x + " " + f1(WY - sc * outs[i]);
+      c += k + x + " " + f1(WY - sc * m.slope * st.vhat * s);
+    }
+    wIn.setAttribute("d", a); wOut.setAttribute("d", b); wLin.setAttribute("d", c);
+    lIn.textContent = "v_in " + eng(st.vhat, "V");
+    lOut.textContent = "v_out +" + eng(up, "V") + " / −" + eng(down, "V");
+    lLin.textContent = "A_v·v̂ = " + eng(lin, "V");
+  }
+
+  // ------------------------------------------------------------ figure 3: the small-signal circuit
+
+  const C = $("smallsig");
+  const layer = S("g", {}, C);
+  const Wr = (d) => S("path", { class: "w", d: d }, layer);
+  const T = (x, y, cls, text, anchor) => { const t = S("text", { x: x, y: y, class: cls, "text-anchor": anchor || "start" }, layer); t.textContent = text; return t; };
+  const ground = (x, y) => Wr("M" + x + " " + y + "m-11 0h22m-16 5h10m-6 5h2");
+  function resistorV(x, y0, y1) {
+    let d = "M" + x + " " + y0 + "V" + (y0 + 8);
+    const n = 6, h = (y1 - y0 - 16) / n;
+    for (let i = 0; i < n; i++) d += "L" + (x + (i % 2 ? 6 : -6)) + " " + (y0 + 8 + h * (i + 0.5));
+    Wr(d + "L" + x + " " + (y1 - 8) + "V" + y1);
+  }
+  function sine(x, y) {
+    S("circle", { class: "src", cx: x, cy: y, r: 13 }, layer);
+    S("path", { d: "M" + (x - 7) + " " + y + "c3 -9 4 -9 7 0s4 9 7 0", fill: "none", stroke: "var(--c1)", "stroke-width": 1.6 }, layer);
+  }
+  const node = (x, y) => S("circle", { cx: x, cy: y, r: 2.6, fill: "var(--ink)" }, layer);
+  function arrowTo(x0, x1, y, text, anchor) {                // a horizontal arrow pointing at x1
+    const dir = x1 > x0 ? 1 : -1;
+    S("path", { class: "ar", d: "M" + x0 + " " + y + "H" + (x1 - dir * 6) }, layer);
+    S("path", { class: "hk", d: "M" + x1 + " " + y + "l" + (-dir * 7) + " -4v8Z" }, layer);
+    T(x0, y - 6, "t0", text, anchor);
+  }
+
+  function drawSmall(m) {
+    layer.textContent = "";
+    const ok = m.b.region === "saturation";
+    // the transistor's small-signal model sits in a dashed box: gate G, drain D, source S. No current enters G.
+    S("rect", { class: "model", x: 196, y: 36, width: 262, height: 124, rx: 4 }, layer);
+    T(200, 30, "tick", "transistor model");
+    Wr("M330 50V86M330 114V150");
+    S("circle", { class: "src3", cx: 330, cy: 100, r: 14 }, layer);
+    Wr("M330 92V104"); S("path", { class: "h3c", d: "M330 111l-4 -8h8Z" }, layer);
+    T(350, 96, "t3", "g_m·v_gs"); T(350, 112, "t3", eng(m.gm, "S"));
+    Wr("M330 50H410V64M410 136V150H330"); resistorV(410, 64, 136);
+    T(420, 104, "t0", "r_o " + eng(m.ro, "Ω"));
+    node(330, 50); node(330, 150); node(220, 100);
+    T(318, 48, "tick", "D", "end"); T(338, 144, "tick", "S"); T(212, 116, "tick", "G", "end");
+    // the controlling voltage: + at the gate, − at the source
+    T(230, 94, "t0", "+"); T(322, 145, "t0", "−", "end"); T(262, 128, "tick", "v_gs", "middle");
+    const Rname = RNAME() + " " + eng(m.p.R, "Ω");
+    const vout = (x, y) => { S("circle", { cx: x, cy: y, r: 4, fill: "var(--surface)", stroke: "var(--ink)" }, layer); T(x, y - 14, "t2", "v_out", "middle"); };
+    if (st.stage === "cs") {
+      Wr("M110 100H220"); sine(110, 130); T(92, 134, "t1", "v_in", "end"); Wr("M110 100V117M110 143V206"); ground(110, 206);
+      Wr("M330 150V206"); ground(330, 206);
+      Wr("M410 50H500V70M500 170V206"); resistorV(500, 70, 170); ground(500, 206); T(510, 124, "t0", Rname);
+      Wr("M500 50H586"); node(410, 50); node(500, 50); vout(590, 50);
+      arrowTo(150, 190, 92, "R_in = " + eng(m.ss.Rin, "Ω"));
+      arrowTo(636, 600, 72, "R_out = " + eng(m.ss.Rout, "Ω"), "end");
+    } else if (st.stage === "cg") {
+      // the gate is held still: wired to ground. v_in drives the source from below.
+      Wr("M220 100V206"); ground(220, 206);
+      Wr("M330 150V166H370V177M370 203V210"); sine(370, 190); T(388, 194, "t1", "v_in"); ground(370, 210);
+      Wr("M410 50H500V70M500 170V206"); resistorV(500, 70, 170); ground(500, 206); T(510, 124, "t0", Rname);
+      Wr("M500 50H586"); node(410, 50); node(500, 50); vout(590, 50);
+      arrowTo(236, 322, 172, "", "start"); T(236, 188, "t0", "R_in = " + eng(m.ss.Rin, "Ω"));
+      arrowTo(636, 600, 72, "R_out = " + eng(m.ss.Rout, "Ω"), "end");
+    } else {
+      Wr("M110 100H220"); sine(110, 130); T(92, 134, "t1", "v_in", "end"); Wr("M110 100V117M110 143V206"); ground(110, 206);
+      Wr("M330 50V30"); Wr("M319 30h22m-16 -5h10m-6 -5h2"); T(346, 26, "tick", "V_DD → ground");
+      Wr("M410 150H500V160M500 196V206"); resistorV(500, 160, 196); ground(500, 206); T(510, 182, "t0", Rname);
+      Wr("M500 150H586"); node(410, 150); node(500, 150); vout(590, 150);
+      arrowTo(150, 190, 92, "R_in = " + eng(m.ss.Rin, "Ω"));
+      arrowTo(636, 600, 124, "R_out = " + eng(m.ss.Rout, "Ω"), "end");
+    }
+    T(20, 232, ok ? "t3" : "warn", ok ? "A_v = " + sig(m.ss.Av) : "outside saturation: this circuit does not describe the stage");
+    if (!ok) layer.lastChild.setAttribute("fill", "var(--accent)");
+  }
+
+  // ------------------------------------------------------------ readouts
+
+  function readouts(m) {
+    const b = m.b, ok = b.region === "saturation", ss = m.ss;
+    $("r-name").textContent = NAMES[st.stage];
+    $("r-role").textContent = ROLES[st.stage];
+    $("r-vin").textContent = "V_IN = " + num(st.vin, 2) + " V" + (st.stage === "cg" ? " (gate at V_B = 1.2 V)" : "");
+    $("r-vout").textContent = "V_OUT = " + eng(b.vout, "V");
+    $("r-id").textContent = "I_D = " + eng(b.ID, "A");
+    $("r-v").textContent = "V_GS = " + eng(b.VGS, "V") + ", V_OV = " + eng(b.VOV, "V") + ", V_DS = " + eng(b.VDS, "V") + ", " + b.region;
+    $("r-warn").textContent = b.region === "triode" ? "triode: the small-signal model does not apply"
+      : b.region === "cut-off" ? "cut-off: no current" : "";
+    $("r-gm").textContent = "g_m = " + eng(m.gm, "S");
+    $("r-ro").textContent = "r_o = " + eng(m.ro, "Ω") + (m.p.lam > 0 && b.ID > 0 ? " (1/(λI_D) = " + eng(1 / (m.p.lam * b.ID), "Ω") + ")" : "");
+    const no = "not from this model outside saturation";
+    $("r-av").textContent = ok ? "A_v = " + sig(ss.Av) : "A_v: " + no;
+    $("r-form").textContent = ok ? { cs: "−g_m (r_o ∥ R_D)", cg: "(1 + g_m r_o) R_D/(R_D + r_o)", cd: "g_m (r_o ∥ R_S)/(1 + g_m (r_o ∥ R_S))" }[st.stage] : "";
+    $("r-slope").textContent = "slope of the curve = " + sig(m.slope);
+    $("r-rin").textContent = "R_in = " + (ok ? eng(ss.Rin, "Ω") : no);
+    $("r-rout").textContent = "R_out = " + (ok ? eng(ss.Rout, "Ω") : no);
+    if (m.sat) {
+      const r = MATHS.room(st.stage, m.p, st.vin);
+      $("r-room").textContent = "room below = " + eng(r.down, "V") + ", room above = " + eng(r.up, "V");
+    } else $("r-room").textContent = "never saturated: no swing";
+    if (st.stage === "cs" && ok && isFinite(m.ro)) {
+      const ig = MATHS.intrinsicGain(m.gm, m.ro);
+      $("r-intr").textContent = "intrinsic gain g_m·r_o = " + Number(ig.toPrecision(3)) + "; |A_v| is " + (100 * Math.abs(ss.Av) / ig).toPrecision(2) + " % of it";
+    } else $("r-intr").textContent = st.stage === "cs" && ok ? "λ = 0: r_o is infinite, no ceiling from the transistor" : "";
+    document.querySelectorAll("[data-row]").forEach((tr) => tr.classList.toggle("on", tr.dataset.row === st.stage));
+  }
+
+  function render() { const m = model(); drawTransfer(m); drawWave(m); drawSmall(m); readouts(m); }
+
+  // ------------------------------------------------------------ controls
+
+  function sync() {
+    document.querySelectorAll("[data-stage]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.stage === st.stage)));
+    $("sR").value = st.lR; $("sW").value = st.lW; $("sL").value = st.lam; $("sA").value = st.vhat;
+    $("lR").textContent = RNAME();
+    $("oR").textContent = RNAME() + " = " + eng(Math.pow(10, st.lR), "Ω");
+    $("oW").textContent = "W/L = " + Math.pow(10, st.lW).toPrecision(3);
+    $("oL").textContent = "λ = " + st.lam.toFixed(2) + " /V";
+    $("oA").textContent = "v̂ = " + eng(st.vhat, "V");
+  }
+  function change(fn) { fn(); sync(); render(); }
+  const setVin = (v) => change(() => { st.vin = clamp(Math.round(v * 100) / 100, 0, VDD); });
+
+  document.querySelectorAll("[data-stage]").forEach((b) => b.addEventListener("click", () => change(() => {
+    st.stage = b.dataset.stage; st.vin = VIN0[st.stage]; st.lR = 4;
+  })));
+  [["sR", "lR"], ["sW", "lW"], ["sL", "lam"], ["sA", "vhat"]].forEach((q) =>
+    $(q[0]).addEventListener("input", (e) => change(() => { st[q[1]] = Number(e.target.value); })));
+  $("reset").addEventListener("click", () => change(() => { Object.assign(st, START); }));
+
+  [handle, hit].forEach((el) => {
+    let on = false;
+    const at = (e) => ((svgPoint(F, e).x - X0) / (X1 - X0)) * VDD;
+    el.addEventListener("pointerdown", (e) => {
+      e.preventDefault(); on = true;
+      try { el.setPointerCapture(e.pointerId); } catch (_) { /* fine without capture */ }
+      handle.focus({ preventScroll: true });
+      setVin(at(e));
+    });
+    el.addEventListener("pointermove", (e) => { if (on) setVin(at(e)); });
+    el.addEventListener("pointerup", () => { on = false; });
+    el.addEventListener("pointercancel", () => { on = false; });
+  });
+  handle.addEventListener("keydown", (e) => {
+    const dir = { ArrowLeft: -1, ArrowDown: -1, ArrowRight: 1, ArrowUp: 1 }[e.key];
+    if (!dir) return;
+    e.preventDefault();
+    setVin(st.vin + dir * (e.shiftKey ? 0.1 : 0.01));
+  });
+
+  $("theme").addEventListener("click", () => {
+    const root = document.documentElement;
+    const dark = root.dataset.theme ? root.dataset.theme === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+    root.dataset.theme = dark ? "light" : "dark";
+    try { localStorage.setItem("momentos-theme", root.dataset.theme); } catch (_) { /* switched, just not remembered */ }
+  });
+
+  sync();
+  render();
+
+  // for checking the numbers from the console
+  window.TOOL = { st: st, model: model, render: render, set: (o) => change(() => Object.assign(st, o)) };
+})();
+</script>
+</body>
+</html>

@@ -109,8 +109,9 @@ The owner's record exists and EE 120 is fully mapped. The user can run `onboard 
     the plan's check cases are its output, pasted unchanged.
   - Done per plan: status `planned`, and `python3 scripts/check.py plans` passes.
   - Started 2026-11-17: `bode-plot`, `ideal-op-amp` and `rc-rl-step-response` are full plans with reference
-    scripts, and their topics have rubric entries. `small-signal-analysis` followed the same day. Next:
-    `resistance-looking-in`.
+    scripts, and their topics have rubric entries. `small-signal-analysis` followed the same day, then
+    `single-stage-amplifiers` (common source, common gate and common drain in one tool, at the owner's choice), which
+    replaces the `common-source` stub. Next: `resistance-looking-in`.
 
 - [ ] **5. The pilot.** Model: Opus runs it, a Sonnet subagent builds. Skill: `build-tool`.
   - Once one full plan exists, start a Sonnet subagent with only: "Work in the repo at <path>. Follow
@@ -188,3 +189,5 @@ The owner's record exists and EE 120 is fully mapped. The user can run `onboard 
   `circuits/amplifiers/ideal-op-amp.html`, `systems/rc-rl-step-response.html`, with 65 check cases between them
   and rubric entries for their seven topics.
   Then `circuits/amplifiers/small-signal-analysis.html` (20 check cases) and rubric entries for its four topics.
+  Then `circuits/amplifiers/single-stage-amplifiers.html` (23 check cases): common source, common gate and the
+  source follower in one tool, with rubric entries for its five topics.
