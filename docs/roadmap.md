@@ -92,6 +92,17 @@ The owner's record exists and EE 120 is fully mapped. The user can run `onboard 
     `gain-bandwidth-product`, `phase-margin`, `op-amp-model`); and `bode-plot`, shared with EE 120. Likely
     quiz-only: `planar-process`, `ac-power`, `electrons-and-holes`, `energy-bands`, `offset-voltage`,
     `op-amp-bias-current`, `amplifier-noise`.
+  - Started 2026-11-16: ten stubs for the circuits side (RC and RL, amplifiers, op-amps) are in `plans/`:
+    `thevenin-norton`, `rc-rl-step-response`, `bode-plot`, `small-signal-analysis`, `common-source`,
+    `resistance-looking-in`, `amplifier-two-port`, `current-mirror`, `ideal-op-amp`, `loop-gain`. They are stubs
+    only: no reference scripts, no numbers. Still without a stub on that side: the Miller effect and amplifier
+    frequency response (`miller-effect`, `amplifier-frequency-response`, `open-circuit-time-constants`,
+    `dominant-pole`), the differential pair (`differential-pair`, `common-and-differential-mode`, `half-circuit`,
+    `cmrr`), and everything on the devices side, starting with junction electrostatics (a stub was not written:
+    the owner moved to circuits first).
+  - Tool folders: a tool goes in the folder of its first topic on the map. So the RC and RL tool is under
+    `systems/` (its topics are `first-order-system` and `step-response`), and the amplifier tools are under
+    `circuits/amplifiers/`.
 
 - [ ] **4. Full plans, in backlog order.** Model: Opus, one or two plans per session. Skill: `write-plan`.
   - Expand the first `stub` row of `plans/BACKLOG.md`. The reference script in `plans/checks/` comes first, and

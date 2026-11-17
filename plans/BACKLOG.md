@@ -7,6 +7,16 @@ The order is fixed by the curricula: course tier first, then how heavily the pla
 
 | # | Plan | Status | Kind | Courses | Weight | Size |
 |---|---|---|---|---|---|---|
+| 1 | [Bode plot from poles and zeros](bode-plot.md) | stub | tool | EE 105, EE 120 | 37.198 | M |
+| 2 | [Ideal op-amp and the virtual short](ideal-op-amp.md) | stub | tool | EE 105, EE 120 | 29.626 | M |
+| 3 | [RC and RL step response](rc-rl-step-response.md) | stub | tool | EE 105, EE 120 | 21.964 | M |
+| 4 | [Bias point and small-signal analysis](small-signal-analysis.md) | stub | tool | EE 105 | 9.362 | M |
+| 5 | [Resistance looking in](resistance-looking-in.md) | stub | tool | EE 105 | 8.229 | L |
+| 6 | [Common-source stage: gain and swing](common-source.md) | stub | tool | EE 105 | 6.74 | M |
+| 7 | [Loop gain, bandwidth and phase margin](loop-gain.md) | stub | tool | EE 105 | 4.523 | M |
+| 8 | [Current mirror](current-mirror.md) | stub | tool | EE 105 | 2.244 | M |
+| 9 | [Amplifier as a two-port, and loading](amplifier-two-port.md) | stub | tool | EE 105 | 1.028 | S |
+| 10 | [Thévenin and Norton equivalents](thevenin-norton.md) | stub | tool | EE 105 | 0.5 | S |
 
 ## Concepts with no plan yet
 
@@ -38,11 +48,9 @@ Each needs a plan or a quiz-only plan. Heaviest first within each tier.
 | EE 120 | FIR and IIR (`fir-iir`) | 16.444 |
 | EE 120 | differential equations as systems (`differential-equations-lti`) | 16.18 |
 | EE 120 | linearity (`system-linearity`) | 15.691 |
-| EE 120 | feedback (`feedback`) | 15.218 |
 | EE 120 | sampling theorem (`sampling-theorem`) | 15.002 |
 | EE 120 | signals as sums of impulses (`impulse-decomposition`) | 14.528 |
 | EE 120 | even and odd parts (`even-odd-parts`) | 14.506 |
-| EE 120 | poles and zeros (`poles-and-zeros`) | 13.163 |
 | EE 120 | orthogonal bases for signals (`orthogonal-expansion`) | 13.061 |
 | EE 120 | signals as vectors (`signal-inner-product`) | 13.061 |
 | EE 120 | second-order systems (`second-order-system`) | 12.694 |
@@ -50,15 +58,12 @@ Each needs a plan or a quiz-only plan. Heaviest first within each tier.
 | EE 120 | impulse train (`impulse-train`) | 12.583 |
 | EE 120 | aliasing (`aliasing`) | 12.489 |
 | EE 120 | low-pass, high-pass, band-pass, notch (`filter-types`) | 12.277 |
-| EE 120 | first-order systems (`first-order-system`) | 12.249 |
 | EE 120 | Parseval's relation (`parseval`) | 11.905 |
 | EE 120 | time and bandwidth trade off (`time-bandwidth`) | 11.87 |
 | EE 120 | reconstruction (`reconstruction`) | 11.861 |
 | EE 120 | z-transform (`z-transform`) | 11.764 |
 | EE 120 | Fourier transform in two dimensions (`fourier-transform-2d`) | 10.307 |
 | EE 120 | time shift is a phase ramp (`ft-time-shift`) | 9.282 |
-| EE 105 | transfer function (`transfer-function`) | 8.811 |
-| EE 105 | ideal op-amp (`ideal-op-amp`) | 8.704 |
 | EE 105 | depletion region (`depletion-region`) | 8.509 |
 | EE 120 | amplitude modulation (`amplitude-modulation`) | 8.321 |
 | EE 120 | frequency shift (`ft-frequency-shift`) | 8.141 |
@@ -92,11 +97,7 @@ Each needs a plan or a quiz-only plan. Heaviest first within each tier.
 | EE 120 | rectangle and sinc (`rect-and-sinc`) | 4.644 |
 | EE 120 | quadrature modulation (`quadrature-modulation`) | 4.364 |
 | EE 105 | threshold voltage (`threshold-voltage`) | 4.285 |
-| EE 120 | step response (`step-response`) | 4.074 |
-| EE 105 | common-source stage (`common-source`) | 4.051 |
-| EE 105 | Bode plot (`bode-plot`) | 4.033 |
 | EE 120 | resonance (`resonance`) | 4.015 |
-| EE 105 | resistance looking in (`resistance-looking-in`) | 3.972 |
 | EE 105 | depletion capacitance (`depletion-capacitance`) | 3.938 |
 | EE 120 | energy and power (`energy-and-power`) | 3.878 |
 | EE 105 | mobility (`mobility`) | 3.833 |
@@ -107,32 +108,22 @@ Each needs a plan or a quiz-only plan. Heaviest first within each tier.
 | EE 105 | resistivity (`resistivity`) | 3.27 |
 | EE 120 | frequency response from the pole-zero plot (`pole-zero-geometry`) | 3.259 |
 | EE 105 | mass-action law (`mass-action-law`) | 3.182 |
-| EE 105 | MOS small-signal model (`mos-small-signal-model`) | 3.141 |
 | EE 105 | MOSFET regions (`mosfet-regions`) | 3.058 |
 | EE 120 | upsampling (`upsampling`) | 3.045 |
 | EE 105 | forward bias (`pn-forward-bias`) | 2.885 |
-| EE 105 | loop gain (`loop-gain`) | 2.841 |
 | EE 105 | Poisson's equation (`poisson-equation`) | 2.841 |
-| EE 105 | transconductance (`transconductance`) | 2.737 |
 | EE 105 | IC capacitor (`ic-capacitor`) | 2.682 |
 | EE 105 | body effect (`body-effect`) | 2.644 |
 | EE 120 | zero-input and zero-state response (`zero-input-zero-state`) | 2.478 |
 | EE 105 | square law (`square-law`) | 2.385 |
-| EE 105 | output swing (`output-swing`) | 2.282 |
 | EE 105 | sheet resistance (`sheet-resistance`) | 2.27 |
 | EE 105 | accumulation, depletion, inversion (`accumulation-depletion-inversion`) | 2.229 |
 | EE 105 | diffusion current (`diffusion-current`) | 2.177 |
-| EE 105 | operating point (`operating-point`) | 1.947 |
 | EE 105 | differential and common mode (`common-and-differential-mode`) | 1.859 |
 | EE 120 | windowing and leakage (`windowing`) | 1.83 |
 | EE 105 | MOS capacitor (`mos-capacitor`) | 1.818 |
-| EE 105 | current mirror (`current-mirror`) | 1.785 |
 | EE 120 | zero-order hold (`zero-order-hold`) | 1.712 |
-| EE 105 | gain-bandwidth trade (`gain-bandwidth-product`) | 1.682 |
-| EE 105 | source degeneration (`source-degeneration`) | 1.654 |
 | EE 105 | flatband voltage (`flatband-voltage`) | 1.641 |
-| EE 105 | common-gate stage (`common-gate`) | 1.55 |
-| EE 105 | small-signal analysis (`small-signal-analysis`) | 1.537 |
 | EE 105 | velocity saturation (`velocity-saturation`) | 1.518 |
 | EE 105 | Einstein relation (`einstein-relation`) | 1.5 |
 | EE 105 | intrinsic carriers (`intrinsic-carriers`) | 1.5 |
@@ -143,8 +134,6 @@ Each needs a plan or a quiz-only plan. Heaviest first within each tier.
 | EE 105 | pinch-off (`pinch-off`) | 1.088 |
 | EE 105 | phasors & impedance (`phasors-impedance`) | 1.074 |
 | EE 105 | channel-length modulation (`channel-length-modulation`) | 1.053 |
-| EE 105 | source follower (`source-follower`) | 1.053 |
-| EE 105 | amplifier two-port (`amplifier-two-port`) | 1.028 |
 | EE 105 | energy bands (`energy-bands`) | 1 |
 | EE 105 | minority-carrier profiles (`minority-carrier-diffusion`) | 1 |
 | EE 105 | triode region (`triode-region`) | 1 |
@@ -159,13 +148,9 @@ Each needs a plan or a quiz-only plan. Heaviest first within each tier.
 | EE 105 | diffusion capacitance (`diffusion-capacitance`) | 0.5 |
 | EE 105 | input bias current (`op-amp-bias-current`) | 0.5 |
 | EE 105 | non-ideal op-amp model (`op-amp-model`) | 0.5 |
-| EE 105 | Thévenin and Norton (`thevenin-norton`) | 0.5 |
 | EE 105 | multistage amplifiers (`multistage-amplifier`) | 0.423 |
-| EE 105 | intrinsic gain (`intrinsic-gain`) | 0.407 |
 | EE 105 | differential pair (`differential-pair`) | 0.354 |
-| EE 105 | current-source load (`current-source-load`) | 0.282 |
 | EE 105 | cascode mirror (`cascode-mirror`) | 0.229 |
-| EE 105 | diode-connected transistor (`diode-connected-transistor`) | 0.177 |
 | EE 105 | Early effect (`early-effect`) | 0.177 |
 | EE 105 | dominant pole (`dominant-pole`) | 0.169 |
 | EE 105 | current references (`current-reference`) | 0.151 |
@@ -183,7 +168,6 @@ Each needs a plan or a quiz-only plan. Heaviest first within each tier.
 | EE 105 | feedback and impedance (`feedback-and-impedance`) | 0 |
 | EE 105 | harmonic distortion (`harmonic-distortion`) | 0 |
 | EE 105 | small-signal capacitance (`incremental-capacitance`) | 0 |
-| EE 105 | phase margin (`phase-margin`) | 0 |
 | EE 105 | planar IC process (`planar-process`) | 0 |
 | EE 105 | potential and doping (`potential-vs-doping`) | 0 |
 | EE 105 | recombination and lifetime (`recombination-and-lifetime`) | 0 |
