@@ -1,0 +1,44 @@
+{
+  "topics": [
+    {
+      "id": "planar-process",
+      "title": "planar IC process",
+      "essence": "A chip is made from the top down: grow oxide, coat it with photoresist, expose a pattern through a mask, etch windows and implant dopants through them. The designer draws lengths and widths; the process fixes depths, thicknesses and doping.",
+      "check": "Why can an IC designer choose a resistor's length and width but not its thickness?"
+    },
+    {
+      "id": "sheet-resistance",
+      "title": "sheet resistance",
+      "essence": "A thin layer of fixed thickness has the same resistance across any square of it, whatever the square's size: R_□, in ohms per square. A resistor is R_□ times its number of squares, L/W.",
+      "check": "A 10 μm by 10 μm square of a layer measures 200 Ω edge to edge. What does a 1 μm square measure, and a strip 50 μm long and 5 μm wide?"
+    },
+    {
+      "id": "ic-capacitor",
+      "title": "IC capacitor",
+      "essence": "Two conducting layers with thin oxide between them form a parallel-plate capacitor, C = ε_ox·A/t_ox. The process fixes the oxide thickness, so the capacitance per area is fixed and the designer chooses only the area.",
+      "check": "You halve the oxide thickness and halve the plate area. What happens to the capacitance, and to the voltage it can safely hold?"
+    },
+    {
+      "id": "incremental-capacitance",
+      "title": "small-signal capacitance",
+      "essence": "When stored charge is not proportional to voltage, capacitance is the slope dQ/dV at the bias point. A small wiggle in voltage moves the charge by C times the wiggle, and C changes when the bias changes.",
+      "check": "A junction's charge grows as the square root of its reverse voltage. Does its small-signal capacitance rise or fall as the reverse bias grows, and why?"
+    },
+    {
+      "id": "transconductance",
+      "title": "transconductance",
+      "essence": "Transconductance g_m is how much output current changes per volt at the input: the slope at the bias point. A MOSFET gives g_m = 2I_D/V_OV and a BJT g_m = I_C/(kT/q), so at the same current the BJT gives more.",
+      "check": "A MOSFET with V_OV = 0.2 V and a BJT each carry 1 mA. Which has the larger g_m, and by about how much?"
+    }
+  ],
+  "links": [
+    { "from": "doping", "to": "planar-process", "why": "Implanting dopants through windows in the oxide is how doped regions get their shapes." },
+    { "from": "resistivity", "to": "sheet-resistance", "why": "Lump the resistivity and the fixed thickness into one number, R_□ = ρ/t." },
+    { "from": "planar-process", "to": "sheet-resistance", "why": "The process fixes the layer's thickness and doping, which is why only L/W is left to the designer." },
+    { "from": "gauss-law", "to": "ic-capacitor", "why": "The charge on one plate sets a uniform field across the oxide, and the voltage is that field times the thickness." },
+    { "from": "planar-process", "to": "ic-capacitor", "why": "Grown oxide is the dielectric, and its thickness is set by the process." },
+    { "from": "ic-capacitor", "to": "incremental-capacitance", "why": "For a plate capacitor the slope dQ/dV and the ratio Q/V agree; in a semiconductor they do not." },
+    { "from": "square-law", "to": "transconductance", "why": "Differentiate the square law: g_m = μC_ox(W/L)V_OV = 2I_D/V_OV." },
+    { "from": "bjt-operation", "to": "transconductance", "why": "Differentiate I_C = I_S·e^(qV_BE/kT): the slope is I_C/(kT/q) at any current." }
+  ]
+}

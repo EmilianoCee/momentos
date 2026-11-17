@@ -46,6 +46,12 @@
       "title": "AC power",
       "essence": "Only the part of the current that is in phase with the voltage delivers power on average.",
       "check": "The current through a capacitor is a quarter cycle ahead of its voltage. How much power does it take in on average?"
+    },
+    {
+      "id": "thevenin-norton",
+      "title": "Thévenin and Norton",
+      "essence": "Seen from two terminals, any linear circuit of sources and resistors is one source and one resistance: a voltage source in series or a current source in parallel. The resistance is what you see looking in with the sources turned off.",
+      "check": "A circuit's open-circuit voltage is 6 V and its short-circuit current is 2 mA. What load resistance takes the most power from it, and why that one?"
     }
   ],
   "links": [
@@ -61,6 +67,8 @@
     { "from": "ohms-law", "to": "phasors-impedance", "why": "Impedance is Ohm's law with complex numbers: V = ZI." },
     { "from": "nodal-analysis", "to": "phasors-impedance", "why": "Swap each R for a Z and every resistor-circuit method works for R, L and C at one frequency." },
     { "from": "phasors-impedance", "to": "ac-power", "why": "Power depends on the angle between the voltage phasor and the current phasor." },
-    { "from": "work", "to": "kvl", "why": "Voltage is work per unit charge. Around a closed loop the total work is zero." }
+    { "from": "work", "to": "kvl", "why": "Voltage is work per unit charge. Around a closed loop the total work is zero." },
+    { "from": "dividers", "to": "thevenin-norton", "why": "A divider seen from its output is a source V·R2/(R1 + R2) behind R1 ∥ R2." },
+    { "from": "system-linearity", "to": "thevenin-norton", "why": "Linearity makes the terminal behaviour a straight line, fixed by two points: the open-circuit voltage and the short-circuit current." }
   ]
 }

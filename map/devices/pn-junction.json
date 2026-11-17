@@ -1,0 +1,103 @@
+{
+  "topics": [
+    {
+      "id": "pn-equilibrium",
+      "title": "pn junction in equilibrium",
+      "essence": "Join p and n silicon and holes diffuse into the n side, electrons into the p side. They leave bare ions behind, whose field pushes carriers back. Equilibrium comes when that drift exactly cancels the diffusion, for each carrier separately.",
+      "check": "In a junction at equilibrium a large diffusion current of holes flows from the p side to the n side. Why is the net hole current still zero?"
+    },
+    {
+      "id": "depletion-region",
+      "title": "depletion region",
+      "essence": "Near the junction the free carriers are swept out, leaving bare ions: negative on the p side, positive on the n side. The depletion approximation treats them as two boxes of fixed charge with sharp edges, enough to draw the field and potential.",
+      "check": "Sketch the charge density, the field and the potential across a junction doped equally on both sides. Where is the field strongest, and why there?"
+    },
+    {
+      "id": "built-in-potential",
+      "title": "built-in potential",
+      "essence": "The potential step across a junction in equilibrium is the difference of the two sides' potentials: φ_bi = (kT/q)·ln(N_A·N_D/n_i²), about 0.6 to 1 V. A voltmeter cannot read it, because the metal contacts add steps that cancel it.",
+      "check": "You raise the doping on the n side tenfold. By how much does the built-in potential rise, and why can you not power anything from it?"
+    },
+    {
+      "id": "depletion-width",
+      "title": "depletion width",
+      "essence": "The charge on the two sides must balance, N_A·x_p = N_D·x_n, so the depletion region reaches deep into the lightly doped side and barely into the heavy one. Its width grows as the square root of the voltage across it.",
+      "check": "One side of a junction is doped 100 times more heavily than the other. Where does most of the depletion region lie, and what happens to its width when reverse bias quadruples the total potential across it?"
+    },
+    {
+      "id": "pn-reverse-bias",
+      "title": "reverse bias",
+      "essence": "Reverse bias adds to the built-in step, so diffusion over the barrier stops. Only minority carriers that wander to the edge are swept across, a tiny current that does not grow with voltage. The depletion region widens to hold the extra voltage.",
+      "check": "Doubling the reverse voltage across a diode barely changes its current. Why?"
+    },
+    {
+      "id": "depletion-capacitance",
+      "title": "depletion capacitance",
+      "essence": "A wider depletion region holds more fixed charge, so the junction stores charge like a capacitor whose plate spacing is the depletion width: C_j = εA/W. More reverse bias spreads the plates and lowers C_j, which is how a varactor tunes a circuit.",
+      "check": "You plot 1/C_j² against reverse voltage for a one-sided junction. What shape do you expect, and what does the point where the line meets the voltage axis tell you?"
+    },
+    {
+      "id": "pn-forward-bias",
+      "title": "forward bias",
+      "essence": "Forward bias lowers the barrier by V_D, so e^(qV_D/kT) times as many majority carriers cross and arrive as minority carriers on the far side. The minority density at each depletion edge rises by that factor; the rest of the story is diffusion.",
+      "check": "The forward voltage on a diode rises by 60 mV. By roughly what factor does the minority-carrier density at the depletion edges rise?"
+    },
+    {
+      "id": "minority-carrier-diffusion",
+      "title": "minority-carrier profiles",
+      "essence": "Injected minority carriers diffuse away from the junction and recombine as they go. In a long region they die out as e^(−x/L), with L = √(Dτ); in a region much shorter than L they fall in a straight line. The slope at the edge sets the current.",
+      "check": "A diode's n region is shortened from many diffusion lengths to a tenth of one. Does the current at a given voltage go up or down, and why?"
+    },
+    {
+      "id": "diode-iv",
+      "title": "diode I–V",
+      "essence": "A diode carries I = I_S(e^(qV_D/kT) − 1): ten times more current for every 60 mV forward, and a tiny −I_S in reverse. I_S is set by the doping, the area and how far the minority carriers diffuse.",
+      "check": "A diode carries 1 mA at 0.65 V. Roughly what voltage gives 10 mA, and what voltage gives 1 μA?"
+    },
+    {
+      "id": "diode-small-signal",
+      "title": "diode small-signal model",
+      "essence": "Bias a diode at a current I_D and a small wiggle in voltage sees the tangent of the exponential: a resistance r_d = (kT/q)/I_D, which is 26 Ω at 1 mA. More bias current means a smaller resistance.",
+      "check": "A diode is biased first at 0.1 mA and then at 10 mA. What is its small-signal resistance in each case, and how small must the signal be for the tangent to hold?"
+    },
+    {
+      "id": "diffusion-capacitance",
+      "title": "diffusion capacitance",
+      "essence": "A forward-biased diode stores minority charge in its neutral regions, about I_D·τ. Change the voltage and that charge must change too, which looks like a capacitance C_d ≈ I_D·τ/(kT/q) that grows with the bias current.",
+      "check": "Why does a forward-biased diode have a much larger capacitance than the same diode under reverse bias?"
+    },
+    {
+      "id": "photodiode-solar-cell",
+      "title": "photodiodes and solar cells",
+      "essence": "Light makes electron-hole pairs, and those born within a diffusion length of the junction are swept across: current flowing backwards through the diode. With a load attached the diode's forward current pushes back, and the cell delivers power.",
+      "check": "The short-circuit current of a lit solar cell doubles. Does its open-circuit voltage double too? Say why or why not."
+    }
+  ],
+  "links": [
+    { "from": "diffusion-current", "to": "pn-equilibrium", "why": "The concentration step at the junction drives the diffusion that starts everything." },
+    { "from": "drift-current", "to": "pn-equilibrium", "why": "The field of the bare ions drives the drift current that cancels the diffusion." },
+    { "from": "pn-equilibrium", "to": "depletion-region", "why": "The carriers that diffused away are what leave the ions bare." },
+    { "from": "poisson-equation", "to": "depletion-region", "why": "Integrate the boxes of charge once for the field and again for the potential." },
+    { "from": "potential-vs-doping", "to": "built-in-potential", "why": "The step is the n side's potential minus the p side's, each about 60 mV per decade from intrinsic." },
+    { "from": "depletion-region", "to": "built-in-potential", "why": "The bare charge of the depletion region is what holds up the potential step." },
+    { "from": "depletion-region", "to": "depletion-width", "why": "Equal and opposite charge in the two boxes fixes how far each one reaches." },
+    { "from": "built-in-potential", "to": "depletion-width", "why": "The total potential across the region sets the width, as its square root." },
+    { "from": "pn-equilibrium", "to": "pn-reverse-bias", "why": "Raise the barrier and the balance of drift and diffusion tips toward drift alone." },
+    { "from": "depletion-width", "to": "pn-reverse-bias", "why": "The extra reverse voltage needs more bare charge, so the region widens as √V." },
+    { "from": "depletion-width", "to": "depletion-capacitance", "why": "The width is the plate spacing, so C_j falls as 1/√V." },
+    { "from": "incremental-capacitance", "to": "depletion-capacitance", "why": "The charge grows as √V, not as V, so the capacitance is the slope at the bias point." },
+    { "from": "boltzmann-factor", "to": "pn-forward-bias", "why": "Lowering a barrier by V_D lets e^(qV_D/kT) times as many carriers over it." },
+    { "from": "pn-equilibrium", "to": "pn-forward-bias", "why": "Lower the barrier and diffusion outruns the drift that used to cancel it." },
+    { "from": "pn-forward-bias", "to": "minority-carrier-diffusion", "why": "The raised density at the depletion edge is the starting point of each profile." },
+    { "from": "diffusion-current", "to": "minority-carrier-diffusion", "why": "With no field in the neutral region, the minority current is pure diffusion, set by the slope." },
+    { "from": "recombination-and-lifetime", "to": "minority-carrier-diffusion", "why": "The lifetime sets how far carriers get before they recombine: L = √(Dτ)." },
+    { "from": "minority-carrier-diffusion", "to": "diode-iv", "why": "The edge slope of each profile, times qD, gives the current, and it scales with e^(qV_D/kT)." },
+    { "from": "pn-reverse-bias", "to": "diode-iv", "why": "The reverse branch is the small minority drift current, which is −I_S." },
+    { "from": "diode-iv", "to": "diode-small-signal", "why": "The slope of the exponential at I_D is I_D/(kT/q)." },
+    { "from": "operating-point", "to": "diode-small-signal", "why": "The tangent is taken at the bias point, so the resistance depends on the bias current." },
+    { "from": "minority-carrier-diffusion", "to": "diffusion-capacitance", "why": "The area under the minority profile is the stored charge, and it scales with the current." },
+    { "from": "incremental-capacitance", "to": "diffusion-capacitance", "why": "The stored charge depends exponentially on voltage, so only the slope dQ/dV acts as a capacitance." },
+    { "from": "diode-iv", "to": "photodiode-solar-cell", "why": "The cell's curve is the diode curve shifted down by the light-generated current." },
+    { "from": "minority-carrier-diffusion", "to": "photodiode-solar-cell", "why": "Only carriers born within about one diffusion length of the junction are collected." }
+  ]
+}

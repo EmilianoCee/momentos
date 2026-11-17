@@ -277,6 +277,24 @@
       "title": "from state space to transfer function",
       "essence": "H(s) = C(sI − A)⁻¹B + D. Every pole of H is an eigenvalue of A. An eigenvalue that cancels is a mode the input cannot excite or the output cannot see.",
       "check": "A has eigenvalues −1 and −3 but H(s) has a pole only at −1. What happened to the mode at −3?"
+    },
+    {
+      "id": "bode-plot",
+      "title": "Bode plot",
+      "essence": "On log axes each pole bends |H| down by 20 dB per decade, and each zero bends it up, from its corner frequency on. Draw the straight lines and add them. The phase of each moves by 90°, spread over the two decades around its corner.",
+      "check": "H(s) has poles at 100 rad/s and 10 krad/s and nothing else. What is the slope of |H| at 1 krad/s and above 100 krad/s, and roughly what is the phase at 1 krad/s?"
+    },
+    {
+      "id": "dominant-pole",
+      "title": "dominant pole",
+      "essence": "When one pole sits far below all the others, it alone sets the bandwidth, and the system acts first-order until well past that corner. The other poles matter only for phase, near where the gain has already fallen.",
+      "check": "An amplifier has poles at 1 Mrad/s and 100 Mrad/s. Estimate its −3 dB bandwidth. What happens to that estimate if the second pole moves down to 2 Mrad/s?"
+    },
+    {
+      "id": "rhp-zero",
+      "title": "right-half-plane zero",
+      "essence": "A zero at s = +z raises the magnitude just as a zero at −z does, but its phase goes the wrong way: it lags, like a pole. It appears when a signal sneaks forward through a side path and arrives with the opposite sign to the main one.",
+      "check": "A common-source stage has a zero at +g_m/C_gd. Far above that frequency, how does the phase compare with what the poles alone predict?"
     }
   ],
   "links": [
@@ -334,6 +352,14 @@
     { "from": "bibo-stability", "to": "internal-stability", "why": "Internal stability implies BIBO stability, but not the other way round." },
     { "from": "state-space-model", "to": "state-space-to-transfer-function", "why": "Transforming the state equations and eliminating the state gives H(s)." },
     { "from": "poles-and-zeros", "to": "state-space-to-transfer-function", "why": "The poles of H are among the eigenvalues of A." },
-    { "from": "rect-and-sinc", "to": "ideal-filters", "why": "The ideal low-pass filter is a rectangle in frequency, so its impulse response is a sinc." }
+    { "from": "rect-and-sinc", "to": "ideal-filters", "why": "The ideal low-pass filter is a rectangle in frequency, so its impulse response is a sinc." },
+    { "from": "poles-and-zeros", "to": "bode-plot", "why": "Each pole and each zero is one straight-line piece, and the plot is their sum in dB." },
+    { "from": "magnitude-and-phase", "to": "bode-plot", "why": "Logarithms turn the product of factors in |H| into a sum, so each factor is drawn on its own." },
+    { "from": "first-order-system", "to": "bode-plot", "why": "A single pole is the basic piece: flat, then −20 dB per decade after ω = 1/τ, with −45° at the corner." },
+    { "from": "first-order-system", "to": "dominant-pole", "why": "Below the other poles the system's response is that of one pole and one time constant." },
+    { "from": "bode-plot", "to": "dominant-pole", "why": "On the plot, the first corner is the bandwidth when the next one is a decade or more away." },
+    { "from": "poles-and-zeros", "to": "rhp-zero", "why": "It is an ordinary zero placed in the right half of the s-plane." },
+    { "from": "bode-plot", "to": "rhp-zero", "why": "Its magnitude line is drawn like any zero's; only its phase line flips sign." },
+    { "from": "common-source", "to": "rhp-zero", "why": "In a common-source stage C_gd carries the input straight to the output with the wrong sign, which puts a zero at +g_m/C_gd." }
   ]
 }

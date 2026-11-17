@@ -1,0 +1,283 @@
+{
+  "topics": [
+    {
+      "id": "operating-point",
+      "title": "operating point",
+      "essence": "An amplifier is a nonlinear device held at a fixed DC point, its bias or Q point, with a small signal riding on top. The bias fixes the region and every small-signal parameter, so it is found first, with all signals set to zero.",
+      "check": "A common-source stage's drain is biased only 0.1 V above the edge of saturation. What goes wrong when a large signal arrives, and which way should the bias move?"
+    },
+    {
+      "id": "small-signal-analysis",
+      "title": "small-signal analysis",
+      "essence": "Find the bias, swap each device for its tangent (its small-signal model), turn DC voltage sources into shorts and DC current sources into opens, and solve the linear circuit. It holds while signals are small: v_gs ≪ V_OV for a MOSFET, v_be ≪ kT/q for a BJT.",
+      "check": "Why does a DC supply rail become ground in the small-signal circuit?"
+    },
+    {
+      "id": "amplifier-two-port",
+      "title": "amplifier two-port",
+      "essence": "Any one-way amplifier can be drawn as an input resistance, a controlled source and an output resistance. The source and the load then form a divider at each end, so the gain you get is the ideal gain times two loading factors.",
+      "check": "A voltage amplifier has gain 100, R_in = 10 kΩ and R_out = 1 kΩ. You drive it from a 10 kΩ source and load it with 1 kΩ. What gain do you measure?"
+    },
+    {
+      "id": "resistance-looking-in",
+      "title": "resistance looking in",
+      "essence": "Three rules carry most amplifier analysis. Looking into a gate: infinite. Into a source: about 1/g_m. Into a drain: r_o, multiplied by about 1 + g_m·R_S when R_S sits under the source. A BJT follows the same rules, but its base looks like r_π, not an open.",
+      "check": "A transistor with g_m = 1 mS and r_o = 100 kΩ has 10 kΩ in its source lead. Roughly what resistance do you see looking into its drain?"
+    },
+    {
+      "id": "bias-and-coupling",
+      "title": "biasing and coupling",
+      "essence": "A huge capacitor is a short at signal frequencies and an open at DC. A huge inductor or resistor is the other way round. Together they let a DC bias and a signal share a node without disturbing each other.",
+      "check": "A 10 μF coupling capacitor feeds an amplifier input of 10 kΩ. Below roughly what frequency does it stop acting like a short?"
+    },
+    {
+      "id": "intrinsic-gain",
+      "title": "intrinsic gain",
+      "essence": "A transistor driving only its own r_o gives a gain g_m·r_o, the most one stage can deliver. For a MOSFET it is 2/(λV_OV), often 10 to 100. For a BJT it is V_A/(kT/q), often over 1000.",
+      "check": "You lower a MOSFET's overdrive while keeping its current fixed. What happens to its intrinsic gain, and what does that cost you?"
+    },
+    {
+      "id": "common-source",
+      "title": "common-source stage",
+      "essence": "Signal on the gate, output at the drain. The transistor turns v_in into a current g_m·v_in and the load turns it back into an inverted voltage: gain −g_m times the resistance at the drain. A BJT common-emitter stage is the same, with r_π at the input.",
+      "check": "A common-source stage has g_m = 2 mS, R_D = 10 kΩ and r_o = 10 kΩ. What is its gain, and what happens if R_D is replaced by an ideal current source?"
+    },
+    {
+      "id": "common-gate",
+      "title": "common-gate stage",
+      "essence": "Signal into the source, output at the drain, gate held still. The input looks like 1/g_m, so the stage takes in a current and hands it to a high-resistance drain almost unchanged: a current buffer. The BJT version is the common-base stage.",
+      "check": "A photodiode with 10 pF of capacitance drives a common-gate stage with g_m = 10 mS. Why is the bandwidth much wider than if it fed a 10 kΩ resistor directly?"
+    },
+    {
+      "id": "source-follower",
+      "title": "source follower",
+      "essence": "Signal on the gate, output at the source. The source follows the gate one V_GS lower, with a gain a little under 1. It presents a huge input resistance and drives its load from about 1/g_m: a voltage buffer. The emitter follower is the BJT version.",
+      "check": "A follower with g_m = 5 mS drives a 200 Ω load. Roughly what is its gain, and why is it well below 1?"
+    },
+    {
+      "id": "source-degeneration",
+      "title": "source degeneration",
+      "essence": "A resistor R_S under the source feeds back: more current lifts the source and shrinks v_gs. Transconductance falls to g_m/(1 + g_m·R_S), close to 1/R_S, so a resistor sets the gain; the output resistance rises by the same factor.",
+      "check": "A common-source stage with g_m = 10 mS and R_D = 5 kΩ gets R_S = 1 kΩ. What is the gain before and after, and why is the new gain more predictable?"
+    },
+    {
+      "id": "current-source-load",
+      "title": "current-source load",
+      "essence": "Gain is g_m times the resistance at the output, and a resistor big enough for high gain drops too much DC voltage. A saturated transistor passes the bias current with only a few hundred millivolts across it but looks like r_o to the signal.",
+      "check": "For a gain of 100 with g_m = 1 mS and 100 μA of bias, how much DC voltage would a resistor load drop, and how does a current-source load avoid that?"
+    },
+    {
+      "id": "current-mirror",
+      "title": "current mirror",
+      "essence": "A diode-connected transistor turns a reference current into a V_GS. A second transistor with the same V_GS carries the same current, scaled by the ratio of widths. Scale it by placing several unit devices side by side, never by changing L.",
+      "check": "A mirror's output device is four times wider than the reference device, and its drain sits at a higher voltage. Is the output current exactly 4·I_REF, above it or below it, and why?"
+    },
+    {
+      "id": "diode-connected-transistor",
+      "title": "diode-connected transistor",
+      "essence": "Tie the gate to the drain and the transistor is always saturated, setting its own V_GS for whatever current it carries. To a small signal it is a resistor of about 1/g_m.",
+      "check": "Why is a diode-connected NMOS always in saturation, whatever current you push through it?"
+    },
+    {
+      "id": "cascode-mirror",
+      "title": "cascode mirror",
+      "essence": "Stack a second transistor on the mirror's output device and it holds that device's drain still, so both its V_GS and its V_DS stay fixed. The output resistance rises by about g_m·r_o, at the cost of more headroom.",
+      "check": "A simple mirror has r_o = 100 kΩ and g_m = 1 mS. Roughly what output resistance does its cascode version give, and what does it cost?"
+    },
+    {
+      "id": "current-reference",
+      "title": "current references",
+      "essence": "Every mirror copies some reference. A resistor from the supply gives one that drifts with the supply, the temperature and the threshold. A self-biased loop of two mirrors can make a current that ignores the supply and ties g_m to a resistor.",
+      "check": "A reference current is set by a resistor from V_DD into a diode-connected NMOS. If V_DD rises by 10%, does the current rise by more or by less than 10%, and why?"
+    },
+    {
+      "id": "output-swing",
+      "title": "output swing",
+      "essence": "The output can only move while every transistor in its path stays in saturation and inside the supply rails. Each saturated device needs at least V_OV across it, so stacking devices for gain eats into the swing.",
+      "check": "A stage on a 1.8 V supply stacks four transistors between the rails, each needing V_OV = 0.2 V. Roughly how much room is left for the output to swing?"
+    },
+    {
+      "id": "amplifier-frequency-response",
+      "title": "amplifier bandwidth",
+      "essence": "Coupling and bypass capacitors become shorts only above some frequency, which sets the low corner. The transistors' own capacitances short the signal away at high frequency, which sets the high corner. Between them the gain is flat.",
+      "check": "A DC-coupled amplifier has no coupling capacitors. What does its frequency response look like at the low end?"
+    },
+    {
+      "id": "miller-effect",
+      "title": "Miller effect",
+      "essence": "A capacitor bridging an inverting gain −A has A + 1 times the input's swing across it, so from the input it looks (1 + A) times bigger. A small C_gd across a gain of −50 loads the input like a capacitor 51 times its size.",
+      "check": "Why does C_gs barely matter in a source follower, while C_gd matters a lot in a common-source stage?"
+    },
+    {
+      "id": "open-circuit-time-constants",
+      "title": "open-circuit time constants",
+      "essence": "Estimate bandwidth without finding any pole: for each capacitor, find the resistance it sees with every other capacitor open, and add the RC products. The −3 dB frequency is about 1/Σ(RC), and the largest term names the bottleneck.",
+      "check": "A stage has three open-circuit time constants: 1 ns, 10 ns and 2 ns. Estimate its −3 dB frequency, and say which capacitor to work on first."
+    },
+    {
+      "id": "multistage-amplifier",
+      "title": "multistage amplifiers",
+      "essence": "Cascade stages to multiply gain and to give each job its own stage: one for gain, one to buffer. The overall gain is the product of each stage's gain as loaded by the next, so a stage with high output resistance should drive one with high input resistance.",
+      "check": "A common-source stage with R_out = 10 kΩ must drive a 100 Ω load. Why does a source follower between them help so much?"
+    },
+    {
+      "id": "cascode",
+      "title": "cascode amplifier",
+      "essence": "Stack a common-gate transistor on a common-source one. The lower device sets g_m; the upper one shields its drain, raising the output resistance by about g_m·r_o, and the gain with it if the load is as good. The lower drain barely moves: little Miller effect.",
+      "check": "Why does the lower transistor's drain hardly move in a cascode, and what does that do to the effect of its C_gd?"
+    },
+    {
+      "id": "differential-pair",
+      "title": "differential pair",
+      "essence": "Two matched transistors share a fixed tail current. Whichever gate is higher takes more of it: near balance the split is linear in v_in1 − v_in2, and for large differences all the current goes one way. Moving both inputs together does not change the split.",
+      "check": "The tail current is 1 mA. Both gates are raised by 0.2 V together. What happens to each drain current, and to the shared source node?"
+    },
+    {
+      "id": "common-and-differential-mode",
+      "title": "differential and common mode",
+      "essence": "Two inputs are their average, the common mode, plus and minus half their difference, the differential mode. A symmetric circuit answers each part separately, so interference that hits both wires equally can be rejected while the difference is amplified.",
+      "check": "One input is at 1.02 V and the other at 0.98 V. What are the common-mode and differential-mode parts?"
+    },
+    {
+      "id": "half-circuit",
+      "title": "half-circuit",
+      "essence": "For a differential input the tail node stands still, so cut the circuit down the middle and ground the cut: each half is a common-source stage. For a common-mode input no current crosses the middle, so cut it there and leave it open, with 2R_tail in each half.",
+      "check": "In the differential half-circuit, why can the shared source node be treated as ground when no capacitor holds it there?"
+    },
+    {
+      "id": "cmrr",
+      "title": "CMRR",
+      "essence": "The common-mode rejection ratio is the wanted differential gain over the unwanted response to a common-mode input. A matched pair with an ideal tail rejects common mode completely; a finite tail resistance and mismatch let some through.",
+      "check": "The two load resistors of a differential pair differ by 1%. Why does a common-mode input now produce a differential output, and what does a larger tail resistance do about it?"
+    },
+    {
+      "id": "mirror-loaded-diff-pair",
+      "title": "mirror-loaded pair",
+      "essence": "Load a differential pair with a current mirror and the mirror copies one side's signal current across to the other, so both halves add at a single output. You keep the full differential gain, g_m(r_o2 ∥ r_o4), with a single-ended output.",
+      "check": "Taking the output from one drain of a resistor-loaded pair halves the gain. Why does a mirror load win the full gain back?"
+    },
+    {
+      "id": "offset-voltage",
+      "title": "offset voltage",
+      "essence": "Tie both inputs together and a real pair or op-amp still sits a little off balance, because its two halves are not identical. The offset V_OS is the DC input that would bring it back, and in a feedback circuit it is amplified like a signal.",
+      "check": "An op-amp with V_OS = 2 mV is used in a non-inverting amplifier with a gain of 101. What DC error appears at the output, and why does the gain matter?"
+    },
+    {
+      "id": "ideal-op-amp",
+      "title": "ideal op-amp",
+      "essence": "An op-amp's gain is so large that, with negative feedback, its output moves until its two inputs are at almost the same voltage: the virtual short. No current enters the inputs. Those two facts solve the standard circuits by inspection.",
+      "check": "In an inverting amplifier with 1 kΩ at the input and 10 kΩ in the feedback path, where does the input current go, and what is the gain?"
+    },
+    {
+      "id": "op-amp-model",
+      "title": "non-ideal op-amp model",
+      "essence": "A real op-amp has finite gain A, finite input resistance and some output resistance, and its gain falls with frequency from one dominant pole. The ideal results come back when the loop gain is large; the errors are about one over the loop gain.",
+      "check": "An op-amp with A = 1000 is wired as a unity-gain buffer. What is the closed-loop gain, and what would it be with A = 10⁶?"
+    },
+    {
+      "id": "feedback-and-impedance",
+      "title": "feedback and impedance",
+      "essence": "Feedback that senses the output voltage holds it steady, so the output impedance falls by 1 + T. Feedback that subtracts in series at the input pushes back on the source, so the input impedance rises by 1 + T. Both last only while the loop gain T is large.",
+      "check": "A follower op-amp has 100 Ω of output resistance open loop and a loop gain of 10⁴ at low frequency. What output resistance does a load see, and what happens near the frequency where the loop gain falls to 1?"
+    },
+    {
+      "id": "op-amp-bias-current",
+      "title": "input bias current",
+      "essence": "Bipolar inputs need a small DC base current. The op-amp draws it through whatever resistors sit at its inputs, and the drops look like an input voltage. A resistor equal to R_1 ∥ R_2 at the non-inverting input makes the two drops match and cancel.",
+      "check": "An inverting amplifier has R_2 = 100 kΩ in its feedback path and an input bias current of 100 nA. What output error do you expect, and what resistor at the + input removes most of it?"
+    },
+    {
+      "id": "slew-rate",
+      "title": "slew rate",
+      "essence": "Inside an op-amp a limited current charges a capacitor, so the output can change no faster than the slew rate SR = I_max/C. A big step comes out as a ramp, and a sine of amplitude V distorts above ω = SR/V, whatever the small-signal bandwidth.",
+      "check": "An op-amp slews at 1 V/μs. Can it reproduce a 1 MHz sine of 1 V amplitude? Of 0.1 V amplitude?"
+    },
+    {
+      "id": "harmonic-distortion",
+      "title": "harmonic distortion",
+      "essence": "A curved input–output characteristic adds harmonics: the square term of its Taylor series makes a component at 2ω and the cube term one at 3ω. An odd, symmetric curve, such as a differential pair's, cancels the even harmonics.",
+      "check": "Why does a balanced differential pair make almost no second harmonic, while a single common-source stage makes plenty?"
+    },
+    {
+      "id": "amplifier-noise",
+      "title": "amplifier noise",
+      "essence": "Every resistor and transistor adds a small random voltage with a flat spectrum, of thermal origin. It is quoted at the input per root hertz, so the noise you see grows as the square root of the bandwidth you keep.",
+      "check": "An amplifier's input noise is 10 nV/√Hz. How much noise do you see in a 1 MHz bandwidth, and what happens if you halve the bandwidth?"
+    }
+  ],
+  "links": [
+    { "from": "nodal-analysis", "to": "operating-point", "why": "Finding the bias is a nodal analysis with the signals off and the devices' DC laws in place of Ohm's law." },
+    { "from": "mosfet-regions", "to": "operating-point", "why": "The bias must keep each transistor in the region the small-signal model assumes, usually saturation." },
+    { "from": "operating-point", "to": "small-signal-analysis", "why": "Every small-signal parameter is a slope taken at the bias point." },
+    { "from": "system-linearity", "to": "small-signal-analysis", "why": "Linearising about a point makes the circuit linear, so superposition and impedances work again." },
+    { "from": "thevenin-norton", "to": "amplifier-two-port", "why": "The input is a Thévenin load on the source and the output is a Thévenin source driving the load." },
+    { "from": "dividers", "to": "amplifier-two-port", "why": "Loading at each port is a voltage divider: R_in against the source resistance, R_L against R_out." },
+    { "from": "mos-small-signal-model", "to": "resistance-looking-in", "why": "Each rule is the small-signal model solved with a test source on one terminal." },
+    { "from": "thevenin-norton", "to": "resistance-looking-in", "why": "Each rule is the Thévenin resistance of a terminal with the signal sources turned off." },
+    { "from": "phasors-impedance", "to": "bias-and-coupling", "why": "1/(jωC) is tiny at signal frequencies and infinite at DC; jωL is the reverse." },
+    { "from": "operating-point", "to": "bias-and-coupling", "why": "Coupling lets each stage keep its own bias point while passing the signal on." },
+    { "from": "transconductance", "to": "intrinsic-gain", "why": "g_m is the current made per volt of input." },
+    { "from": "channel-length-modulation", "to": "intrinsic-gain", "why": "r_o is the largest resistance that current can be pushed into without a separate load." },
+    { "from": "mos-small-signal-model", "to": "common-source", "why": "g_m·v_gs into the drain resistance, with the gate drawing nothing, is the whole stage." },
+    { "from": "resistance-looking-in", "to": "common-source", "why": "The gain is −g_m times what you see looking into the drain node: R_D ∥ r_o." },
+    { "from": "resistance-looking-in", "to": "common-gate", "why": "Looking into the source gives the low input resistance 1/g_m; looking into the drain gives the high output resistance." },
+    { "from": "mos-small-signal-model", "to": "common-gate", "why": "The same g_m·v_gs, with v_gs now set by the source moving." },
+    { "from": "resistance-looking-in", "to": "source-follower", "why": "Looking back into the source gives the follower's output resistance, about 1/g_m." },
+    { "from": "body-effect", "to": "source-follower", "why": "With the body grounded, g_mb·v_bs loads the output and the gain falls further below 1." },
+    { "from": "mos-small-signal-model", "to": "source-follower", "why": "v_gs is the input minus the output, so the current makes the output chase the input." },
+    { "from": "common-source", "to": "source-degeneration", "why": "Degeneration is a common-source stage with a resistor added under the source." },
+    { "from": "feedback", "to": "source-degeneration", "why": "The source resistor senses the output current and subtracts from the input: negative feedback with loop gain g_m·R_S." },
+    { "from": "common-source", "to": "current-source-load", "why": "The common-source gain −g_m·R_out is what the current-source load is there to raise." },
+    { "from": "channel-length-modulation", "to": "current-source-load", "why": "The load transistor's r_o is the resistance the signal sees." },
+    { "from": "diode-connected-transistor", "to": "current-mirror", "why": "The diode-connected device turns the reference current into the V_GS that the copy shares." },
+    { "from": "square-law", "to": "current-mirror", "why": "Equal V_GS means equal current per unit width, so the width ratio sets the copy ratio." },
+    { "from": "mosfet-regions", "to": "diode-connected-transistor", "why": "With V_DS = V_GS, the saturation test V_DS ≥ V_GS − V_T always passes." },
+    { "from": "transconductance", "to": "diode-connected-transistor", "why": "Its current changes by g_m per volt of its own voltage, and that is a conductance g_m." },
+    { "from": "current-mirror", "to": "cascode-mirror", "why": "A plain mirror copies V_GS but not V_DS; the cascode fixes both." },
+    { "from": "resistance-looking-in", "to": "cascode-mirror", "why": "The lower device's r_o acts as degeneration for the upper one, so R_out ≈ g_m·r_o·r_o." },
+    { "from": "current-mirror", "to": "current-reference", "why": "A mirror is only as steady as the reference current it copies." },
+    { "from": "mosfet-regions", "to": "output-swing", "why": "Each device must keep V_DS ≥ V_OV to stay saturated, and those minimums add up." },
+    { "from": "cascode-mirror", "to": "output-swing", "why": "Stacking for output resistance is exactly what costs swing." },
+    { "from": "bias-and-coupling", "to": "amplifier-frequency-response", "why": "The coupling capacitors stop being shorts at low frequency and set the low corner." },
+    { "from": "mos-capacitances", "to": "amplifier-frequency-response", "why": "The device capacitances short the signal at high frequency and set the high corner." },
+    { "from": "frequency-response", "to": "amplifier-frequency-response", "why": "An amplifier is an LTI system around its bias point, so it has an H(jω) like any other." },
+    { "from": "mos-capacitances", "to": "miller-effect", "why": "C_gd is the capacitor that bridges the gain of a common-source stage." },
+    { "from": "common-source", "to": "miller-effect", "why": "The common-source stage's large inverting gain is what multiplies C_gd." },
+    { "from": "dominant-pole", "to": "open-circuit-time-constants", "why": "The method estimates the dominant pole: the sum of time constants is the sum of 1/pole over all poles." },
+    { "from": "resistance-looking-in", "to": "open-circuit-time-constants", "why": "Each R is a resistance looking in across one capacitor's terminals." },
+    { "from": "amplifier-two-port", "to": "multistage-amplifier", "why": "Each stage is a two-port, and the next stage's R_in is its load." },
+    { "from": "source-follower", "to": "multistage-amplifier", "why": "A follower is the buffer stage: high R_in to the stage before, low R_out to the stage after." },
+    { "from": "common-gate", "to": "cascode", "why": "The upper device is a common-gate stage passing the lower device's current to the output." },
+    { "from": "common-source", "to": "cascode", "why": "The lower device is a common-source stage that sets the transconductance." },
+    { "from": "cascode-mirror", "to": "cascode", "why": "The same stacking that raised the mirror's output resistance raises the amplifier's." },
+    { "from": "square-law", "to": "differential-pair", "why": "The split of the tail current follows from two square laws with a shared source." },
+    { "from": "current-mirror", "to": "differential-pair", "why": "The tail current is usually a mirror's output." },
+    { "from": "even-odd-parts", "to": "common-and-differential-mode", "why": "Common and differential mode are the even and odd parts of the pair of inputs about the circuit's line of symmetry." },
+    { "from": "system-linearity", "to": "common-and-differential-mode", "why": "Superposition lets each part be solved alone and the answers added." },
+    { "from": "common-and-differential-mode", "to": "half-circuit", "why": "Each mode has its own symmetry, so each gets its own half." },
+    { "from": "common-source", "to": "half-circuit", "why": "The differential half is a plain common-source stage, so its gain is −g_m·R_D." },
+    { "from": "differential-pair", "to": "half-circuit", "why": "The pair's symmetry is what lets it be cut in two." },
+    { "from": "half-circuit", "to": "cmrr", "why": "The common-mode half, with 2R_tail under its source, gives the common-mode gain." },
+    { "from": "common-and-differential-mode", "to": "cmrr", "why": "CMRR compares the circuit's answers to the two modes." },
+    { "from": "differential-pair", "to": "mirror-loaded-diff-pair", "why": "The pair makes two opposite signal currents; the mirror lets both reach one output." },
+    { "from": "current-mirror", "to": "mirror-loaded-diff-pair", "why": "The mirror flips one side's current and adds it to the other." },
+    { "from": "current-source-load", "to": "mirror-loaded-diff-pair", "why": "The output sees two r_o's in parallel, as in any current-source load." },
+    { "from": "differential-pair", "to": "offset-voltage", "why": "Mismatch between the two halves of the input pair is where offset comes from." },
+    { "from": "ideal-op-amp", "to": "offset-voltage", "why": "Model the real op-amp as an ideal one with V_OS in series with an input." },
+    { "from": "feedback", "to": "ideal-op-amp", "why": "The virtual short is what huge gain plus negative feedback does: the error shrinks toward zero." },
+    { "from": "nodal-analysis", "to": "ideal-op-amp", "why": "KCL at the inverting input, with no current into the op-amp, gives the gain." },
+    { "from": "ideal-op-amp", "to": "op-amp-model", "why": "The model adds back what the ideal op-amp leaves out, one imperfection at a time." },
+    { "from": "amplifier-two-port", "to": "op-amp-model", "why": "The op-amp is a voltage two-port with R_in, gain A and R_out." },
+    { "from": "loop-gain", "to": "op-amp-model", "why": "Every error in the ideal result scales as 1/(1 + T)." },
+    { "from": "loop-gain", "to": "feedback-and-impedance", "why": "Both impedance changes are factors of 1 + T." },
+    { "from": "amplifier-two-port", "to": "feedback-and-impedance", "why": "Feedback changes the amplifier's R_in and R_out, the two resistances of its two-port." },
+    { "from": "ideal-op-amp", "to": "op-amp-bias-current", "why": "With the virtual short, the bias current's path through the resistors can be traced by inspection." },
+    { "from": "bjt-operation", "to": "op-amp-bias-current", "why": "A bipolar input transistor needs base current I_C/β to stay on." },
+    { "from": "op-amp-model", "to": "slew-rate", "why": "The dominant-pole capacitor inside the op-amp is the one that slews." },
+    { "from": "differential-pair", "to": "slew-rate", "why": "A large input steers the whole tail current one way, and that fixed current is what charges the capacitor." },
+    { "from": "differential-pair", "to": "harmonic-distortion", "why": "The pair's S-shaped transfer curve is odd, so its even harmonics cancel." },
+    { "from": "square-law", "to": "harmonic-distortion", "why": "A single square law has a square term, which makes the second harmonic." },
+    { "from": "boltzmann-factor", "to": "amplifier-noise", "why": "Thermal noise carries kT of power per hertz, the same kT that sets the thermal voltage." },
+    { "from": "amplifier-two-port", "to": "amplifier-noise", "why": "Noise is referred to the input by dividing the output noise by the gain." }
+  ]
+}

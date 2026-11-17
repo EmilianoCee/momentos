@@ -27,7 +27,7 @@ The owner's record exists and EE 120 is fully mapped. The user can run `onboard 
 
 ## Tier 1: EE 120 and EE 105
 
-- [ ] **1. EE 105 topics and curriculum.** Model: Opus. Skills: `add-topic`, `add-course`. Local inputs: yes.
+- [x] **1. EE 105 topics and curriculum.** Model: Opus. Skills: `add-topic`, `add-course`. Local inputs: yes.
   - Read `course-survey/ee105-reader-ch*.md` (concept notes per chapter, with the tags used below),
     `course-survey/ee105-hw-notes.md` and `course-survey/ee105-exams-notes.md`.
   - Add about 90 topics in `devices/semiconductors`, `devices/pn-junction`, `devices/mos` and
@@ -47,6 +47,23 @@ The owner's record exists and EE 120 is fully mapped. The user can run `onboard 
     PMOS is written with source-high quantities (`V_SG`, `V_SD`, `|V_T|`).
   - Done: the file curricula/ee-105.json exists, every concept points at a map topic, `python3 scripts/learner.py report`
     shows an EE 105 section, and the map reads well in a headless Chrome screenshot of `devices`.
+  - Done 2026-11-16. 108 concepts in 16 units (89 at target 4, 19 at 3); 94 new topics, 14 reused. Read these
+    before extending it:
+    - The concept-to-tag map lives in the local helper `course-survey/build-ee105-curriculum.py` (untracked, like
+      the survey). It writes curricula/ee-105.json from the survey tables with the same target and flag rules as
+      `assessed.py`, and lets a concept narrow its tagged rows by a regex on the survey's note column
+      (`depletion-width`, `triode-region`, `minority-carrier-diffusion`, `early-effect`,
+      `diode-connected-transistor`) or list items by hand (`rhp-zero`). Edit the map there and re-run it rather
+      than editing the JSON by hand. `--report` prints weights and any unused tag.
+    - One topic per idea across MOS and BJT: `common-source` also covers common emitter, `common-gate` common
+      base, `source-follower` the emitter follower, `source-degeneration` emitter degeneration. Their survey tags
+      are merged.
+    - The thermal voltage is written kT/q on the map, never V_T, which is the MOS threshold (see `docs/map.md`).
+    - New folders: `devices/bjt` (added to the table in `docs/map.md`), `systems/control` (loop gain, the
+      gain-bandwidth trade, phase margin; EE 128 will add to it), `physics/thermodynamics`
+      (`boltzmann-factor`), `physics/electromagnetism` (`gauss-law`, `poisson-equation`).
+    - Twelve concepts are `reader-only` (no survey item): they are the connecting ideas (`boltzmann-factor`,
+      `incremental-capacitance`, `potential-vs-doping`, `phase-margin`, ...). Keep them at target 3.
 
 - [ ] **2. Rubrics for the 30 heaviest EE 120 and EE 105 topics.** Model: Opus writes five as models; Sonnet
   subagents write the rest from them. Skill: none (format in `docs/quiz-protocol.md`, "The topic's rubric").
@@ -54,7 +71,7 @@ The owner's record exists and EE 120 is fully mapped. The user can run `onboard 
     topic, concretely), `missteps` (the usual first wrong steps), `seeds` (one per kind: `predict`, `explain`,
     `limit`, `transfer`; set-ups to vary, never exam text).
   - Take the order from `plans/BACKLOG.md`, "Concepts with no plan yet".
-  - Done: `python3 scripts/check.py rubrics` names fewer than 140 tier 1 topics without descriptors.
+  - Done: `python3 scripts/check.py rubrics` names fewer than 150 tier 1 topics without descriptors (179 before).
 
 - [ ] **3. Plan stubs for every tier 1 concept.** Model: Opus. Skill: `write-plan` (stubs only: steps 1 to 4).
   - A stub is `plans/<id>.md` with the `json plan` block (`status` `stub`, no `checks`) and four short sections:
@@ -63,6 +80,18 @@ The owner's record exists and EE 120 is fully mapped. The user can run `onboard 
   - Group closely linked concepts into one tool (for example `ft-time-shift`, `ft-frequency-shift` and
     `ft-duality` into one Fourier-properties tool). Expect about 60 tools and 25 quiz-only plans for the two courses.
   - Done: "Concepts with no plan yet" in `plans/BACKLOG.md` lists no EE 120 or EE 105 concept.
+  - Suggested EE 105 groups (one tool each): junction electrostatics (`depletion-region`, `depletion-width`,
+    `built-in-potential`, `poisson-equation`, `pn-reverse-bias`, `depletion-capacitance`); diode currents
+    (`pn-forward-bias`, `minority-carrier-diffusion`, `diode-iv`, `diode-small-signal`); carriers and transport
+    (`doping`, `mass-action-law`, `drift-current`, `diffusion-current`, `resistivity`); the MOS capacitor
+    (`accumulation-depletion-inversion`, `flatband-voltage`, `threshold-voltage`, `mos-cv-curve`); MOSFET I–V
+    (`mosfet-regions`, `triode-region`, `pinch-off`, `square-law`, `channel-length-modulation`, `pmos`);
+    single-stage amplifiers (`common-source`, `common-gate`, `source-follower`, `source-degeneration`,
+    `resistance-looking-in`); mirrors (`current-mirror`, `cascode-mirror`, `output-swing`); the differential pair
+    (`differential-pair`, `common-and-differential-mode`, `half-circuit`, `cmrr`); op-amp feedback (`loop-gain`,
+    `gain-bandwidth-product`, `phase-margin`, `op-amp-model`); and `bode-plot`, shared with EE 120. Likely
+    quiz-only: `planar-process`, `ac-power`, `electrons-and-holes`, `energy-bands`, `offset-voltage`,
+    `op-amp-bias-current`, `amplifier-noise`.
 
 - [ ] **4. Full plans, in backlog order.** Model: Opus, one or two plans per session. Skill: `write-plan`.
   - Expand the first `stub` row of `plans/BACKLOG.md`. The reference script in `plans/checks/` comes first, and
@@ -134,3 +163,6 @@ The owner's record exists and EE 120 is fully mapped. The user can run `onboard 
 - 2026-11-15: architecture, schemas and checkers; the instruction layer and nine skills; the mastery framework,
   quiz protocol and pre-prompts; the course registry (35 courses, checked against the 2026-27 catalog); the
   EE 120 curriculum and its 82 concepts on the map; the owner's record.
+- 2026-11-16: the EE 105 curriculum (108 concepts) and 94 new map topics; `bode-plot` added to EE 120. Fixed a
+  map bug: the filters overwrote each topic's list of outgoing links, so clicking a topic or opening
+  `index.html#<id>` threw an error.

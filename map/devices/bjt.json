@@ -1,0 +1,40 @@
+{
+  "topics": [
+    {
+      "id": "bjt-operation",
+      "title": "BJT action",
+      "essence": "A forward-biased base–emitter junction injects electrons into a base much thinner than their diffusion length. Nearly all reach the reverse-biased collector and are swept across: I_C = I_S·e^(qV_BE/kT). Holes sent back to the emitter make I_B = I_C/β.",
+      "check": "Why does a thinner base, or a more heavily doped emitter, raise β?"
+    },
+    {
+      "id": "bjt-regions",
+      "title": "BJT regions",
+      "essence": "Forward active: base–emitter on, base–collector off, V_BE ≈ 0.7 V and I_C = βI_B. Saturation: both junctions on, V_CE ≈ 0.1 V and I_C < βI_B. Cut-off: neither on. A BJT's saturation is like a MOSFET's triode, not its saturation.",
+      "check": "A BJT with β = 100 gets I_B = 10 μA, but its collector circuit can pass at most 0.5 mA. Which region is it in, and roughly what is V_CE?"
+    },
+    {
+      "id": "early-effect",
+      "title": "Early effect",
+      "essence": "Raising V_CE widens the collector depletion region into the base and thins it, so I_C creeps up with V_CE. The output curves extrapolate back to −V_A on the voltage axis, and r_o = V_A/I_C.",
+      "check": "Lighter base doping lets the collector's depletion region eat further into the base. Does the Early voltage V_A go up or down?"
+    },
+    {
+      "id": "bjt-small-signal-model",
+      "title": "hybrid-π model",
+      "essence": "Around its bias point a BJT is a source g_m·v_π from collector to emitter, with g_m = I_C/(kT/q) and r_o across it. Unlike a MOSFET its base draws current: r_π = β/g_m from base to emitter, so source resistance divides the signal.",
+      "check": "A BJT with β = 100 is biased at 1 mA. What are g_m and r_π, and what happens to r_π if the bias current doubles?"
+    }
+  ],
+  "links": [
+    { "from": "pn-forward-bias", "to": "bjt-operation", "why": "The emitter junction is a forward-biased diode injecting minority carriers into the base." },
+    { "from": "minority-carrier-diffusion", "to": "bjt-operation", "why": "A base far shorter than the diffusion length gives a straight-line profile, and almost no carriers recombine on the way." },
+    { "from": "bjt-operation", "to": "bjt-regions", "why": "Which of the two junctions is forward biased decides the region." },
+    { "from": "diode-iv", "to": "bjt-regions", "why": "V_BE ≈ 0.7 V and V_CE,sat ≈ 0.1 V are diode on-voltages and their difference." },
+    { "from": "bjt-operation", "to": "early-effect", "why": "I_C is set by the base width, so anything that thins the base raises it." },
+    { "from": "depletion-width", "to": "early-effect", "why": "The collector depletion region widens as √V and takes its width out of the base." },
+    { "from": "channel-length-modulation", "to": "early-effect", "why": "The same idea in the MOSFET: the effective length shrinks as the output voltage grows." },
+    { "from": "transconductance", "to": "bjt-small-signal-model", "why": "g_m = I_C/(kT/q) is the slope of the exponential at the bias current." },
+    { "from": "early-effect", "to": "bjt-small-signal-model", "why": "The Early voltage sets r_o = V_A/I_C." },
+    { "from": "mos-small-signal-model", "to": "bjt-small-signal-model", "why": "Same controlled source and r_o; the new part is r_π, because the base draws current." }
+  ]
+}

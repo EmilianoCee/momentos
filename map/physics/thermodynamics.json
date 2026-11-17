@@ -1,0 +1,13 @@
+{
+  "topics": [
+    {
+      "id": "boltzmann-factor",
+      "title": "Boltzmann factor",
+      "essence": "In thermal equilibrium the share of particles with at least an energy E more than the rest falls as e^(−E/kT). Lower a barrier by qV and e^(qV/kT) times as many carriers clear it. At 300 K, kT/q ≈ 26 mV.",
+      "check": "A barrier for electrons is lowered by 60 mV at room temperature. Roughly how many times more electrons get over it, and why does it not matter how high the barrier was to begin with?"
+    }
+  ],
+  "links": [
+    { "from": "work", "to": "boltzmann-factor", "why": "Raising a barrier by V costs each charge qV of work, and the exponent counts that work in units of kT." }
+  ]
+}

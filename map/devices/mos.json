@@ -1,0 +1,135 @@
+{
+  "topics": [
+    {
+      "id": "mos-capacitor",
+      "title": "MOS capacitor",
+      "essence": "A gate sits on thin oxide over a silicon body. The gate side is an ordinary plate, but the body side can answer with piled-up holes, with bare acceptor ions, or with a thin sheet of electrons, depending on the gate voltage.",
+      "check": "An NMOS capacitor is built on a p-type body. Why is it called NMOS?"
+    },
+    {
+      "id": "flatband-voltage",
+      "title": "flatband voltage",
+      "essence": "Gate and body are different materials, so even with them shorted a built-in potential bends the bands at the surface. The flatband voltage V_FB is the gate voltage that cancels it: no charge, no field, flat bands.",
+      "check": "An n+ polysilicon gate sits on a p-type body. Is V_FB positive or negative, and why?"
+    },
+    {
+      "id": "accumulation-depletion-inversion",
+      "title": "accumulation, depletion, inversion",
+      "essence": "Raise the gate of an NMOS capacitor. Below V_FB holes pile up at the surface. Above it they are pushed away, leaving bare acceptors. Above V_T electrons gather in a thin surface layer, and they, not a deeper depletion, answer any further gate charge.",
+      "check": "Sketch the charge in the body with the gate well above threshold. Why does the depletion region stop widening once the electron layer forms?"
+    },
+    {
+      "id": "threshold-voltage",
+      "title": "threshold voltage",
+      "essence": "Threshold is the gate voltage at which the surface is as strongly n-type as the body is p-type: the surface potential has moved by 2|φ_p|. V_T = V_FB + 2|φ_p| + Q_dep/C_ox, the last term being the oxide voltage needed to hold the depletion charge.",
+      "check": "You raise the body doping of an NMOS. Does V_T go up or down, and which of its three parts change?"
+    },
+    {
+      "id": "mos-cv-curve",
+      "title": "MOS C–V curve",
+      "essence": "Capacitance is the slope of gate charge against gate voltage. In accumulation it is C_ox. In depletion the depletion layer adds a capacitor in series and C dips. In inversion, measured slowly, the electrons sit right at the surface and C returns to C_ox.",
+      "check": "Measured at high frequency, an NMOS capacitor's C–V curve stays low in inversion instead of returning to C_ox. Why?"
+    },
+    {
+      "id": "mosfet-structure",
+      "title": "MOSFET structure",
+      "essence": "A MOSFET is a MOS capacitor with an n+ source and drain on either side of the gate. Below threshold they are two back-to-back diodes and nothing flows. Above it the electron layer joins them: a channel whose charge the gate controls.",
+      "check": "Why must the body of an NMOS sit at the lowest voltage in the circuit?"
+    },
+    {
+      "id": "mosfet-regions",
+      "title": "MOSFET regions",
+      "essence": "Cut-off when V_GS < V_T. Triode when the channel reaches all the way to the drain, V_DS < V_GS − V_T. Saturation when it does not, V_DS ≥ V_GS − V_T. Find the region before using any equation.",
+      "check": "An NMOS with V_T = 0.5 V has its gate at 1.2 V, source at 0 V and drain at 0.5 V. Which region is it in, and how far must the drain rise to change that?"
+    },
+    {
+      "id": "triode-region",
+      "title": "triode region",
+      "essence": "With a small V_DS the channel is a uniform sheet of charge C_ox(V_GS − V_T) per area, and the transistor is a resistor set by the gate. As V_DS grows the channel thins toward the drain and the current bends over: I_D = μC_ox(W/L)(V_GS − V_T − V_DS/2)V_DS.",
+      "check": "With V_DS = 10 mV you double V_GS − V_T. What happens to the channel's resistance, and why?"
+    },
+    {
+      "id": "pinch-off",
+      "title": "pinch-off",
+      "essence": "When V_DS reaches V_GS − V_T, the gate-to-channel voltage at the drain end falls to threshold and the channel charge there vanishes. Any extra drain voltage drops across a short high-field gap that carriers shoot through, so the current stops growing.",
+      "check": "If the channel charge is zero at the drain end, how can current still flow there?"
+    },
+    {
+      "id": "square-law",
+      "title": "square law",
+      "essence": "In saturation the gate alone sets the current: I_D = ½μC_ox(W/L)(V_GS − V_T)². Call V_OV = V_GS − V_T the overdrive. Double it and the current quadruples.",
+      "check": "A transistor in saturation carries 100 μA with V_OV = 0.2 V. What current flows at V_OV = 0.3 V? What if instead you keep V_OV = 0.2 V and double W?"
+    },
+    {
+      "id": "channel-length-modulation",
+      "title": "channel-length modulation",
+      "essence": "Above saturation the pinch-off point creeps toward the source, so the channel gets shorter and the current rises slowly with V_DS: I_D(1 + λV_DS). Seen by a small signal this is the output resistance r_o = 1/(λI_D).",
+      "check": "Two transistors carry the same current, and one is twice as long as the other. Which has the larger r_o, and why?"
+    },
+    {
+      "id": "pmos",
+      "title": "PMOS",
+      "essence": "A PMOS is an NMOS with every polarity flipped: holes in an n-type body, with the source on the high side. Write it with V_SG, V_SD, I_SD and |V_T| and every NMOS equation and curve carries over unchanged.",
+      "check": "A PMOS with |V_T| = 0.5 V has its source at 3 V, gate at 1.5 V and drain at 1.5 V. Which region is it in?"
+    },
+    {
+      "id": "body-effect",
+      "title": "body effect",
+      "essence": "The body is a second, weaker gate. Raise the source above the body and the depletion layer must hold more charge, so V_T rises. For small signals this is a second current source g_mb·v_bs, typically 10 to 30% of g_m·v_gs for the same voltage.",
+      "check": "In a source follower with its body grounded, the source moves up and down with the output. Why does that pull the gain further below 1?"
+    },
+    {
+      "id": "mos-small-signal-model",
+      "title": "MOS small-signal model",
+      "essence": "Around its bias point a saturated MOSFET is a current source g_m·v_gs from drain to source, with r_o across it and no current into the gate. That one picture replaces the square law in every small-signal problem.",
+      "check": "In the small-signal model, why is there no resistor between gate and source?"
+    },
+    {
+      "id": "mos-capacitances",
+      "title": "MOSFET capacitances",
+      "essence": "In saturation the channel hangs from the source end, so most gate capacitance is C_gs ≈ ⅔WLC_ox plus overlap, while C_gd is only overlap and fringe. The source and drain junctions add C_sb and C_db to the body. These set every high-frequency limit.",
+      "check": "Why is C_gd much smaller than C_gs in saturation, yet often the more harmful of the two in a common-source stage?"
+    },
+    {
+      "id": "transit-frequency",
+      "title": "transit frequency",
+      "essence": "Drive the gate with a current and short the drain: the current gain g_m/(jω(C_gs + C_gd)) falls to 1 at f_T ≈ g_m/(2π(C_gs + C_gd)). It is the transistor's own speed limit, set by how long a carrier takes to cross the channel.",
+      "check": "You double a transistor's width at the same overdrive. What happens to g_m, to C_gs and to f_T?"
+    }
+  ],
+  "links": [
+    { "from": "ic-capacitor", "to": "mos-capacitor", "why": "It is a plate capacitor across the oxide, except that one plate is a semiconductor." },
+    { "from": "depletion-region", "to": "mos-capacitor", "why": "Holes pushed away from the surface leave a depletion layer of bare acceptors, as on one side of a junction." },
+    { "from": "built-in-potential", "to": "flatband-voltage", "why": "Gate and body form a contact of two materials with different potentials, like the two sides of a junction." },
+    { "from": "potential-vs-doping", "to": "flatband-voltage", "why": "The body's potential is (kT/q)·ln(N_A/n_i) below intrinsic, and V_FB is the gate's potential minus that." },
+    { "from": "mos-capacitor", "to": "accumulation-depletion-inversion", "why": "The three regimes are the three ways the body plate can answer the gate's charge." },
+    { "from": "poisson-equation", "to": "accumulation-depletion-inversion", "why": "Each regime's charge fixes the field and potential through the oxide and the body." },
+    { "from": "boltzmann-factor", "to": "accumulation-depletion-inversion", "why": "Electron density at the surface grows exponentially with surface potential, so past threshold electrons are far cheaper than deeper depletion." },
+    { "from": "accumulation-depletion-inversion", "to": "threshold-voltage", "why": "Threshold is the boundary between depletion and inversion." },
+    { "from": "flatband-voltage", "to": "threshold-voltage", "why": "V_FB is the first of the three parts: the voltage just to reach flat bands." },
+    { "from": "potential-vs-doping", "to": "threshold-voltage", "why": "Inverting the surface means moving it from φ_p to −φ_p, a swing of 2|φ_p|." },
+    { "from": "accumulation-depletion-inversion", "to": "mos-cv-curve", "why": "Each regime puts the body's answering charge at a different depth, which sets the capacitance." },
+    { "from": "incremental-capacitance", "to": "mos-cv-curve", "why": "The C–V curve is the slope dQ/dV of a charge that is not proportional to voltage." },
+    { "from": "accumulation-depletion-inversion", "to": "mosfet-structure", "why": "The channel is the inversion layer, now with a source and drain to feed it electrons." },
+    { "from": "pn-reverse-bias", "to": "mosfet-structure", "why": "The source and drain junctions with the body must stay reverse biased to keep the device isolated." },
+    { "from": "mosfet-structure", "to": "mosfet-regions", "why": "Whether the channel exists, and whether it reaches the drain, defines the regions." },
+    { "from": "threshold-voltage", "to": "mosfet-regions", "why": "V_GS against V_T decides whether there is a channel at all." },
+    { "from": "mosfet-regions", "to": "triode-region", "why": "Triode is the region where the channel reaches the drain." },
+    { "from": "drift-current", "to": "triode-region", "why": "The current is the channel charge per length times its drift velocity μV_DS/L." },
+    { "from": "triode-region", "to": "pinch-off", "why": "The triode channel thins toward the drain, and pinch-off is where it thins to nothing." },
+    { "from": "pinch-off", "to": "square-law", "why": "Past pinch-off the current is frozen at its value at V_DS = V_GS − V_T." },
+    { "from": "triode-region", "to": "square-law", "why": "Put V_DS = V_GS − V_T into the triode equation and the square law comes out." },
+    { "from": "pinch-off", "to": "channel-length-modulation", "why": "The pinch-off point moves toward the source as V_DS grows, shortening the channel." },
+    { "from": "square-law", "to": "channel-length-modulation", "why": "The current is proportional to 1/L, so a shorter effective channel means more current." },
+    { "from": "mosfet-regions", "to": "pmos", "why": "The same region tests, written with V_SG, V_SD and |V_T|." },
+    { "from": "threshold-voltage", "to": "body-effect", "why": "Source-to-body voltage adds to the depletion charge term of V_T." },
+    { "from": "mos-small-signal-model", "to": "body-effect", "why": "g_mb·v_bs is a second controlled source beside g_m·v_gs." },
+    { "from": "transconductance", "to": "mos-small-signal-model", "why": "g_m is the source in the middle of the model." },
+    { "from": "channel-length-modulation", "to": "mos-small-signal-model", "why": "λ gives the r_o in parallel with the source." },
+    { "from": "small-signal-analysis", "to": "mos-small-signal-model", "why": "The model is the transistor's tangent at its bias point, as the method requires." },
+    { "from": "mos-small-signal-model", "to": "mos-capacitances", "why": "The capacitances are added around the same g_m source and r_o." },
+    { "from": "depletion-capacitance", "to": "mos-capacitances", "why": "C_sb and C_db are the source and drain junctions' depletion capacitances." },
+    { "from": "mos-capacitances", "to": "transit-frequency", "why": "C_gs + C_gd is the capacitance the input current has to charge." },
+    { "from": "transconductance", "to": "transit-frequency", "why": "g_m is the current the device delivers for the voltage that charging builds." }
+  ]
+}

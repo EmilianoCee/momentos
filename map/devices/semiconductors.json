@@ -1,0 +1,105 @@
+{
+  "topics": [
+    {
+      "id": "energy-bands",
+      "title": "energy bands",
+      "essence": "In a crystal an electron's energy can only lie in allowed bands. In a semiconductor the valence band is full and the conduction band empty, with a gap E_g between (1.12 eV in silicon). Only electrons lifted across the gap, and their holes, carry current.",
+      "check": "Why does a perfectly pure silicon crystal at 0 K carry no current at all, even with a field across it?"
+    },
+    {
+      "id": "electrons-and-holes",
+      "title": "electrons and holes",
+      "essence": "Break one bond and you get two carriers: a free electron, and a vacancy that neighbouring electrons hop into, so the vacancy moves like a positive particle. The hole is the bookkeeping for a band that is almost full.",
+      "check": "A field points to the right inside a piece of silicon. Which way do the electrons drift, which way do the holes drift, and which way does each one's current point?"
+    },
+    {
+      "id": "intrinsic-carriers",
+      "title": "intrinsic carriers",
+      "essence": "In pure silicon every free electron leaves a hole, so n = p = n_i, about 10¹⁰ cm⁻³ at 300 K. Heat lifts more electrons across the gap, so n_i grows exponentially with temperature: roughly doubling every 9 K near room temperature.",
+      "check": "Why does a semiconductor conduct better when it is heated, while a metal conducts worse?"
+    },
+    {
+      "id": "mass-action-law",
+      "title": "mass-action law",
+      "essence": "Generation and recombination balance in equilibrium, so the product np stays at n_i² whatever the doping. Push n up a millionfold with donors and p falls a millionfold.",
+      "check": "Silicon is doped with 10¹⁶ cm⁻³ donors. How many holes per cm³ are there at 300 K, and why are there fewer than in pure silicon?"
+    },
+    {
+      "id": "doping",
+      "title": "doping",
+      "essence": "Phosphorus has one electron more than its four bonds need and gives it away; boron has one fewer and takes one, leaving a hole. A few dopant atoms per million set which carrier dominates. With both kinds present, the larger wins by the difference.",
+      "check": "Silicon holds 10¹⁷ cm⁻³ boron and 4×10¹⁶ cm⁻³ phosphorus. Is it n-type or p-type, and roughly how many majority carriers per cm³ does it have?"
+    },
+    {
+      "id": "potential-vs-doping",
+      "title": "potential and doping",
+      "essence": "A doped region's potential, measured from intrinsic silicon, is (kT/q)·ln(n/n_i): about 60 mV per decade of doping, positive for n-type and negative for p-type. Every built-in potential is a difference of two of these.",
+      "check": "An n-type region has 10¹⁶ cm⁻³ electrons and n_i = 10¹⁰ cm⁻³. Without a calculator, what is its potential relative to intrinsic silicon?"
+    },
+    {
+      "id": "mobility",
+      "title": "mobility",
+      "essence": "A carrier is pushed by the field, then knocked off course by a collision about every tenth of a picosecond. Mobility μ is its average drift speed per unit field. Dopant ions and a hotter lattice scatter more and lower μ. Electrons outrun holes 2 to 3 times.",
+      "check": "You raise the doping of a silicon bar tenfold. Why does its resistivity fall by less than ten times?"
+    },
+    {
+      "id": "drift-current",
+      "title": "drift current",
+      "essence": "A field adds a small average velocity v = μE on top of fast random motion. Current density is charge times density times that velocity, J = q(nμ_n + pμ_p)E. Electrons and holes drift opposite ways, but both currents point along E.",
+      "check": "Two bars of the same size carry the same current. One has twice the electron density. How does its electron drift velocity compare with the other's?"
+    },
+    {
+      "id": "resistivity",
+      "title": "resistivity",
+      "essence": "A doped bar's resistivity is set almost entirely by its majority carriers: ρ ≈ 1/(qNμ) for a doping N. The minority carriers are outnumbered by many decades and add nothing you could measure.",
+      "check": "A bar is doped with 10¹⁶ cm⁻³ donors. Why can you ignore its holes when you work out its resistance, even though they drift too?"
+    },
+    {
+      "id": "diffusion-current",
+      "title": "diffusion current",
+      "essence": "Random motion alone carries particles from where they are crowded to where they are sparse, with no field at all. The flow follows the slope of the concentration: J_n = qD_n·dn/dx for electrons and J_p = −qD_p·dp/dx for holes.",
+      "check": "Holes are piled up at the left end of a bar and spread to the right. Which way does the hole current point? Which way would the current point if electrons were piled up there instead?"
+    },
+    {
+      "id": "einstein-relation",
+      "title": "Einstein relation",
+      "essence": "Drift and diffusion are both limited by the same collisions, so the diffusion constant and the mobility are tied: D/μ = kT/q. Know how mobile a carrier is and you know how fast it spreads.",
+      "check": "Electrons in a sample have a mobility of 1000 cm²/V·s. What is their diffusion constant at 300 K, and why should cooling the sample change the ratio D/μ?"
+    },
+    {
+      "id": "velocity-saturation",
+      "title": "velocity saturation",
+      "essence": "At high fields carriers lose energy to the lattice as fast as the field gives it, so their drift speed stops near 10⁷ cm/s in silicon. A very short transistor then carries a current that grows linearly with V_GS − V_T instead of as its square.",
+      "check": "A transistor's channel is made ten times shorter, at the same voltages. Why does its current grow by much less than ten times?"
+    },
+    {
+      "id": "recombination-and-lifetime",
+      "title": "recombination and lifetime",
+      "essence": "An extra electron in p-type silicon survives, on average, a lifetime τ before it meets a hole and recombines, usually at a defect near the middle of the gap. Disturb the balance and the excess dies away as e^(−t/τ).",
+      "check": "Light makes extra electrons and holes in a p-type bar and is then switched off. What sets how fast the extra electrons disappear, and why does the hole density barely change in relative terms?"
+    }
+  ],
+  "links": [
+    { "from": "electrons-and-holes", "to": "intrinsic-carriers", "why": "Each broken bond makes one electron and one hole, which is why n = p in pure silicon." },
+    { "from": "energy-bands", "to": "intrinsic-carriers", "why": "The gap E_g is the energy each pair must be given, so a wider gap means exponentially fewer carriers." },
+    { "from": "boltzmann-factor", "to": "intrinsic-carriers", "why": "The share of electrons lifted across the gap is a Boltzmann factor, which is where the exponential in temperature comes from." },
+    { "from": "energy-bands", "to": "electrons-and-holes", "why": "An empty state in a nearly full valence band is what moves as a hole." },
+    { "from": "intrinsic-carriers", "to": "mass-action-law", "why": "Pure silicon fixes the product: np = n_i·n_i, and doping changes the split but not the product." },
+    { "from": "mass-action-law", "to": "doping", "why": "Doping sets the majority density, and np = n_i² then fixes the minority density." },
+    { "from": "electrons-and-holes", "to": "doping", "why": "A donor adds electrons without holes and an acceptor adds holes without electrons." },
+    { "from": "boltzmann-factor", "to": "potential-vs-doping", "why": "Carrier density follows potential as a Boltzmann factor, so potential follows the logarithm of density." },
+    { "from": "doping", "to": "potential-vs-doping", "why": "The doping sets n or p, and the log of its ratio to n_i sets the potential." },
+    { "from": "doping", "to": "mobility", "why": "Ionized dopants are charged obstacles, so more doping means more scattering and lower mobility." },
+    { "from": "mobility", "to": "drift-current", "why": "Mobility turns a field into a drift velocity, v = μE." },
+    { "from": "ohms-law", "to": "drift-current", "why": "J = σE is Ohm's law written per unit area and per unit length." },
+    { "from": "drift-current", "to": "resistivity", "why": "Resistivity is 1/σ, and σ = q(nμ_n + pμ_p) is the drift current per unit field." },
+    { "from": "mass-action-law", "to": "resistivity", "why": "np = n_i² makes the minority density so small that only the majority term in σ counts." },
+    { "from": "electrons-and-holes", "to": "diffusion-current", "why": "Both carriers spread down their own gradients, and their opposite charges set the signs of the two currents." },
+    { "from": "diffusion-current", "to": "einstein-relation", "why": "D measures how fast carriers spread, which is the quantity the relation ties to μ." },
+    { "from": "mobility", "to": "einstein-relation", "why": "The same collision time sets both the drift speed per unit field and the spreading rate." },
+    { "from": "boltzmann-factor", "to": "einstein-relation", "why": "In equilibrium drift must cancel diffusion in a Boltzmann-shaped profile, and that forces D/μ = kT/q." },
+    { "from": "drift-current", "to": "velocity-saturation", "why": "v = μE holds only at low fields; velocity saturation is where that straight line flattens." },
+    { "from": "mass-action-law", "to": "recombination-and-lifetime", "why": "Recombination is the process that pulls np back to n_i² after it is disturbed." },
+    { "from": "first-order-system", "to": "recombination-and-lifetime", "why": "The excess decays at a rate proportional to itself, so it falls like any first-order system with time constant τ." }
+  ]
+}

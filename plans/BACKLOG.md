@@ -57,10 +57,14 @@ Each needs a plan or a quiz-only plan. Heaviest first within each tier.
 | EE 120 | z-transform (`z-transform`) | 11.764 |
 | EE 120 | Fourier transform in two dimensions (`fourier-transform-2d`) | 10.307 |
 | EE 120 | time shift is a phase ramp (`ft-time-shift`) | 9.282 |
+| EE 105 | transfer function (`transfer-function`) | 8.811 |
+| EE 105 | ideal op-amp (`ideal-op-amp`) | 8.704 |
+| EE 105 | depletion region (`depletion-region`) | 8.509 |
 | EE 120 | amplitude modulation (`amplitude-modulation`) | 8.321 |
 | EE 120 | frequency shift (`ft-frequency-shift`) | 8.141 |
 | EE 120 | internal stability (`internal-stability`) | 7.937 |
 | EE 120 | Laplace transform (`laplace-transform`) | 7.802 |
+| EE 105 | doping (`doping`) | 7.603 |
 | EE 120 | spectrum of a periodic signal (`spectrum-of-periodic-signals`) | 7.181 |
 | EE 120 | inverse transforms by partial fractions (`inverse-by-partial-fractions`) | 7.156 |
 | EE 120 | shift, flip, scale (`signal-operations`) | 7.141 |
@@ -70,25 +74,117 @@ Each needs a plan or a quiz-only plan. Heaviest first within each tier.
 | EE 120 | unit step (`unit-step`) | 6.463 |
 | EE 120 | stability from poles (`stability-from-poles`) | 6.333 |
 | EE 120 | differentiation in frequency (`ft-differentiation`) | 6.21 |
+| EE 105 | pn junction in equilibrium (`pn-equilibrium`) | 6.199 |
 | EE 120 | frequency-division multiplexing (`frequency-division-multiplexing`) | 6.192 |
 | EE 120 | digital filtering of analog signals (`dt-processing-of-ct`) | 6.026 |
 | EE 120 | FFT (`fft`) | 5.872 |
 | EE 120 | downsampling (`downsampling`) | 5.859 |
 | EE 120 | synchronous demodulation (`synchronous-demodulation`) | 5.806 |
 | EE 120 | modes of a state-space system (`state-modes`) | 5.719 |
+| EE 105 | depletion width (`depletion-width`) | 5.682 |
 | EE 120 | multiplication becomes convolution (`ft-multiplication-property`) | 5.604 |
-| EE 120 | transfer function (`transfer-function`) | 5.555 |
+| EE 105 | diode I–V (`diode-iv`) | 5.438 |
+| EE 105 | reverse bias (`pn-reverse-bias`) | 5.36 |
 | EE 120 | all-pass systems (`all-pass`) | 5.029 |
+| EE 105 | drift current (`drift-current`) | 4.859 |
 | EE 120 | correlation (`correlation`) | 4.743 |
 | EE 120 | duality (`ft-duality`) | 4.712 |
 | EE 120 | rectangle and sinc (`rect-and-sinc`) | 4.644 |
 | EE 120 | quadrature modulation (`quadrature-modulation`) | 4.364 |
+| EE 105 | threshold voltage (`threshold-voltage`) | 4.285 |
 | EE 120 | step response (`step-response`) | 4.074 |
+| EE 105 | common-source stage (`common-source`) | 4.051 |
+| EE 105 | Bode plot (`bode-plot`) | 4.033 |
 | EE 120 | resonance (`resonance`) | 4.015 |
+| EE 105 | resistance looking in (`resistance-looking-in`) | 3.972 |
+| EE 105 | depletion capacitance (`depletion-capacitance`) | 3.938 |
 | EE 120 | energy and power (`energy-and-power`) | 3.878 |
+| EE 105 | mobility (`mobility`) | 3.833 |
+| EE 105 | Gauss's law (`gauss-law`) | 3.703 |
+| EE 105 | diode small-signal model (`diode-small-signal`) | 3.597 |
+| EE 105 | built-in potential (`built-in-potential`) | 3.473 |
+| EE 105 | PMOS (`pmos`) | 3.453 |
+| EE 105 | resistivity (`resistivity`) | 3.27 |
 | EE 120 | frequency response from the pole-zero plot (`pole-zero-geometry`) | 3.259 |
+| EE 105 | mass-action law (`mass-action-law`) | 3.182 |
+| EE 105 | MOS small-signal model (`mos-small-signal-model`) | 3.141 |
+| EE 105 | MOSFET regions (`mosfet-regions`) | 3.058 |
 | EE 120 | upsampling (`upsampling`) | 3.045 |
+| EE 105 | forward bias (`pn-forward-bias`) | 2.885 |
+| EE 105 | loop gain (`loop-gain`) | 2.841 |
+| EE 105 | Poisson's equation (`poisson-equation`) | 2.841 |
+| EE 105 | transconductance (`transconductance`) | 2.737 |
+| EE 105 | IC capacitor (`ic-capacitor`) | 2.682 |
+| EE 105 | body effect (`body-effect`) | 2.644 |
 | EE 120 | zero-input and zero-state response (`zero-input-zero-state`) | 2.478 |
+| EE 105 | square law (`square-law`) | 2.385 |
+| EE 105 | output swing (`output-swing`) | 2.282 |
+| EE 105 | sheet resistance (`sheet-resistance`) | 2.27 |
+| EE 105 | accumulation, depletion, inversion (`accumulation-depletion-inversion`) | 2.229 |
+| EE 105 | diffusion current (`diffusion-current`) | 2.177 |
+| EE 105 | operating point (`operating-point`) | 1.947 |
+| EE 105 | differential and common mode (`common-and-differential-mode`) | 1.859 |
 | EE 120 | windowing and leakage (`windowing`) | 1.83 |
+| EE 105 | MOS capacitor (`mos-capacitor`) | 1.818 |
+| EE 105 | current mirror (`current-mirror`) | 1.785 |
 | EE 120 | zero-order hold (`zero-order-hold`) | 1.712 |
+| EE 105 | gain-bandwidth trade (`gain-bandwidth-product`) | 1.682 |
+| EE 105 | source degeneration (`source-degeneration`) | 1.654 |
+| EE 105 | flatband voltage (`flatband-voltage`) | 1.641 |
+| EE 105 | common-gate stage (`common-gate`) | 1.55 |
+| EE 105 | small-signal analysis (`small-signal-analysis`) | 1.537 |
+| EE 105 | velocity saturation (`velocity-saturation`) | 1.518 |
+| EE 105 | Einstein relation (`einstein-relation`) | 1.5 |
+| EE 105 | intrinsic carriers (`intrinsic-carriers`) | 1.5 |
+| EE 105 | slew rate (`slew-rate`) | 1.5 |
+| EE 105 | amplifier bandwidth (`amplifier-frequency-response`) | 1.39 |
+| EE 105 | offset voltage (`offset-voltage`) | 1.341 |
+| EE 105 | MOS C–V curve (`mos-cv-curve`) | 1.088 |
+| EE 105 | pinch-off (`pinch-off`) | 1.088 |
+| EE 105 | phasors & impedance (`phasors-impedance`) | 1.074 |
+| EE 105 | channel-length modulation (`channel-length-modulation`) | 1.053 |
+| EE 105 | source follower (`source-follower`) | 1.053 |
+| EE 105 | amplifier two-port (`amplifier-two-port`) | 1.028 |
+| EE 105 | energy bands (`energy-bands`) | 1 |
+| EE 105 | minority-carrier profiles (`minority-carrier-diffusion`) | 1 |
+| EE 105 | triode region (`triode-region`) | 1 |
+| EE 105 | BJT regions (`bjt-regions`) | 0.829 |
+| EE 105 | BJT action (`bjt-operation`) | 0.812 |
 | EE 120 | linear phase is delay (`linear-phase`) | 0.805 |
+| EE 105 | MOSFET structure (`mosfet-structure`) | 0.793 |
+| EE 105 | MOSFET capacitances (`mos-capacitances`) | 0.729 |
+| EE 105 | cascode amplifier (`cascode`) | 0.604 |
+| EE 105 | hybrid-π model (`bjt-small-signal-model`) | 0.542 |
+| EE 105 | right-half-plane zero (`rhp-zero`) | 0.53 |
+| EE 105 | diffusion capacitance (`diffusion-capacitance`) | 0.5 |
+| EE 105 | input bias current (`op-amp-bias-current`) | 0.5 |
+| EE 105 | non-ideal op-amp model (`op-amp-model`) | 0.5 |
+| EE 105 | Thévenin and Norton (`thevenin-norton`) | 0.5 |
+| EE 105 | multistage amplifiers (`multistage-amplifier`) | 0.423 |
+| EE 105 | intrinsic gain (`intrinsic-gain`) | 0.407 |
+| EE 105 | differential pair (`differential-pair`) | 0.354 |
+| EE 105 | current-source load (`current-source-load`) | 0.282 |
+| EE 105 | cascode mirror (`cascode-mirror`) | 0.229 |
+| EE 105 | diode-connected transistor (`diode-connected-transistor`) | 0.177 |
+| EE 105 | Early effect (`early-effect`) | 0.177 |
+| EE 105 | dominant pole (`dominant-pole`) | 0.169 |
+| EE 105 | current references (`current-reference`) | 0.151 |
+| EE 105 | Miller effect (`miller-effect`) | 0.141 |
+| EE 105 | amplifier noise (`amplifier-noise`) | 0.088 |
+| EE 105 | CMRR (`cmrr`) | 0.088 |
+| EE 105 | half-circuit (`half-circuit`) | 0.088 |
+| EE 105 | mirror-loaded pair (`mirror-loaded-diff-pair`) | 0.088 |
+| EE 105 | photodiodes and solar cells (`photodiode-solar-cell`) | 0.074 |
+| EE 105 | open-circuit time constants (`open-circuit-time-constants`) | 0.062 |
+| EE 105 | AC power (`ac-power`) | 0 |
+| EE 105 | biasing and coupling (`bias-and-coupling`) | 0 |
+| EE 105 | Boltzmann factor (`boltzmann-factor`) | 0 |
+| EE 105 | electrons and holes (`electrons-and-holes`) | 0 |
+| EE 105 | feedback and impedance (`feedback-and-impedance`) | 0 |
+| EE 105 | harmonic distortion (`harmonic-distortion`) | 0 |
+| EE 105 | small-signal capacitance (`incremental-capacitance`) | 0 |
+| EE 105 | phase margin (`phase-margin`) | 0 |
+| EE 105 | planar IC process (`planar-process`) | 0 |
+| EE 105 | potential and doping (`potential-vs-doping`) | 0 |
+| EE 105 | recombination and lifetime (`recombination-and-lifetime`) | 0 |
+| EE 105 | transit frequency (`transit-frequency`) | 0 |

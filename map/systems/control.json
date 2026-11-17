@@ -1,0 +1,31 @@
+{
+  "topics": [
+    {
+      "id": "loop-gain",
+      "title": "loop gain",
+      "essence": "Break the feedback loop, inject a signal and see what comes back around: the loop gain T. Feedback divides errors, distortion and gain drift by 1 + T, so its benefits last only at frequencies where |T| is large.",
+      "check": "An op-amp with open-loop gain 10⁴ is wired as a non-inverting amplifier that feeds back a tenth of the output. What is T, and how much does a 10% drop in open-loop gain change the closed-loop gain?"
+    },
+    {
+      "id": "gain-bandwidth-product",
+      "title": "gain-bandwidth trade",
+      "essence": "Wrap feedback round a single-pole amplifier and the gain falls by 1 + T while the bandwidth rises by 1 + T. Their product stays at the unity-gain frequency, so every decade of closed-loop gain costs a decade of bandwidth.",
+      "check": "An op-amp's gain falls to 1 at 10 MHz. You build a non-inverting amplifier with a gain of 100. What bandwidth do you expect, and what happens if you lower the gain to 10?"
+    },
+    {
+      "id": "phase-margin",
+      "title": "phase margin",
+      "essence": "Negative feedback turns positive if the loop delays the signal by 180° while |T| is still 1 or more. Phase margin is how far the loop's phase is from −180° where |T| = 1. A small margin means ringing; none means oscillation.",
+      "check": "A loop gain has one pole far below crossover and a second pole exactly at the frequency where |T| = 1. What is the phase margin, and what does the closed-loop step response look like?"
+    }
+  ],
+  "links": [
+    { "from": "feedback", "to": "loop-gain", "why": "G/(1 + GH) approaches 1/H only when the product GH, the loop gain, is large." },
+    { "from": "block-diagrams", "to": "loop-gain", "why": "The loop gain is the product of every block met going once around the loop." },
+    { "from": "dominant-pole", "to": "gain-bandwidth-product", "why": "With one dominant pole the open-loop gain falls as 1/ω, so gain times bandwidth is constant." },
+    { "from": "loop-gain", "to": "gain-bandwidth-product", "why": "The same 1 + T divides the gain and multiplies the bandwidth." },
+    { "from": "bode-plot", "to": "phase-margin", "why": "Read the frequency where |T| crosses 0 dB, then read the phase there." },
+    { "from": "loop-gain", "to": "phase-margin", "why": "Stability is a property of the loop gain T, not of the forward gain alone." },
+    { "from": "stability-from-poles", "to": "phase-margin", "why": "A closed-loop pole crosses into the right half-plane exactly when the margin reaches zero." }
+  ]
+}

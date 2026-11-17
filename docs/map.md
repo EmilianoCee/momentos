@@ -36,7 +36,8 @@ inside the circle of `maths`. A file has two lists:
 | `later` | no | where the idea comes back in a later course: `course` (an id in `curricula/courses.json`) and `how` (one line). |
 
 A topic's folder is its file's place, so there is no `folder` field. Its courses come from `curricula/`, so there
-is no `courses` field either. Write `e^(jθ)` to get a superscript.
+is no `courses` field either. Write `e^(jθ)` to get a superscript. Write the thermal voltage as kT/q: `V_T` is the
+MOS threshold voltage.
 
 A link points from a foundation to what it makes possible. It is stored in the file of the topic it leads **to**.
 Its `why` is one sentence saying what exactly carries over. Every topic needs at least one link.
@@ -61,7 +62,7 @@ File a topic under the kind of thing it is a statement about, never under the co
 | `signals` | functions of time or of an index, and ways to represent them | `fourier`, `sampling` |
 | `systems` | things that turn signals into signals | `control` |
 | `circuits` | what connected components do, given how each behaves at its terminals | `amplifiers` |
-| `devices` | what happens inside a component to give it that behaviour | `semiconductors`, `pn-junction`, `mos` |
+| `devices` | what happens inside a component to give it that behaviour | `semiconductors`, `pn-junction`, `mos`, `bjt` |
 | `unspecified` | nothing yet: a parking lot | |
 
 When two folders fit, choose the one where the idea is first needed. A folder that passes about 45 topics is split

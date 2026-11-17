@@ -1,0 +1,203 @@
+{
+  "course": "EE 105",
+  "tier": 1,
+  "scope_term": "SP24",
+  "built_from": [
+    "Homework 1 to 11 of Spring 2024, which define the current scope",
+    "10 past exams from Spring 2005 to Spring 2024, tagged question by question: 8 from 2005 to 2014 and the Spring 2023 and Spring 2024 midterms",
+    "The course reader's 18 chapters, read for concepts only"
+  ],
+  "notes": [
+    "The latest local homework is Spring 2024. It stops at single-stage amplifiers (homework 11): mirrors, cascodes, differential pairs, amplifier frequency response and op-amp feedback have no homework items.",
+    "The two recent midterms (Spring 2023 and Spring 2024) have no transistor questions. They examine doped-semiconductor transport, pn junctions, IC resistors and capacitors, Laplace-domain systems and op-amp feedback. Amplifier concepts carry only 2005 to 2014 exam weight and are flagged old-exams-only; they stay at target 4 because the course text treats them as core.",
+    "Symbols: V_T is the MOS threshold voltage, as in the course. The thermal voltage is always written kT/q (26 mV at 300 K), never V_T.",
+    "Saturation means opposite things for the two transistors: a saturated MOSFET is the amplifying region, a saturated BJT has both junctions on and is like a MOSFET in triode.",
+    "PMOS is written with source-high quantities: V_SG, V_SD, I_SD and |V_T|, so its equations look like the NMOS ones.",
+    "The course and the repo both write j for the imaginary unit.",
+    "The reader is MOS-first: the bipolar transistor is one chapter, and older exams use it more than recent ones.",
+    "Constants the course uses: kT/q = 26 mV, n_i = 10¹⁰ cm⁻³ for silicon at 300 K, E_g = 1.12 eV, ε_Si = 11.7ε₀ (some problems use 12ε₀), ε_ox = 3.9ε₀."
+  ],
+  "outline": [
+    "Weeks 1 to 4: circuits and signals review: KCL and Thévenin, first-order transients, LTI systems, Laplace transforms and Bode plots, convolution, op-amps with finite gain",
+    "Weeks 5 to 7: semiconductors: bands, carriers and doping, drift and diffusion, IC resistors and capacitors, pn junctions in equilibrium and with current",
+    "Weeks 8 to 10: the MOS capacitor (regimes, threshold, C–V) and the MOSFET (regions, square law, channel-length modulation)",
+    "Weeks 11 to 12: small-signal models and single-stage amplifiers, with the body effect",
+    "Remaining weeks and the reader's later chapters: the bipolar transistor, current mirrors, frequency response, multistage and differential amplifiers, op-amp feedback and non-idealities"
+  ],
+  "units": [
+    {
+      "id": "u1",
+      "title": "LTI systems and AC circuits"
+    },
+    {
+      "id": "u2",
+      "title": "Semiconductors: carriers, drift and diffusion"
+    },
+    {
+      "id": "u3",
+      "title": "IC resistors and capacitors, and electrostatics"
+    },
+    {
+      "id": "u4",
+      "title": "PN junctions in equilibrium"
+    },
+    {
+      "id": "u5",
+      "title": "PN junction currents"
+    },
+    {
+      "id": "u6",
+      "title": "The MOS capacitor"
+    },
+    {
+      "id": "u7",
+      "title": "MOSFET physics"
+    },
+    {
+      "id": "u8",
+      "title": "MOS small-signal models"
+    },
+    {
+      "id": "u9",
+      "title": "The bipolar transistor"
+    },
+    {
+      "id": "u10",
+      "title": "Single-stage amplifiers"
+    },
+    {
+      "id": "u11",
+      "title": "Current mirrors and biasing"
+    },
+    {
+      "id": "u12",
+      "title": "Frequency response of amplifiers"
+    },
+    {
+      "id": "u13",
+      "title": "Multistage amplifiers and the cascode"
+    },
+    {
+      "id": "u14",
+      "title": "Differential amplifiers"
+    },
+    {
+      "id": "u15",
+      "title": "Op-amps and feedback"
+    },
+    {
+      "id": "u16",
+      "title": "Non-ideal op-amps"
+    }
+  ],
+  "concepts": [
+    {"topic": "nodal-analysis", "unit": "u1", "target": 4, "assessed": ["SP24 HW1 Q1", "SP24 HW1 Q2"], "flags": []},
+    {"topic": "thevenin-norton", "unit": "u1", "target": 3, "assessed": ["SP24 HW1 Q2"], "flags": []},
+    {"topic": "first-order-system", "unit": "u1", "target": 4, "assessed": ["SP24 HW1 Q3", "SP24 HW1 Q4", "SP24 HW3 Q2", "SP23 MT Q8e", "FA06 MT2 Q3b", "SP05 MT2 Q1a", "SP05 MT2 Q1b"], "flags": []},
+    {"topic": "system-linearity", "unit": "u1", "target": 4, "assessed": ["SP24 MT Q1a", "SP24 MT Q1b", "SP24 HW2 Q2", "SP24 HW4 Q1", "SP23 MT Q5", "SP23 MT Q6a"], "flags": []},
+    {"topic": "frequency-response", "unit": "u1", "target": 3, "assessed": ["SP24 HW2 Q1"], "flags": []},
+    {"topic": "impulse-response", "unit": "u1", "target": 4, "assessed": ["SP24 HW2 Q1", "SP24 HW2 Q2", "SP24 HW3 Q2", "SP24 HW4 Q1"], "flags": []},
+    {"topic": "convolution", "unit": "u1", "target": 3, "assessed": ["SP24 HW4 Q1"], "flags": []},
+    {"topic": "step-response", "unit": "u1", "target": 4, "assessed": ["SP24 HW1 Q3", "SP24 HW2 Q1", "SP24 HW2 Q2", "SP23 MT Q5", "SP23 MT Q8e"], "flags": []},
+    {"topic": "laplace-transform", "unit": "u1", "target": 4, "assessed": ["SP24 HW3 Q1", "SP24 HW3 Q2", "SP23 MT Q6a"], "flags": []},
+    {"topic": "transfer-function", "unit": "u1", "target": 4, "assessed": ["SP24 MT Q1a", "SP24 MT Q1b", "SP24 MT Q1d", "SP24 HW2 Q1", "SP24 HW2 Q3", "SP24 HW3 Q1", "SP24 HW3 Q3", "SP24 HW4 Q3", "SP23 MT Q6a", "SP23 MT Q6b", "SP23 MT Q8d", "SP14 MT2 Q1c", "SP14 MT2 Q1d", "SP14 MT2 Q1f", "SP14 MT2 Q1g", "FA06 MT2 Q3b", "SP05 MT2 Q1b"], "flags": []},
+    {"topic": "poles-and-zeros", "unit": "u1", "target": 4, "assessed": ["SP24 MT Q1d", "SP24 MT Q1e", "SP24 HW3 Q3", "SP24 HW4 Q3", "SP23 MT Q5", "SP23 MT Q8c", "SP14 MT2 Q1d", "SP14 MT2 Q1e", "SP14 MT2 Q1f", "SP14 MT2 Q1g", "SP05 MT2 Q1c"], "flags": []},
+    {"topic": "bode-plot", "unit": "u1", "target": 4, "assessed": ["SP24 MT Q1e", "SP24 HW3 Q3", "SP24 HW4 Q3", "SP23 MT Q6b", "SP23 MT Q8c", "SP14 MT2 Q1e", "SP08 MT2 Q2f", "SP05 MT2 Q1b", "SP05 MT2 Q1c", "SP05 MT2 Q1d"], "flags": []},
+    {"topic": "resonance", "unit": "u1", "target": 3, "assessed": ["SP24 HW2 Q3"], "flags": []},
+    {"topic": "phasors-impedance", "unit": "u1", "target": 4, "assessed": ["SP24 HW2 Q3", "SP24 HW3 Q2", "SP05 MT2 Q1a", "SP05 MT2 Q1d"], "flags": []},
+    {"topic": "ac-power", "unit": "u1", "target": 3, "assessed": [], "flags": ["reader-only"]},
+    {"topic": "energy-bands", "unit": "u2", "target": 4, "assessed": ["SP24 HW5 Q1", "SP24 HW5 Q2"], "flags": []},
+    {"topic": "electrons-and-holes", "unit": "u2", "target": 3, "assessed": [], "flags": ["reader-only"]},
+    {"topic": "intrinsic-carriers", "unit": "u2", "target": 4, "assessed": ["SP24 HW5 Q1", "SP24 HW5 Q2", "SP24 HW5 Q3"], "flags": []},
+    {"topic": "mass-action-law", "unit": "u2", "target": 4, "assessed": ["SP24 MT Q3b", "SP24 HW8 Q1e", "SP23 MT Q3b", "SP23 MT Q3e"], "flags": []},
+    {"topic": "doping", "unit": "u2", "target": 4, "assessed": ["SP24 MT Q2a", "SP24 MT Q3a", "SP24 MT Q3b", "SP24 HW6 Q1", "SP24 HW7 Q2", "SP23 MT Q3a", "SP23 MT Q3b", "SP23 MT Q3c", "SP23 MT Q3e", "SP14 MT1 Q1d", "SP08 MT2 Q3a"], "flags": []},
+    {"topic": "boltzmann-factor", "unit": "u2", "target": 3, "assessed": [], "flags": ["reader-only"]},
+    {"topic": "mobility", "unit": "u2", "target": 4, "assessed": ["SP24 MT Q3c", "SP24 HW5 Q3", "SP24 HW6 Q1", "SP23 MT Q3c", "SP23 MT Q3d", "FA10 FINAL Q1b", "SP08 MT2 Q3e"], "flags": []},
+    {"topic": "drift-current", "unit": "u2", "target": 4, "assessed": ["SP24 MT Q3c", "SP24 HW5 Q2", "SP24 HW5 Q3", "SP24 HW6 Q1", "SP24 HW6 Q2", "SP23 MT Q3c", "SP23 MT Q3d", "FA10 FINAL Q1b", "FA10 FINAL Q1c"], "flags": []},
+    {"topic": "resistivity", "unit": "u2", "target": 4, "assessed": ["SP24 MT Q3c", "SP24 HW6 Q1", "SP23 MT Q1a", "SP23 MT Q3c", "FA10 FINAL Q1b"], "flags": []},
+    {"topic": "diffusion-current", "unit": "u2", "target": 4, "assessed": ["SP24 MT Q3d", "SP24 HW6 Q2", "SP24 HW7 Q3a", "FA10 FINAL Q1ai", "FA10 FINAL Q1c"], "flags": []},
+    {"topic": "einstein-relation", "unit": "u2", "target": 4, "assessed": ["SP24 MT Q3d", "SP24 HW6 Q2"], "flags": []},
+    {"topic": "planar-process", "unit": "u3", "target": 3, "assessed": [], "flags": ["reader-only"]},
+    {"topic": "sheet-resistance", "unit": "u3", "target": 4, "assessed": ["SP24 HW6 Q3b", "SP23 MT Q1a", "SP23 MT Q1b", "FA10 FINAL Q1b"], "flags": []},
+    {"topic": "gauss-law", "unit": "u3", "target": 4, "assessed": ["SP24 MT Q2c", "SP24 HW6 Q4", "SP24 HW7 Q1c", "SP24 HW8 Q1b-d", "SP23 MT Q4c", "SP14 MT1 Q1e", "FA10 FINAL Q2c", "SP07 FINAL Q1f", "SP06 MT1 Q3"], "flags": []},
+    {"topic": "poisson-equation", "unit": "u3", "target": 4, "assessed": ["SP24 MT Q2c", "SP24 HW6 Q4", "SP24 HW7 Q1b", "SP23 MT Q4c"], "flags": []},
+    {"topic": "ic-capacitor", "unit": "u3", "target": 4, "assessed": ["SP24 HW1 Q4", "SP24 HW6 Q3a", "SP23 MT Q2a", "SP23 MT Q2b"], "flags": []},
+    {"topic": "incremental-capacitance", "unit": "u3", "target": 3, "assessed": [], "flags": ["reader-only"]},
+    {"topic": "potential-vs-doping", "unit": "u4", "target": 3, "assessed": [], "flags": ["reader-only"]},
+    {"topic": "pn-equilibrium", "unit": "u4", "target": 4, "assessed": ["SP24 MT Q2a", "SP24 MT Q2b", "SP24 MT Q2c", "SP24 HW7 Q1a", "SP23 MT Q4a", "SP23 MT Q4b", "SP23 MT Q4c", "FA10 FINAL Q1ai", "FA10 FINAL Q1c"], "flags": []},
+    {"topic": "depletion-region", "unit": "u4", "target": 4, "assessed": ["SP24 MT Q2b", "SP24 MT Q2c", "SP24 MT Q2d", "SP24 HW6 Q4", "SP24 HW7 Q1b", "SP24 HW7 Q1c", "SP24 HW7 Q3b", "SP24 HW8 Q1f", "SP23 MT Q4b", "SP23 MT Q4c", "SP23 MT Q4d", "SP14 MT1 Q1d", "SP14 MT1 Q1e", "FA10 FINAL Q1ai", "SP06 MT1 Q2d"], "flags": []},
+    {"topic": "built-in-potential", "unit": "u4", "target": 4, "assessed": ["SP24 MT Q2a", "SP24 HW6 Q4", "SP24 HW7 Q1a", "SP24 HW7 Q2", "SP23 MT Q4a", "FA10 FINAL Q1ai", "SP06 MT1 Q1b"], "flags": []},
+    {"topic": "depletion-width", "unit": "u4", "target": 4, "assessed": ["SP24 MT Q2b", "SP24 MT Q2d", "SP24 HW6 Q4", "SP24 HW7 Q1b", "SP24 HW7 Q2", "SP24 HW8 Q1f", "SP23 MT Q4b", "SP23 MT Q4d"], "flags": []},
+    {"topic": "pn-reverse-bias", "unit": "u4", "target": 4, "assessed": ["SP24 MT Q2d", "SP24 MT Q2e", "SP24 MT Q2f", "SP24 HW7 Q1d", "SP23 MT Q4d", "SP23 MT Q4e", "FA10 FINAL Q1c", "SP07 FINAL Q1h", "SP05 MT2 Q2b"], "flags": []},
+    {"topic": "depletion-capacitance", "unit": "u4", "target": 4, "assessed": ["SP24 MT Q2e", "SP24 HW7 Q1d", "SP24 HW7 Q2", "SP24 HW7 Q3b", "SP24 HW9 Q2b-c", "SP23 MT Q4e", "SP07 FINAL Q1h", "SP06 MT1 Q1b"], "flags": []},
+    {"topic": "pn-forward-bias", "unit": "u5", "target": 4, "assessed": ["SP24 MT Q2f", "SP24 HW7 Q1e", "SP24 HW7 Q3a", "SP23 MT Q4f", "SP06 MT1 Q1b"], "flags": []},
+    {"topic": "recombination-and-lifetime", "unit": "u5", "target": 3, "assessed": [], "flags": ["reader-only"]},
+    {"topic": "minority-carrier-diffusion", "unit": "u5", "target": 4, "assessed": ["SP24 HW7 Q1e", "SP24 HW7 Q1f"], "flags": []},
+    {"topic": "diode-iv", "unit": "u5", "target": 4, "assessed": ["SP24 MT Q2f", "SP24 MT Q4a", "SP24 MT Q4b", "SP24 MT Q4d", "SP24 HW7 Q1e", "SP23 MT Q4f", "SP07 FINAL Q1g", "SP06 MT1 Q1a"], "flags": []},
+    {"topic": "diode-small-signal", "unit": "u5", "target": 4, "assessed": ["SP24 MT Q4b", "SP24 MT Q4c", "SP24 MT Q4d", "SP24 HW7 Q1f", "SP07 FINAL Q1g", "SP06 MT1 Q1a"], "flags": []},
+    {"topic": "diffusion-capacitance", "unit": "u5", "target": 3, "assessed": ["SP24 HW7 Q1f"], "flags": []},
+    {"topic": "photodiode-solar-cell", "unit": "u5", "target": 4, "assessed": ["SP05 MT2 Q2b", "SP05 MT2 Q2c"], "flags": ["old-exams-only"]},
+    {"topic": "mos-capacitor", "unit": "u6", "target": 4, "assessed": ["SP24 HW8 Q1b-d", "SP24 HW8 Q1f", "SP24 HW8 Q2", "FA10 FINAL Q2c", "SP07 FINAL Q1e", "SP06 MT1 Q2a", "SP06 MT1 Q2c", "SP06 MT1 Q2d", "SP06 MT1 Q3"], "flags": []},
+    {"topic": "flatband-voltage", "unit": "u6", "target": 4, "assessed": ["SP24 HW8 Q1g", "SP24 HW9 Q2a", "SP24 HW9 Q2d-e", "SP07 FINAL Q1e", "SP06 MT1 Q2a", "SP06 MT1 Q4"], "flags": []},
+    {"topic": "accumulation-depletion-inversion", "unit": "u6", "target": 4, "assessed": ["SP24 HW8 Q1a", "SP24 HW8 Q1b-d", "SP24 HW8 Q2", "SP24 HW9 Q2f", "FA10 FINAL Q2c", "SP07 FINAL Q1f", "SP06 MT1 Q2b", "SP06 MT1 Q3"], "flags": []},
+    {"topic": "threshold-voltage", "unit": "u6", "target": 4, "assessed": ["SP24 HW8 Q1a", "SP24 HW8 Q1e", "SP24 HW8 Q1g", "SP24 HW9 Q1", "SP24 HW9 Q2a", "SP24 HW9 Q2d-e", "SP24 HW9 Q2f", "SP24 HW9 Q3a", "SP08 MT2 Q3d", "SP07 FINAL Q1f", "SP06 MT1 Q2a", "SP06 MT1 Q4", "SP06 MT1 Q5a", "SP05 MT2 Q3e"], "flags": []},
+    {"topic": "mos-cv-curve", "unit": "u6", "target": 4, "assessed": ["SP24 HW9 Q2b-c", "SP24 HW9 Q2d-e", "SP06 MT1 Q2c", "SP06 MT1 Q2d"], "flags": []},
+    {"topic": "mosfet-structure", "unit": "u7", "target": 4, "assessed": ["SP24 HW9 Q3a", "SP08 MT2 Q3a", "SP08 MT2 Q3b", "SP08 MT2 Q3c", "SP07 FINAL Q1a", "SP07 FINAL Q1b"], "flags": []},
+    {"topic": "mosfet-regions", "unit": "u7", "target": 4, "assessed": ["SP24 HW10 Q2a", "SP24 HW9 Q1", "SP24 HW9 Q3b", "SP24 HW9 Q3c", "SP24 HW9 Q3d-e", "FA10 FINAL Q2a", "FA10 FINAL Q2b", "SP08 MT2 Q3d", "SP07 FINAL Q5c", "SP07 FINAL Q5d", "FA06 MT2 Q1a", "FA06 MT2 Q1b", "SP06 MT1 Q5a", "SP06 MT1 Q5b", "SP05 MT2 Q3b"], "flags": []},
+    {"topic": "triode-region", "unit": "u7", "target": 4, "assessed": ["SP24 HW9 Q3c", "SP24 HW9 Q3d-e"], "flags": []},
+    {"topic": "pinch-off", "unit": "u7", "target": 4, "assessed": ["SP24 HW11 Q2e", "SP24 HW9 Q3b", "FA10 FINAL Q2b"], "flags": []},
+    {"topic": "square-law", "unit": "u7", "target": 4, "assessed": ["SP24 HW10 Q1a", "SP24 HW11 Q2d", "SP24 HW9 Q3c", "SP24 HW9 Q3d-e", "FA10 FINAL Q4a", "SP07 FINAL Q4a", "FA06 MT2 Q1a", "FA06 MT2 Q3d", "SP06 MT1 Q5b", "SP05 MT2 Q2a", "SP05 MT2 Q3a", "SP05 MT2 Q3b"], "flags": []},
+    {"topic": "channel-length-modulation", "unit": "u7", "target": 4, "assessed": ["SP24 HW10 Q1b", "SP24 HW9 Q3d-e", "SP07 FINAL Q4a"], "flags": []},
+    {"topic": "pmos", "unit": "u7", "target": 4, "assessed": ["SP24 HW10 Q2a", "SP24 HW10 Q2b", "SP24 HW11 Q2a-c", "SP24 HW11 Q2d", "SP24 HW8 Q2", "SP24 HW9 Q1", "SP08 MT2 Q3a", "SP08 MT2 Q3b", "SP08 MT2 Q3c", "SP08 MT2 Q3d", "SP08 MT2 Q3e", "SP07 FINAL Q1a", "FA06 MT2 Q1b", "FA06 MT2 Q3a"], "flags": []},
+    {"topic": "velocity-saturation", "unit": "u7", "target": 4, "assessed": ["SP24 HW6 Q1", "SP23 MT Q3d", "FA10 FINAL Q2a", "FA10 FINAL Q2b"], "flags": []},
+    {"topic": "operating-point", "unit": "u8", "target": 4, "assessed": ["SP24 HW10 Q1c", "SP24 HW10 Q2a", "SP24 HW11 Q2d", "SP07 FINAL Q2a", "SP07 FINAL Q3a", "SP07 FINAL Q4a", "SP07 FINAL Q5a", "FA06 MT2 Q1b", "FA06 MT2 Q2a", "SP05 MT2 Q2a", "SP05 MT2 Q2b", "SP05 MT2 Q3a", "SP05 MT2 Q3b"], "flags": []},
+    {"topic": "small-signal-analysis", "unit": "u8", "target": 4, "assessed": ["SP24 MT Q4d", "SP24 HW10 Q1c", "SP05 MT2 Q2f"], "flags": []},
+    {"topic": "transconductance", "unit": "u8", "target": 4, "assessed": ["SP24 HW10 Q1a", "SP24 HW10 Q3", "SP24 HW11 Q3b-c", "SP24 HW11 Q3d", "SP14 MT2 Q1a", "SP08 MT2 Q1a", "SP08 MT2 Q2b", "SP08 MT2 Q3e", "SP08 MT2 Q4a", "SP08 MT2 Q4b", "SP08 MT2 Q4c", "SP07 FINAL Q2b", "FA06 MT2 Q2b", "FA06 MT2 Q3c", "FA06 MT2 Q3d"], "flags": []},
+    {"topic": "mos-small-signal-model", "unit": "u8", "target": 4, "assessed": ["SP24 HW10 Q2b", "SP24 HW10 Q2c", "SP24 HW11 Q1", "SP24 HW11 Q2a-c", "SP24 HW11 Q3b-c", "SP14 MT2 Q1a", "SP14 MT2 Q1b", "SP08 MT2 Q1a", "SP08 MT2 Q4a", "FA06 MT2 Q2c", "FA06 MT2 Q3a", "SP05 MT2 Q2d", "SP05 MT2 Q3c"], "flags": []},
+    {"topic": "body-effect", "unit": "u8", "target": 4, "assessed": ["SP24 HW10 Q2c", "SP24 HW10 Q3", "SP24 HW11 Q3a", "SP24 HW11 Q3b-c", "SP24 HW11 Q3d", "SP08 MT2 Q3c", "FA06 MT2 Q2b", "SP05 MT2 Q3e"], "flags": []},
+    {"topic": "mos-capacitances", "unit": "u8", "target": 4, "assessed": ["SP24 HW10 Q3", "SP14 MT2 Q1b", "SP07 FINAL Q4c"], "flags": []},
+    {"topic": "bjt-operation", "unit": "u9", "target": 4, "assessed": ["SP14 MT2 Q2c", "SP14 MT1 Q1c", "SP14 MT1 Q2b", "SP14 MT1 Q2c", "SP07 FINAL Q1c", "SP07 FINAL Q1d"], "flags": ["old-exams-only"]},
+    {"topic": "bjt-regions", "unit": "u9", "target": 4, "assessed": ["SP14 MT2 Q2a", "SP14 MT2 Q2b", "SP14 MT1 Q2a", "FA10 FINAL Q4a", "SP07 FINAL Q2a", "SP07 FINAL Q2e", "SP07 FINAL Q3a", "SP07 FINAL Q3b"], "flags": ["old-exams-only"]},
+    {"topic": "early-effect", "unit": "u9", "target": 4, "assessed": ["SP14 MT1 Q1c"], "flags": ["old-exams-only"]},
+    {"topic": "bjt-small-signal-model", "unit": "u9", "target": 4, "assessed": ["FA10 FINAL Q3bi", "FA10 FINAL Q3bii", "SP08 MT2 Q2b", "SP08 MT2 Q2d", "SP08 MT2 Q4b", "SP08 MT2 Q4c", "SP08 MT2 Q4d", "SP07 FINAL Q2b"], "flags": ["old-exams-only"]},
+    {"topic": "amplifier-two-port", "unit": "u10", "target": 4, "assessed": ["SP24 HW11 Q1", "SP14 MT1 Q3", "FA10 FINAL Q3a", "FA10 FINAL Q3bii", "SP08 MT2 Q2c", "SP05 MT2 Q1a", "SP05 MT2 Q2c", "SP05 MT2 Q2f"], "flags": []},
+    {"topic": "resistance-looking-in", "unit": "u10", "target": 4, "assessed": ["SP24 HW10 Q1b", "SP24 HW10 Q2b", "SP24 HW11 Q1", "SP24 HW4 Q2", "SP14 MT2 Q1a", "SP14 MT1 Q1a", "SP14 MT1 Q1c", "SP14 MT1 Q1g", "SP14 MT1 Q1h", "FA10 FINAL Q3bi", "SP08 MT2 Q1a", "SP08 MT2 Q1c", "SP08 MT2 Q1e", "SP08 MT2 Q2b", "SP08 MT2 Q4a", "SP08 MT2 Q4b", "SP08 MT2 Q4c", "SP08 MT2 Q4d", "SP07 FINAL Q2b", "SP07 FINAL Q2d", "SP07 FINAL Q3c", "SP07 FINAL Q4b", "SP07 FINAL Q5b", "FA06 MT2 Q2b", "FA06 MT2 Q2c", "SP05 MT2 Q2d", "SP05 MT2 Q2e", "SP05 MT2 Q3c", "SP05 MT2 Q3d"], "flags": []},
+    {"topic": "bias-and-coupling", "unit": "u10", "target": 3, "assessed": [], "flags": ["reader-only"]},
+    {"topic": "intrinsic-gain", "unit": "u10", "target": 4, "assessed": ["SP14 MT1 Q1f", "SP08 MT2 Q1c", "SP08 MT2 Q4e", "SP07 FINAL Q2c", "SP07 FINAL Q4b"], "flags": ["old-exams-only"]},
+    {"topic": "common-source", "unit": "u10", "target": 4, "assessed": ["SP24 HW10 Q1c", "SP24 HW10 Q2b", "SP24 HW10 Q2c", "SP24 HW11 Q3a", "SP14 MT2 Q1b", "SP14 MT2 Q1c", "SP14 MT2 Q1e", "SP14 MT1 Q1b", "SP14 MT1 Q1f", "SP14 MT1 Q1g", "SP14 MT1 Q3", "FA10 FINAL Q2d", "FA10 FINAL Q3bii", "SP08 MT2 Q1b", "SP08 MT2 Q1d", "SP08 MT2 Q1e", "SP08 MT2 Q4e", "SP07 FINAL Q2c", "SP07 FINAL Q2d", "SP07 FINAL Q4b", "SP07 FINAL Q5b", "FA06 MT2 Q2a", "FA06 MT2 Q3a", "FA06 MT2 Q3b", "FA06 MT2 Q3d"], "flags": []},
+    {"topic": "common-gate", "unit": "u10", "target": 4, "assessed": ["SP24 HW11 Q1", "SP24 HW11 Q3a", "SP14 MT1 Q1a", "SP08 MT2 Q1b", "SP08 MT2 Q2a", "SP08 MT2 Q2c", "SP05 MT2 Q2a", "SP05 MT2 Q2c", "SP05 MT2 Q2d", "SP05 MT2 Q2e", "SP05 MT2 Q2f"], "flags": []},
+    {"topic": "source-follower", "unit": "u10", "target": 4, "assessed": ["SP24 HW11 Q2a-c", "SP14 MT1 Q1h", "SP14 MT1 Q1i", "FA10 FINAL Q3bi", "SP05 MT2 Q3c", "SP05 MT2 Q3d", "SP05 MT2 Q3e"], "flags": []},
+    {"topic": "source-degeneration", "unit": "u10", "target": 4, "assessed": ["SP14 MT2 Q1f", "SP14 MT2 Q2b", "SP14 MT1 Q1i", "SP14 MT1 Q2a", "SP14 MT1 Q2b", "SP14 MT1 Q2c", "SP14 MT1 Q3", "FA10 FINAL Q4c", "SP08 MT2 Q1d", "SP08 MT2 Q1e", "SP08 MT2 Q2c", "SP07 FINAL Q2d", "FA06 MT2 Q2a", "FA06 MT2 Q2c"], "flags": ["old-exams-only"]},
+    {"topic": "current-source-load", "unit": "u11", "target": 4, "assessed": ["SP14 MT1 Q1b", "SP07 FINAL Q2c", "SP07 FINAL Q5d"], "flags": ["old-exams-only"]},
+    {"topic": "diode-connected-transistor", "unit": "u11", "target": 4, "assessed": ["FA10 FINAL Q3bi", "FA10 FINAL Q3bii"], "flags": ["old-exams-only"]},
+    {"topic": "current-mirror", "unit": "u11", "target": 4, "assessed": ["SP14 MT2 Q2a", "SP14 MT2 Q2b", "SP14 MT2 Q2c", "SP14 MT1 Q2a", "SP14 MT1 Q2b", "SP14 MT1 Q2c", "FA10 FINAL Q4a", "FA10 FINAL Q4di", "FA10 FINAL Q4dii", "SP08 MT2 Q2a", "SP07 FINAL Q2a", "SP07 FINAL Q2e", "SP07 FINAL Q3a", "SP07 FINAL Q3b", "SP07 FINAL Q3c", "SP07 FINAL Q5a", "FA06 MT2 Q1a", "SP05 MT2 Q3a"], "flags": ["old-exams-only"]},
+    {"topic": "cascode-mirror", "unit": "u11", "target": 4, "assessed": ["SP14 MT2 Q2c", "SP07 FINAL Q3c"], "flags": ["old-exams-only"]},
+    {"topic": "current-reference", "unit": "u11", "target": 4, "assessed": ["FA10 FINAL Q4di", "SP08 MT2 Q2a"], "flags": ["old-exams-only"]},
+    {"topic": "output-swing", "unit": "u11", "target": 4, "assessed": ["SP24 MT Q1c", "SP24 HW11 Q2e", "SP24 HW5 Q4b", "SP14 MT1 Q1f", "SP07 FINAL Q5c", "SP07 FINAL Q5d"], "flags": []},
+    {"topic": "amplifier-frequency-response", "unit": "u12", "target": 4, "assessed": ["SP23 MT Q8d", "SP14 MT2 Q1c", "FA10 FINAL Q2d", "SP08 MT2 Q2d", "SP08 MT2 Q2e", "SP08 MT2 Q2f", "SP07 FINAL Q4c", "FA06 MT2 Q3c"], "flags": ["not-yet-assessed"]},
+    {"topic": "miller-effect", "unit": "u12", "target": 4, "assessed": ["FA10 FINAL Q2d", "SP07 FINAL Q4c"], "flags": ["old-exams-only"]},
+    {"topic": "dominant-pole", "unit": "u12", "target": 4, "assessed": ["SP08 MT2 Q2e", "SP08 MT2 Q2f", "FA06 MT2 Q3c"], "flags": ["old-exams-only"]},
+    {"topic": "open-circuit-time-constants", "unit": "u12", "target": 4, "assessed": ["SP08 MT2 Q2e"], "flags": ["old-exams-only"]},
+    {"topic": "rhp-zero", "unit": "u12", "target": 4, "assessed": ["SP14 MT2 Q1e", "SP14 MT2 Q1f", "SP14 MT2 Q1g"], "flags": ["old-exams-only"]},
+    {"topic": "transit-frequency", "unit": "u12", "target": 3, "assessed": [], "flags": ["reader-only"]},
+    {"topic": "multistage-amplifier", "unit": "u13", "target": 4, "assessed": ["SP14 MT1 Q1i", "FA10 FINAL Q3a", "SP07 FINAL Q5a", "SP07 FINAL Q5b", "SP07 FINAL Q5c"], "flags": ["old-exams-only"]},
+    {"topic": "cascode", "unit": "u13", "target": 4, "assessed": ["SP14 MT1 Q1b", "SP14 MT1 Q1g", "SP08 MT2 Q1b", "SP08 MT2 Q1c", "SP08 MT2 Q4d", "SP08 MT2 Q4e"], "flags": ["old-exams-only"]},
+    {"topic": "differential-pair", "unit": "u14", "target": 4, "assessed": ["FA10 FINAL Q4b", "FA10 FINAL Q4c", "FA10 FINAL Q4di", "FA10 FINAL Q4dii"], "flags": ["old-exams-only"]},
+    {"topic": "common-and-differential-mode", "unit": "u14", "target": 4, "assessed": ["SP23 MT Q7b", "SP23 MT Q7c", "FA10 FINAL Q4b", "FA10 FINAL Q4c"], "flags": ["not-yet-assessed"]},
+    {"topic": "half-circuit", "unit": "u14", "target": 4, "assessed": ["FA10 FINAL Q4c"], "flags": ["old-exams-only"]},
+    {"topic": "cmrr", "unit": "u14", "target": 4, "assessed": ["FA10 FINAL Q4b"], "flags": ["old-exams-only"]},
+    {"topic": "mirror-loaded-diff-pair", "unit": "u14", "target": 4, "assessed": ["FA10 FINAL Q4dii"], "flags": ["old-exams-only"]},
+    {"topic": "ideal-op-amp", "unit": "u15", "target": 4, "assessed": ["SP24 MT Q1a", "SP24 MT Q1b", "SP24 MT Q1c", "SP24 HW4 Q2", "SP24 HW4 Q3", "SP24 HW5 Q4a", "SP23 MT Q7a", "SP23 MT Q7b", "SP23 MT Q7c", "SP23 MT Q8a", "SP23 MT Q8b"], "flags": []},
+    {"topic": "feedback", "unit": "u15", "target": 4, "assessed": ["SP24 MT Q1d", "SP24 HW4 Q2", "SP23 MT Q7a", "SP23 MT Q8a", "SP23 MT Q8c", "SP23 MT Q8d", "SP23 MT Q8e"], "flags": []},
+    {"topic": "loop-gain", "unit": "u15", "target": 4, "assessed": ["SP24 MT Q1d", "SP24 MT Q1e", "SP23 MT Q8c"], "flags": []},
+    {"topic": "gain-bandwidth-product", "unit": "u15", "target": 4, "assessed": ["SP23 MT Q8d", "SP23 MT Q8e"], "flags": ["not-yet-assessed"]},
+    {"topic": "op-amp-model", "unit": "u15", "target": 3, "assessed": ["SP24 HW4 Q2"], "flags": []},
+    {"topic": "feedback-and-impedance", "unit": "u15", "target": 3, "assessed": [], "flags": ["reader-only"]},
+    {"topic": "phase-margin", "unit": "u15", "target": 3, "assessed": [], "flags": ["reader-only"]},
+    {"topic": "offset-voltage", "unit": "u16", "target": 4, "assessed": ["SP24 HW5 Q4a", "SP23 MT Q8b"], "flags": []},
+    {"topic": "op-amp-bias-current", "unit": "u16", "target": 3, "assessed": ["SP24 HW5 Q4a"], "flags": []},
+    {"topic": "slew-rate", "unit": "u16", "target": 4, "assessed": ["SP24 MT Q1c", "SP24 HW5 Q4b"], "flags": []},
+    {"topic": "harmonic-distortion", "unit": "u16", "target": 3, "assessed": [], "flags": ["reader-only"]},
+    {"topic": "amplifier-noise", "unit": "u16", "target": 4, "assessed": ["FA10 FINAL Q4b"], "flags": ["old-exams-only"]}
+  ]
+}

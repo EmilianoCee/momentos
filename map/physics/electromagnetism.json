@@ -1,0 +1,20 @@
+{
+  "topics": [
+    {
+      "id": "gauss-law",
+      "title": "Gauss's law",
+      "essence": "Field lines start and end on charge. The flux leaving a closed surface is the charge inside over ε, so a sheet of charge makes the field jump, and where the material changes with no charge there, εE stays the same across the boundary.",
+      "check": "There is no charge at the oxide–silicon interface of a MOS capacitor, and the field in the oxide is 3 MV/cm. Is the field just inside the silicon larger or smaller, and by about what factor?"
+    },
+    {
+      "id": "poisson-equation",
+      "title": "Poisson's equation",
+      "essence": "In one dimension the slope of the field is the charge density over ε, and the field is minus the slope of the potential. Integrate the charge once for the field and again for the potential: a box of charge gives a triangle of field and a parabola of potential.",
+      "check": "A layer holds uniform positive charge on one side of a plane and uniform negative charge on the other. Sketch the field. Where is it largest, and why is the potential made of two parabolas?"
+    }
+  ],
+  "links": [
+    { "from": "dot-product", "to": "gauss-law", "why": "Flux is the field dotted with the surface's normal, summed over the surface." },
+    { "from": "gauss-law", "to": "poisson-equation", "why": "Apply Gauss's law to a thin slab: the field changes across it by the charge inside over ε." }
+  ]
+}
