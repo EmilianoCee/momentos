@@ -1,0 +1,658 @@
+<!doctype html>
+<!--
+  Concept:      With one energy store and a constant source, the store's voltage or current moves exponentially
+                from where it was to where the t → ∞ circuit puts it, covering 63% of what is left every τ.
+  Course:       EE 105 (RC and RL transients, time constants); EE 120 (first-order systems, step response)
+  Play with:    A capacitor or an inductor, R₁, R₂ across the store, V_S, the starting value, the switch, a square
+                wave, and views of the circuit at t = 0⁺ and t → ∞
+  Should click: Only v_C and i_L are continuous. Every other voltage and current can jump, and the circuits at
+                t = 0⁺ and t → ∞ are resistor circuits you already know how to solve.
+  Plan:         plans/rc-rl-step-response.md
+  Checked:      21 check cases pass (node scripts/test-tools.js). Headless Chrome, light and dark, no console errors:
+                1 kΩ, 1 µF, 5 V from 0 V reads τ = 1.00 ms, 3.16 V and i_C = 1.84 mA at τ, 63.2 % done, i_C(0⁺) = 5 mA;
+                1 H with R₂ = 1 kΩ, start 2 mA reads τ = 2.00 ms, i_L(∞) = 5.00 mA, v_L(0⁺) = 1.50 V; square wave with
+                a period of 2τ settles between about 1.34 V and 3.66 V; C = 2 µF gives 2.00 ms and adding R₂ gives
+                998 µs; switch off sends the final value to 0 V; arrow keys move the cursor 0.05τ, Shift 0.5τ; reset
+                restores the start.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RC and RL step response · momentos</title>
+<script>
+  // apply a saved light/dark choice before anything is painted
+  try {
+    var saved = localStorage.getItem("momentos-theme");
+    if (saved === "light" || saved === "dark") document.documentElement.dataset.theme = saved;
+  } catch (e) { /* no storage in some previews: follow the system setting */ }
+</script>
+<style>
+  /* ---- momentos house style: begin (the same block in every tool. Change it only in
+     templates/tool-template.html, then run scripts/sync-house-style.py) ---- */
+  :root {
+    color-scheme: light dark;
+    --bg: light-dark(#f6f4ee, #131312);          /* the page */
+    --surface: light-dark(#fbfaf6, #1b1b19);     /* figures and inputs */
+    --ink: light-dark(#1d1c1a, #ebe8e1);         /* text and the main strokes */
+    --ink-2: light-dark(#5f5c55, #b1ada3);       /* secondary text */
+    --ink-3: light-dark(#77736b, #8a867d);       /* labels, axis numbers */
+    --line: light-dark(rgba(29, 28, 26, 0.16), rgba(235, 232, 225, 0.18));   /* hairlines and borders */
+    --grid: light-dark(rgba(29, 28, 26, 0.07), rgba(235, 232, 225, 0.08));   /* grid lines */
+    --accent: light-dark(#c2410c, #ff8f5a);      /* the one thing being pointed at */
+    /* Colour is for quantities, never for decoration. Give each quantity one of these and keep it
+       the same in the figure, the numbers and the prose. */
+    --c1: light-dark(#2458c4, #7aa7ff);          /* blue */
+    --c2: light-dark(#c2410c, #ff9a62);          /* orange */
+    --c3: light-dark(#0f7f6b, #4fd3b4);          /* teal */
+    --c4: light-dark(#9d3fb0, #d78be6);          /* purple */
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+    --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  }
+  :root[data-theme="light"] { color-scheme: light; }
+  :root[data-theme="dark"] { color-scheme: dark; }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 17px/1.55 var(--serif);
+    -webkit-font-smoothing: antialiased;
+  }
+  .bar {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 22px;
+    font: 12px/1 var(--mono);
+    letter-spacing: 0.06em;
+    color: var(--ink-3);
+  }
+  .bar a { color: var(--ink-2); text-decoration: none; border-bottom: 1px solid var(--line); padding-bottom: 2px; }
+  .bar a:hover { color: var(--accent); border-color: var(--accent); }
+  .bar .grow { flex: 1; }
+  button {
+    font: 12px/1 var(--mono);
+    color: var(--ink-2);
+    background: transparent;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 7px 10px;
+    cursor: pointer;
+  }
+  button:hover { color: var(--ink); border-color: var(--ink-2); }
+  button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  button:disabled { opacity: 0.4; cursor: default; }
+  :focus-visible { outline: 1px dashed var(--ink); outline-offset: 2px; }
+
+  main { max-width: 1120px; margin: 0 auto; padding: 4px 22px 72px; }
+  h1 { font: 400 clamp(30px, 4.6vw, 44px)/1.08 var(--serif); letter-spacing: -0.015em; margin: 14px 0 10px; }
+  .lede { max-width: 62ch; margin: 0 0 26px; color: var(--ink-2); font-size: 18px; }
+  h2 {
+    font: 500 10.5px/1.4 var(--mono);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin: 0 0 10px;
+  }
+  .bench { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(280px, 1fr); gap: 28px; align-items: start; }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-top: 28px; }
+  figure { margin: 0; }
+  .stage { border: 1px solid var(--line); border-radius: 4px; background: var(--surface); overflow: hidden; }
+  .stage svg { display: block; width: 100%; height: auto; touch-action: none; user-select: none; -webkit-user-select: none; }
+  figcaption { padding: 9px 12px; border-top: 1px solid var(--line); font: 11.5px/1.5 var(--mono); color: var(--ink-3); }
+  .controls { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 12px; }
+  .controls label { font: 12px/1 var(--mono); color: var(--ink-2); display: inline-flex; align-items: center; gap: 6px; margin-left: 6px; }
+  input[type="range"] { accent-color: var(--ink); }
+  input[type="checkbox"] { accent-color: var(--ink); }
+
+  .notes { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 44px; margin-top: 46px; padding-top: 28px; border-top: 1px solid var(--line); }
+  .notes p { margin: 0 0 14px; max-width: 62ch; }
+  .notes p b { font-weight: 600; }
+  .notes ul { margin: 0 0 26px; padding: 0; list-style: none; }
+  .notes li { margin: 0 0 12px; padding-left: 14px; border-left: 1px solid var(--line); font-size: 16px; line-height: 1.45; }
+  .notes li a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--line); }
+  .notes li a:hover { color: var(--accent); border-color: var(--accent); }
+  details { margin-top: 4px; }
+  summary { font: 11.5px/1.4 var(--mono); color: var(--ink-3); cursor: pointer; }
+  details span { color: var(--ink-2); font-size: 15px; }
+  sup, sub { font-size: 0.72em; line-height: 0; }
+
+  @media (max-width: 860px) {
+    .bench, .pair, .notes { grid-template-columns: 1fr; }
+    .notes { gap: 28px; }
+  }
+  /* ---- momentos house style: end ---- */
+
+  /* ---- this tool: everything below is yours ---- */
+  var { font-style: italic; font-family: var(--serif); }
+  .grid line { stroke: var(--grid); stroke-width: 1; }
+  .grid .axis { stroke: var(--line); }
+  .tick { font: 10.5px var(--mono); fill: var(--ink-3); }
+  .w { fill: none; stroke: var(--ink); stroke-width: 1.6; stroke-linejoin: round; stroke-linecap: round; }
+  .term { fill: var(--surface); stroke: var(--ink); stroke-width: 1.4; }
+  .src4 { fill: var(--surface); stroke: var(--c4); stroke-width: 1.8; }
+  .src1 { fill: var(--surface); stroke: var(--c1); stroke-width: 1.8; }
+  .t1 { font: 12px var(--mono); fill: var(--c1); }
+  .t2 { font: 12px var(--mono); fill: var(--c2); }
+  .t3 { font: 11px var(--mono); fill: var(--c3); }
+  .t4 { font: 12px var(--mono); fill: var(--c4); }
+  .t0 { font: 12px var(--mono); fill: var(--ink-2); }
+  .a1 { stroke: var(--c1); stroke-width: 1.6; fill: none; } .h1 { fill: var(--c1); }
+  .a2 { stroke: var(--c2); stroke-width: 1.6; fill: none; } .h2 { fill: var(--c2); }
+  .x { fill: none; stroke: var(--c1); stroke-width: 2.6; stroke-linejoin: round; }
+  .j { fill: none; stroke: var(--c2); stroke-width: 1.6; stroke-linejoin: round; }
+  .fin { stroke: var(--c1); stroke-width: 1.2; stroke-dasharray: 6 4; }
+  .tan { stroke: var(--c3); stroke-width: 1.4; stroke-dasharray: 4 3; }
+  .mark { stroke: var(--c3); stroke-width: 1; stroke-dasharray: 1 3; }
+  .inp { fill: none; stroke: var(--c4); stroke-width: 1.2; }
+  .cursor { stroke: var(--ink-2); stroke-width: 1; stroke-dasharray: 3 3; }
+  .tri { fill: var(--ink-2); cursor: ew-resize; outline: none; }
+  .tri:focus-visible { stroke: var(--ink); stroke-width: 1.5; }
+  .hit { fill: transparent; cursor: crosshair; }
+  .d1 { fill: var(--c1); } .d2 { fill: var(--c2); } .d3 { fill: var(--c3); }
+  .read { font: 13px/1.6 var(--mono); font-variant-numeric: tabular-nums; }
+  .read p { margin: 0 0 4px; }
+  .read .big { font: 400 32px/1.15 var(--serif); color: var(--c3); margin: 4px 0 6px; }
+  .q1 { color: var(--c1); } .q2 { color: var(--c2); } .q3 { color: var(--c3); } .q0 { color: var(--ink-2); }
+  .controls output { font: 12px/1 var(--mono); color: var(--ink-2); min-width: 10ch; display: inline-block; }
+  .controls .lbl { font: 12px/1 var(--mono); color: var(--ink-3); }
+  .formula { font: 13px/1.6 var(--mono); border-left: 1px solid var(--line); padding-left: 10px; margin-top: 10px; }
+</style>
+</head>
+<body>
+
+<header class="bar">
+  <a href="../index.html#first-order-system">← map</a>
+  <span>systems</span>
+  <span class="grow"></span>
+  <button type="button" id="theme" aria-label="Switch between light and dark">◐</button>
+</header>
+
+<main>
+  <h1>RC and RL step response</h1>
+  <p class="lede">A capacitor's voltage and an inductor's current cannot jump. So when a switch moves, they start where
+    they were and slide exponentially to where the circuit will leave them. Three numbers solve it: the start, the
+    final value and τ.</p>
+
+  <div class="bench">
+    <div>
+      <figure class="stage">
+        <svg id="circuit" viewBox="0 0 640 300" role="group" aria-label="The circuit: a source, a two-way switch, R1, the energy store, and R2 when added"></svg>
+        <figcaption>The switch puts V_S or ground on the left end of R₁. "t = 0⁺" redraws the store as the source it is
+          at that instant; "t → ∞" as the open circuit or short it becomes.</figcaption>
+      </figure>
+      <div class="controls">
+        <span class="lbl">view</span>
+        <button type="button" data-view="circuit">circuit</button>
+        <button type="button" data-view="zero">t = 0⁺</button>
+        <button type="button" data-view="inf">t → ∞</button>
+        <span class="lbl" style="margin-left:12px">store</span>
+        <button type="button" data-store="C">capacitor</button>
+        <button type="button" data-store="L">inductor</button>
+      </div>
+      <div class="controls">
+        <label>R₁ <input type="range" id="sR1" min="2" max="5" step="0.05" value="3" aria-label="R1, log scale"></label><output id="oR1"></output>
+        <span id="gC"><label>C <input type="range" id="sC" min="-8" max="-4" step="0.05" value="-6" aria-label="C, log scale"></label><output id="oC"></output></span>
+        <span id="gL"><label>L <input type="range" id="sL" min="-3" max="1" step="0.05" value="0" aria-label="L, log scale"></label><output id="oL"></output></span>
+      </div>
+      <div class="controls">
+        <label>V_S <input type="range" id="sV" min="0" max="10" step="0.5" value="5" aria-label="source voltage"></label><output id="oV"></output>
+        <label>start <input type="range" id="sX" min="-10" max="10" step="0.5" value="0" aria-label="the state just before t = 0"></label><output id="oX"></output>
+      </div>
+      <div class="controls">
+        <label><input type="checkbox" id="r2on"> add R₂ across the store</label>
+        <span id="gR2"><label>R₂ <input type="range" id="sR2" min="2" max="5" step="0.05" value="3" aria-label="R2, log scale"></label><output id="oR2"></output></span>
+      </div>
+      <div class="controls">
+        <button type="button" id="switch">switch: on</button>
+        <span class="lbl" style="margin-left:12px">mode</span>
+        <button type="button" data-mode="step">step</button>
+        <button type="button" data-mode="square">square wave</button>
+        <span id="gK"><label>period <input type="range" id="sK" min="1" max="20" step="1" value="10" aria-label="period as a multiple of tau"></label><output id="oK"></output></span>
+        <button type="button" id="reset">reset</button>
+      </div>
+      <figure class="stage" style="margin-top:18px">
+      <svg id="plot" viewBox="0 0 640 360" role="group" aria-label="The state variable and the quantity that jumps against time"></svg>
+      <figcaption>The state in blue, the quantity that jumps in orange. Drag the cursor or press in the plot; focused,
+        ← → move it, with Shift ten times further.</figcaption>
+      </figure>
+    </div>
+    <aside class="read">
+      <h2>Time constant</h2>
+      <div class="big" id="r-tau"></div>
+      <p class="q0" id="r-rth"></p>
+      <p class="q1" id="r-start"></p>
+      <p class="q1" id="r-final"></p>
+      <h2 style="margin-top:16px">At the cursor</h2>
+      <p id="r-t"></p>
+      <p class="q1" id="r-x"></p>
+      <p class="q3" id="r-done"></p>
+      <p class="q2" id="r-j"></p>
+      <h2 style="margin-top:16px">Three numbers</h2>
+      <p>start: what the store held just before, <span id="n-start"></span></p>
+      <p>final: solve the t → ∞ circuit</p>
+      <p>τ: the resistance the store sees, sources off</p>
+      <div class="formula" id="n-formula"></div>
+    </aside>
+  </div>
+
+  <section class="notes">
+    <div>
+      <h2>What should click</h2>
+      <p><b>The state cannot jump.</b> A capacitor's voltage is its charge over C, and charge takes time to move. An
+        inductor's current is its flux over L. So v_C and i_L at t = 0⁺ are what they were at t = 0⁻. Everything else,
+        including i_C and v_L, can jump.</p>
+      <p><b>Two resistor circuits give the two ends.</b> At t = 0⁺ the capacitor is a voltage source and the inductor a
+        current source, holding their values. At t → ∞ the capacitor is open and the inductor a short. Solve each and
+        you have the jump and the final value.</p>
+      <p><b>τ is the resistance the store sees.</b> Turn the source off and look out from the store's terminals: R_th.
+        Then τ = R_th·C or L/R_th. A resistor across the store counts.</p>
+      <p><b>63% of what is left, every τ.</b> After τ the change is 63% done, after 3τ 95%, after 5τ 99%. The starting
+        slope, kept up, would finish at τ: the tangent.</p>
+    </div>
+    <div>
+      <h2>Predict, then try</h2>
+      <ul>
+        <li>Double C. Does the capacitor reach 5 V sooner or later?
+          <details><summary>why</summary><span>Later. τ = RC doubles: twice the charge has to move through the same resistor at the same current.</span></details></li>
+        <li>Close the switch with the capacitor at 0 V. What is the current the instant after, and what is it a long time later?
+          <details><summary>why</summary><span>5 mA, then 0. At t = 0⁺ the capacitor is a 0 V source, so all of V_S sits across R₁. At t → ∞ it is an open circuit.</span></details></li>
+        <li>Add R₂ = 1 kΩ across the capacitor. What happens to τ and to the final voltage?
+          <details><summary>why</summary><span>Both halve. The capacitor sees R₁ ∥ R₂ = 500 Ω, and the divider leaves it 2.5 V.</span></details></li>
+        <li>After one τ, is the capacitor at 5 V?
+          <details><summary>why</summary><span>No: at 63% of the way, 3.16 V. It is within 1% of 5 V only after about 5τ. The tangent line is what reaches 5 V at τ.</span></details></li>
+        <li>Switch to the inductor and add R₂. Does the inductor get faster or slower?
+          <details><summary>why</summary><span>Faster. τ = L/R_th, and R₂ makes R_th smaller. A capacitor and an inductor answer a smaller resistance in opposite ways.</span></details></li>
+        <li>Square wave with the period at 2τ. Does the capacitor ever reach 0 V or 5 V?
+          <details><summary>why</summary><span>No. Each half period is one τ, so it goes 63% of the way and turns back. It settles into a ripple between about 1.34 V and 3.66 V.</span></details></li>
+      </ul>
+      <h2>Where this shows up</h2>
+      <ul>
+        <li><a href="../index.html#first-order-system">first-order systems</a>: one store, one τ: the step response covers 63% of what is left every τ.</li>
+        <li><a href="../index.html#step-response">step response</a>: the switch on is a step input; where the curve settles is the circuit's gain for a constant input.</li>
+        <li><a href="../index.html#thevenin-norton">Thévenin and Norton</a>: the store sees a Thévenin source; its resistance is τ's R and its voltage is the final value.</li>
+        <li><a href="../index.html#kvl">KVL</a>: at t = 0⁺ the store is a source and KVL around the loop gives the jump.</li>
+        <li><a href="../index.html#bode-plot">Bode plot</a>: the same circuit in the frequency domain is one pole at 1/τ.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<script id="maths">
+// ---- the maths: plain functions with no page behind them. scripts/test-tools.js runs this block on
+// its own and compares it with the check cases below, so nothing in here may touch the DOM.
+// A two-way switch puts VS or ground on the left end of R1; R1 runs to the store (C or L) whose other end is
+// ground; R2, when not null, sits across the store. The state x is v_C in V or i_L in A.
+var MATHS = (function () {
+  "use strict";
+
+  // what the store sees with the source off, ohms
+  function rTh(R1, R2) { return R2 === null ? R1 : R1 * R2 / (R1 + R2); }
+  // open-circuit voltage at the store's terminals, V
+  function vTh(VS, R1, R2) { return R2 === null ? VS : VS * R2 / (R1 + R2); }
+  // time constant, s
+  function tau(store, R1, R2, X) { return store === "C" ? rTh(R1, R2) * X : X / rTh(R1, R2); }
+  // where the state ends with the input held at VS: C open (V), L a short (A)
+  function finalValue(store, VS, R1, R2) { return store === "C" ? vTh(VS, R1, R2) : vTh(VS, R1, R2) / rTh(R1, R2); }
+  function stateAt(start, final, tau, t) { return final + (start - final) * Math.exp(-t / tau); }
+  // the starting slope kept up
+  function tangentAt(start, final, tau, t) { return start + (final - start) * t / tau; }
+  // fraction of the change done after n time constants
+  function fractionDone(n) { return 1 - Math.exp(-n); }
+  // i_C into the top plate (A), or v_L with the top end positive (V)
+  function jumpAt(store, VS, R1, R2, x) {
+    return store === "C" ? (vTh(VS, R1, R2) - x) / rTh(R1, R2) : vTh(VS, R1, R2) - rTh(R1, R2) * x;
+  }
+  // input VS for the first half period, 0 V for the next, repeating; x0 at t = 0
+  function squareWave(store, VS, R1, R2, X, x0, half, t) {
+    var T = tau(store, R1, R2, X), x = x0, done = 0, k = 0;
+    while (done + half <= t) {
+      x = stateAt(x, finalValue(store, k % 2 === 0 ? VS : 0, R1, R2), T, half);
+      done += half; k += 1;
+    }
+    return stateAt(x, finalValue(store, k % 2 === 0 ? VS : 0, R1, R2), T, t - done);
+  }
+
+  return { rTh: rTh, vTh: vTh, tau: tau, finalValue: finalValue, stateAt: stateAt, tangentAt: tangentAt,
+    fractionDone: fractionDone, jumpAt: jumpAt, squareWave: squareWave };
+})();
+</script>
+<script type="application/json" id="check-cases">
+[
+  {"fn": "tau", "args": ["C", 1000, null, 1e-06], "expect": 0.001, "tol": 1e-09, "units": "s", "tag": "typical", "note": "R1 = 1 kΩ, C = 1 µF, no R2: τ = RC = 1 ms"},
+  {"fn": "tau", "args": ["C", 1000, 1000, 1e-06], "expect": 0.0005, "tol": 1e-09, "units": "s", "tag": "typical", "note": "the same with R2 = 1 kΩ across C: the capacitor sees 1 kΩ ∥ 1 kΩ = 500 Ω, so τ = 0.5 ms, not 1 ms"},
+  {"fn": "tau", "args": ["L", 1000, null, 1], "expect": 0.001, "tol": 1e-09, "units": "s", "tag": "typical", "note": "R1 = 1 kΩ, L = 1 H: τ = L/R = 1 ms"},
+  {"fn": "tau", "args": ["L", 1000, 1000, 1], "expect": 0.002, "tol": 1e-09, "units": "s", "tag": "typical", "note": "the same with R2 = 1 kΩ across L: L/(500 Ω) = 2 ms. A smaller resistance makes the inductor slower"},
+  {"fn": "rTh", "args": [1000, 3000], "expect": 750.0, "tol": 1e-09, "units": "Ω", "tag": "typical", "note": "R1 = 1 kΩ in parallel with R2 = 3 kΩ: 750 Ω, what the store sees with the source turned off"},
+  {"fn": "finalValue", "args": ["C", 5, 1000, null], "expect": 5, "tol": 1e-09, "units": "V", "tag": "typical", "note": "V_S = 5 V through 1 kΩ into a capacitor: it ends at 5 V, an open circuit carrying no current"},
+  {"fn": "finalValue", "args": ["C", 5, 1000, 1000], "expect": 2.5, "tol": 1e-09, "units": "V", "tag": "typical", "note": "with R2 = 1 kΩ across it, the capacitor ends at the divider's 2.5 V, not at 5 V"},
+  {"fn": "finalValue", "args": ["L", 5, 1000, 1000], "expect": 0.005, "tol": 1e-09, "units": "A", "tag": "typical", "note": "V_S = 5 V, R1 = 1 kΩ, R2 = 1 kΩ across an inductor: it ends as a short carrying 5 V/1 kΩ = 5 mA, and R2 carries nothing"},
+  {"fn": "stateAt", "args": [0, 5, 0.001, 0.001], "expect": 3.1606027941427883, "tol": 1e-09, "units": "V", "tag": "typical", "note": "from 0 V toward 5 V with τ = 1 ms, after 1 ms: 3.16 V, 63% of the way, not all of it"},
+  {"fn": "fractionDone", "args": [1], "expect": 0.6321205588285577, "tol": 1e-09, "units": "", "tag": "typical", "note": "after one τ, 63.2% of the change is done"},
+  {"fn": "fractionDone", "args": [5], "expect": 0.9932620530009145, "tol": 1e-09, "units": "", "tag": "typical", "note": "after five τ, 99.3% of the change is done"},
+  {"fn": "stateAt", "args": [0, 5, 0.001, 0], "expect": 0.0, "tol": 1e-09, "units": "V", "tag": "limit-zero", "note": "at t = 0⁺ the capacitor is still at its start, 0 V: its voltage cannot jump"},
+  {"fn": "jumpAt", "args": ["C", 5, 1000, null, 0], "expect": 0.005, "tol": 1e-09, "units": "A", "tag": "limit-zero", "note": "at t = 0⁺, with v_C = 0 V, the capacitor acts as a 0 V source: i_C jumps from 0 to 5 V/1 kΩ = 5 mA"},
+  {"fn": "jumpAt", "args": ["L", 5, 1000, null, 0], "expect": 5, "tol": 1e-09, "units": "V", "tag": "limit-zero", "note": "at t = 0⁺, with i_L = 0 A, the inductor acts as a 0 A current source, an open circuit: v_L jumps to the full 5 V"},
+  {"fn": "stateAt", "args": [0, 5, 0.001, 0.02], "expect": 4.999999989694232, "tol": 1e-09, "units": "V", "tag": "limit-infinity", "note": "after 20 τ the capacitor is at 5 V to within 0.00000001 V: the open-circuit picture"},
+  {"fn": "jumpAt", "args": ["C", 5, 1000, null, 5], "expect": 0.0, "tol": 1e-09, "units": "A", "tag": "limit-infinity", "note": "when v_C has reached 5 V the capacitor current is 0 A: an open circuit"},
+  {"fn": "tangentAt", "args": [0, 5, 0.001, 0.001], "expect": 5.0, "tol": 1e-09, "units": "V", "tag": "breaks", "note": "the tangent at t = 0⁺ reaches the final 5 V at t = τ = 1 ms; the curve itself is only at 3.16 V. Keeping the starting slope is wrong after the first few percent"},
+  {"fn": "jumpAt", "args": ["C", 0, 1000, null, 5], "expect": -0.005, "tol": 1e-09, "units": "A", "tag": "sign", "note": "the switch flips to ground with the capacitor at 5 V: i_C = −5 mA, the capacitor drives current back out through R1"},
+  {"fn": "stateAt", "args": [5, 0, 0.001, 0.001], "expect": 1.8393972058572117, "tol": 1e-09, "units": "V", "tag": "sign", "note": "discharging from 5 V toward 0 V with τ = 1 ms: after 1 ms it is at 1.84 V, 63% of the way down"},
+  {"fn": "squareWave", "args": ["C", 5, 1000, null, 1e-06, 0, 0.001, 0.0015], "expect": 1.9170024978210178, "tol": 1e-09, "units": "V", "tag": "typical", "note": "square wave with half period 1 ms = τ: charging for 1 ms reaches 3.16 V, then 0.5 ms toward 0 V leaves 1.92 V"},
+  {"fn": "squareWave", "args": ["C", 5, 1000, null, 1e-06, 0, 0.01, 0.01], "expect": 4.999773000351188, "tol": 1e-09, "units": "V", "tag": "typical", "note": "square wave with half period 10 ms = 10 τ: by the end of the first half the capacitor is at 5 V to within 0.0002 V"}
+]
+</script>
+<script>
+(function () {
+  "use strict";
+
+  const NS = "http://www.w3.org/2000/svg";
+  function S(name, attrs, parent) {
+    const el = document.createElementNS(NS, name);
+    for (const k in attrs) el.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(el);
+    return el;
+  }
+  const $ = (id) => document.getElementById(id);
+  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+  const f1 = (v) => v.toFixed(1);
+  // three significant figures and an SI prefix: eng(1e-3, "s") is "1.00 ms"
+  function eng(v, unit) {
+    if (Math.abs(v) < 1e-12) return "0 " + unit;
+    const pre = { "-12": "p", "-9": "n", "-6": "µ", "-3": "m", "0": "", "3": "k", "6": "M" };
+    let e = clamp(Math.floor(Math.log10(Math.abs(v)) / 3) * 3, -12, 6);
+    let s = Math.abs(v / Math.pow(10, e)).toPrecision(3);
+    if (Number(s) >= 1000 && e < 6) { e += 3; s = Math.abs(v / Math.pow(10, e)).toPrecision(3); }
+    return (v < 0 ? "−" : "") + s + " " + pre[String(e)] + unit;
+  }
+  function svgPoint(svg, e) {
+    const ctm = svg.getScreenCTM();
+    if (!ctm) return { x: 0, y: 0 };
+    const p = new DOMPoint(e.clientX, e.clientY).matrixTransform(ctm.inverse());
+    return { x: p.x, y: p.y };
+  }
+
+  // ------------------------------------------------------------ state
+
+  const START = { store: "C", lR1: 3, lC: -6, lL: 0, VS: 5, x0: 0, r2on: false, lR2: 3, sw: "on",
+    mode: "step", k: 10, view: "circuit", tn: 1 };
+  const st = Object.assign({}, START);       // tn: the cursor's time as a multiple of tau
+
+  const R1 = () => Math.pow(10, st.lR1);
+  const R2 = () => (st.r2on ? Math.pow(10, st.lR2) : null);
+  const X = () => Math.pow(10, st.store === "C" ? st.lC : st.lL);
+  const toSI = (v) => (st.store === "C" ? v : v / 1000);       // the start slider: V, or mA for i_L
+  const shown = (v) => (st.store === "C" ? v : v * 1000);      // the state as shown: V, or mA
+  const xUnit = () => (st.store === "C" ? "V" : "mA");
+  const jUnit = () => (st.store === "C" ? "mA" : "V");
+  const jShown = (v) => (st.store === "C" ? v * 1000 : v);
+  const xName = () => (st.store === "C" ? "v_C" : "i_L");
+  const jName = () => (st.store === "C" ? "i_C" : "v_L");
+  const T = () => MATHS.tau(st.store, R1(), R2(), X());
+  const half = () => (st.k * T()) / 2;
+  const span = () => (st.mode === "step" ? 6 * T() : 4 * st.k * T());
+  const inputStep = () => (st.sw === "on" ? st.VS : 0);
+  // the input during the segment that contains time t (square wave), or after the switch (step)
+  const inputAt = (t) => (st.mode === "step" ? inputStep() : (Math.floor(t / half() + 1e-9) % 2 === 0 ? st.VS : 0));
+  function stateAt(t) {
+    const x0 = toSI(st.x0);
+    if (st.mode === "step") return MATHS.stateAt(x0, MATHS.finalValue(st.store, inputStep(), R1(), R2()), T(), t);
+    return MATHS.squareWave(st.store, st.VS, R1(), R2(), X(), x0, half(), t);
+  }
+  const jumpAt = (t, input) => MATHS.jumpAt(st.store, input, R1(), R2(), stateAt(t));
+
+  // ------------------------------------------------------------ figure 1: the circuit
+
+  const C = $("circuit");
+  const layer = S("g", {}, C);
+  const W = (d) => S("path", { class: "w", d: d }, layer);
+  const Tx = (x, y, cls, text, anchor) => { const t = S("text", { x: x, y: y, class: cls, "text-anchor": anchor || "start" }, layer); t.textContent = text; return t; };
+  function arrowDown(x, y0, y1, n) {
+    S("path", { class: "a" + n, d: "M" + x + " " + y0 + "V" + (y1 - 6) }, layer);
+    S("path", { class: "h" + n, d: "M" + x + " " + y1 + "l-4 -8h8Z" }, layer);
+  }
+  function resistorV(x, y0, y1) {
+    let d = "M" + x + " " + y0 + "V" + (y0 + 10);
+    const n = 6, h = (y1 - y0 - 20) / n;
+    for (let i = 0; i < n; i++) d += "L" + (x + (i % 2 ? 7 : -7)) + " " + (y0 + 10 + h * (i + 0.5));
+    W(d + "L" + x + " " + (y1 - 10) + "V" + y1);
+  }
+
+  function drawCircuit() {
+    layer.textContent = "";
+    const right = st.r2on ? 500 : 400, cap = st.store === "C";
+    // source, switch, R1, rails
+    S("circle", { class: "src4", cx: 60, cy: 160, r: 18 }, layer);
+    Tx(60, 156, "t4", "+", "middle"); Tx(60, 172, "t4", "−", "middle");
+    Tx(8, 274, "t4", "V_S = " + eng(st.VS, "V"));
+    W("M60 142V70H117M60 178V250H" + right + "M120 113V250");
+    S("circle", { class: "term", cx: 120, cy: 70, r: 3 }, layer);
+    S("circle", { class: "term", cx: 120, cy: 110, r: 3 }, layer);
+    Tx(112, 62, "tick", "on", "end"); Tx(112, 114, "tick", "off", "end");
+    const on = st.mode === "square" ? true : st.sw === "on";
+    W("M160 70L" + (on ? "124 70" : "124 107"));
+    S("circle", { cx: 160, cy: 70, r: 3, fill: "var(--ink)" }, layer);
+    W("M160 70H190M290 70H" + right);
+    let d = "M190 70H200";
+    for (let i = 0; i < 6; i++) d += "L" + (200 + 80 / 6 * (i + 0.5)) + " " + (70 + (i % 2 ? 7 : -7));
+    W(d + "L280 70H290");
+    Tx(240, 52, "t0", "R₁ = " + eng(R1(), "Ω"), "middle");
+    if (st.r2on) { W("M500 70V120M500 200V250"); resistorV(500, 120, 200); Tx(512, 164, "t0", "R₂ = " + eng(R2(), "Ω")); }
+    // the store, in the chosen view
+    W("M400 70V120M400 200V250");
+    const x0 = toSI(st.x0), in0 = st.mode === "square" ? st.VS : inputStep();
+    if (st.view === "circuit") {
+      if (cap) {
+        W("M400 120V156M388 156H412M388 164H412M400 164V200");
+        Tx(380, 146, "t1", "+", "end"); Tx(380, 188, "t1", "−", "end"); Tx(372, 168, "t1", "v_C", "end");
+        arrowDown(424, 128, 156, 2); Tx(432, 146, "t2", "i_C");
+      } else {
+        W("M400 120a10 10 0 0 1 0 20a10 10 0 0 1 0 20a10 10 0 0 1 0 20a10 10 0 0 1 0 20");
+        arrowDown(378, 128, 160, 1); Tx(370, 148, "t1", "i_L", "end");
+        Tx(426, 136, "t2", "+"); Tx(426, 196, "t2", "−"); Tx(432, 168, "t2", "v_L");
+      }
+    } else if (st.view === "zero") {
+      W("M400 120V142M400 178V200");
+      S("circle", { class: "src1", cx: 400, cy: 160, r: 18 }, layer);
+      if (cap) { Tx(400, 156, "t1", "+", "middle"); Tx(400, 172, "t1", "−", "middle"); }
+      else arrowDown(400, 147, 175, 1);
+      Tx(400, 272, "t1", xName() + "(0⁺) = " + eng(shown(x0), xUnit()), "middle");
+      Tx(400, 290, "t2", jName() + "(0⁺) = " + eng(jShown(MATHS.jumpAt(st.store, in0, R1(), R2(), x0)), jUnit()), "middle");
+    } else {
+      if (cap) { W("M400 120V150M400 170V200"); Tx(412, 164, "t2", "open: i_C = 0"); }
+      else { W("M400 120V200"); Tx(412, 164, "t2", "short: v_L = 0"); }
+      Tx(400, 278, "t1", xName() + "(∞) = " + eng(shown(MATHS.finalValue(st.store, in0, R1(), R2())), xUnit()), "middle");
+    }
+  }
+
+  // ------------------------------------------------------------ figure 2: the plot
+
+  const P = $("plot");
+  const PX0 = 64, PX1 = 580, PY0 = 20, PY1 = 320, MID = (PY0 + PY1) / 2;
+  const grid = S("g", { class: "grid" }, P), labels = S("g", {}, P), marks = S("g", {}, P);
+  const inp = S("path", { class: "inp" }, P);
+  const jPath = S("path", { class: "j" }, P), xPath = S("path", { class: "x" }, P);
+  const startDot = S("circle", { class: "d1", r: 5 }, P);
+  const hit = S("rect", { class: "hit", x: PX0, y: PY0, width: PX1 - PX0, height: PY1 - PY0 }, P);
+  const cursor = S("line", { class: "cursor", y1: PY0, y2: PY1 }, P);
+  const cdx = S("circle", { class: "d1", r: 4.5 }, P), cdj = S("circle", { class: "d2", r: 4 }, P);
+  const tri = S("path", { class: "tri", d: "M0 0L-7 11H7Z", tabindex: 0, role: "slider", "aria-label": "cursor time" }, P);
+  let view = null;      // the scales of the current drawing
+
+  function drawPlot() {
+    const t1 = span(), N = 300, tau = T();
+    // samples, one run per segment of constant input, so the jumps are drawn as vertical lines
+    const segs = [];
+    if (st.mode === "step") segs.push([0, t1]);
+    else for (let a = 0; a < t1 - 1e-12 * t1; a += half()) segs.push([a, Math.min(a + half(), t1)]);
+    const pts = [];
+    segs.forEach((s) => {
+      const n = Math.max(2, Math.round((N * (s[1] - s[0])) / t1)), input = inputAt(s[0] + 1e-9 * t1);
+      for (let i = 0; i <= n; i++) {
+        const t = s[0] + ((s[1] - s[0]) * i) / n;
+        pts.push({ t: t, x: stateAt(t), j: jumpAt(t, input), u: input });
+      }
+    });
+    const x0 = toSI(st.x0), fin = MATHS.finalValue(st.store, st.mode === "step" ? inputStep() : st.VS, R1(), R2());
+    let lo = Math.min(0, x0, fin), hi = Math.max(0, x0, fin);
+    pts.forEach((p) => { lo = Math.min(lo, p.x); hi = Math.max(hi, p.x); });
+    const minSpan = st.store === "C" ? 1 : 1e-3;
+    if (hi - lo < minSpan) { const c = (hi + lo) / 2; lo = c - minSpan / 2; hi = c + minSpan / 2; }
+    const pad = 0.1 * (hi - lo); lo -= pad; hi += pad;
+    let jmax = 0; pts.forEach((p) => { jmax = Math.max(jmax, Math.abs(p.j)); });
+    if (jmax === 0) jmax = st.store === "C" ? 1e-3 : 1;
+    const TX = (t) => PX0 + ((PX1 - PX0) * t) / t1;
+    const YX = (x) => PY1 - ((x - lo) / (hi - lo)) * (PY1 - PY0);
+    const YJ = (j) => MID - (0.9 * (MID - PY0) * j) / jmax;
+    view = { TX: TX, YX: YX, YJ: YJ, t1: t1 };
+
+    grid.textContent = ""; labels.textContent = ""; marks.textContent = "";
+    const every = st.mode === "step" ? tau : half();
+    for (let k = 0; k * every <= t1 * (1 + 1e-9); k++) {
+      const x = TX(k * every);
+      S("line", { x1: x, x2: x, y1: PY0, y2: PY1, class: k === 0 ? "axis" : "" }, grid);
+      S("text", { x: x, y: PY1 + 30, "text-anchor": "middle", class: "tick" }, labels).textContent = k === 0 ? "0" : eng(k * every, "s");
+    }
+    S("text", { x: 632, y: PY1 + 30, "text-anchor": "end", class: "tick" }, labels).textContent = "t";
+    for (let k = 0; k <= 4; k++) {
+      const v = lo + ((hi - lo) * k) / 4, y = YX(v);
+      S("line", { x1: PX0, x2: PX1, y1: y, y2: y, class: k === 0 ? "axis" : "" }, grid);
+      S("text", { x: PX0 - 6, y: y + 3.5, "text-anchor": "end", class: "t1", style: "font-size:10.5px" }, labels).textContent = Number(shown(v).toPrecision(3)).toString().replace("-", "−");
+    }
+    [-1, 0, 1].forEach((s) => {
+      S("text", { x: PX1 + 6, y: YJ(s * jmax) + 3.5, class: "t2", style: "font-size:10.5px" }, labels).textContent = Number(jShown(s * jmax).toPrecision(3)).toString().replace("-", "−");
+    });
+    S("text", { x: 4, y: 12, class: "t1", style: "font-size:10.5px" }, labels).textContent = xName() + " (" + xUnit() + ")";
+    S("text", { x: 636, y: 12, "text-anchor": "end", class: "t2", style: "font-size:10.5px" }, labels).textContent = jName() + " (" + jUnit() + ")";
+
+    if (st.mode === "step") {
+      S("line", { class: "fin", x1: PX0, x2: PX1, y1: YX(fin), y2: YX(fin) }, marks);
+      S("text", { x: PX1 - 4, y: YX(fin) - 6, "text-anchor": "end", class: "t1" }, marks).textContent = "final";
+      S("line", { class: "tan", x1: TX(0), y1: YX(MATHS.tangentAt(x0, fin, tau, 0)), x2: TX(tau), y2: YX(MATHS.tangentAt(x0, fin, tau, tau)) }, marks);
+      S("circle", { class: "d3", r: 4, cx: TX(tau), cy: YX(fin) }, marks);
+      S("text", { x: TX(tau) + 6, y: YX(fin) + (fin >= x0 ? -8 : 16), class: "t3" }, marks).textContent = "τ";
+      [1, 2, 3, 5].forEach((n) => {
+        S("line", { class: "mark", x1: TX(n * tau), x2: TX(n * tau), y1: PY0, y2: PY1 }, marks);
+        S("text", { x: TX(n * tau), y: PY0 - 6, "text-anchor": "middle", class: "t3" }, marks).textContent = Math.round(100 * MATHS.fractionDone(n)) + "%";
+      });
+      inp.setAttribute("d", "");
+    } else {
+      let d = "";
+      pts.forEach((p, i) => { d += (i ? "L" : "M") + f1(TX(p.t)) + " " + (p.u > 0 ? PY0 + 4 : PY0 + 20); });
+      inp.setAttribute("d", d);
+      S("text", { x: PX0 + 4, y: PY0 + 16, class: "t4", style: "font-size:10px" }, marks).textContent = "V_S on";
+      S("text", { x: TX(half()) + 4, y: PY0 + 32, class: "t4", style: "font-size:10px" }, marks).textContent = "off";
+    }
+    let dx = "", dj = "";
+    pts.forEach((p, i) => {
+      dx += (i ? "L" : "M") + f1(TX(p.t)) + " " + f1(YX(p.x));
+      dj += (i ? "L" : "M") + f1(TX(p.t)) + " " + f1(YJ(p.j));
+    });
+    xPath.setAttribute("d", dx); jPath.setAttribute("d", dj);
+    startDot.setAttribute("cx", TX(0)); startDot.setAttribute("cy", YX(x0));
+  }
+
+  // ------------------------------------------------------------ cursor and readouts
+
+  function drawCursor() {
+    const tau = T(), t = clamp(st.tn * tau, 0, span()), x = stateAt(t), j = jumpAt(t, inputAt(t));
+    const px = view.TX(t);
+    cursor.setAttribute("x1", f1(px)); cursor.setAttribute("x2", f1(px));
+    cdx.setAttribute("cx", f1(px)); cdx.setAttribute("cy", f1(view.YX(x)));
+    cdj.setAttribute("cx", f1(px)); cdj.setAttribute("cy", f1(view.YJ(j)));
+    tri.setAttribute("transform", "translate(" + f1(px) + " " + (PY1 + 4) + ")");
+    tri.setAttribute("aria-valuetext", eng(t, "s"));
+    $("r-t").textContent = "t = " + eng(t, "s") + " = " + (t / tau).toFixed(2) + " τ";
+    $("r-x").textContent = xName() + " = " + eng(shown(x), xUnit());
+    $("r-done").textContent = st.mode === "step" ? (100 * MATHS.fractionDone(t / tau)).toFixed(1) + " % of the change done" : "";
+    $("r-j").textContent = jName() + " = " + eng(jShown(j), jUnit());
+  }
+
+  function readouts() {
+    const cap = st.store === "C", x0 = toSI(st.x0), in0 = st.mode === "square" ? st.VS : inputStep();
+    const fin = MATHS.finalValue(st.store, in0, R1(), R2());
+    $("r-tau").textContent = "τ = " + (cap ? "R_th·C" : "L/R_th") + " = " + eng(T(), "s");
+    $("r-rth").textContent = st.r2on ? "R_th = R₁ ∥ R₂ = " + eng(MATHS.rTh(R1(), R2()), "Ω") : "R_th = R₁ = " + eng(R1(), "Ω");
+    $("r-start").textContent = "x_start = " + xName() + "(0⁺) = " + eng(shown(x0), xUnit());
+    $("r-final").textContent = "x_final = " + xName() + "(∞) = " + eng(shown(fin), xUnit());
+    $("n-start").textContent = xName() + "(0⁻) = " + xName() + "(0⁺)";
+    $("n-formula").innerHTML = xName() + "(t) = " + eng(shown(fin), xUnit()) + " + (" + eng(shown(x0), xUnit()) + " − " +
+      eng(shown(fin), xUnit()) + ")·e<sup>−t/" + eng(T(), "s").replace(" ", "&nbsp;") + "</sup>" +
+      (st.mode === "square" ? "<br><span class=\"q0\">(for the first half period)</span>" : "");
+  }
+
+  function render() { drawCircuit(); drawPlot(); readouts(); drawCursor(); }
+
+  // ------------------------------------------------------------ controls
+
+  function sync() {
+    document.querySelectorAll("[data-view]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.view === st.view)));
+    document.querySelectorAll("[data-store]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.store === st.store)));
+    document.querySelectorAll("[data-mode]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.mode === st.mode)));
+    $("gC").style.display = st.store === "C" ? "" : "none";
+    $("gL").style.display = st.store === "L" ? "" : "none";
+    $("gR2").style.display = st.r2on ? "" : "none";
+    $("gK").style.display = st.mode === "square" ? "" : "none";
+    $("switch").disabled = st.mode === "square";
+    $("switch").textContent = "switch: " + st.sw;
+    $("r2on").checked = st.r2on;
+    [["sR1", "lR1"], ["sC", "lC"], ["sL", "lL"], ["sV", "VS"], ["sX", "x0"], ["sR2", "lR2"], ["sK", "k"]].forEach((p) => { $(p[0]).value = st[p[1]]; });
+    $("oR1").textContent = "R₁ = " + eng(R1(), "Ω");
+    $("oC").textContent = "C = " + eng(Math.pow(10, st.lC), "F");
+    $("oL").textContent = "L = " + eng(Math.pow(10, st.lL), "H");
+    $("oV").textContent = "V_S = " + st.VS.toFixed(1) + " V";
+    $("oX").textContent = "start = " + st.x0.toFixed(1).replace("-", "−") + " " + xUnit();
+    $("oR2").textContent = "R₂ = " + eng(Math.pow(10, st.lR2), "Ω");
+    $("oK").textContent = "period = " + st.k + " τ";
+  }
+  function change(fn) { fn(); st.tn = clamp(st.tn, 0, span() / T()); sync(); render(); }
+
+  document.querySelectorAll("[data-view]").forEach((b) => b.addEventListener("click", () => { st.view = b.dataset.view; sync(); drawCircuit(); }));
+  document.querySelectorAll("[data-store]").forEach((b) => b.addEventListener("click", () => change(() => { st.store = b.dataset.store; })));
+  document.querySelectorAll("[data-mode]").forEach((b) => b.addEventListener("click", () => change(() => { st.mode = b.dataset.mode; })));
+  [["sR1", "lR1"], ["sC", "lC"], ["sL", "lL"], ["sV", "VS"], ["sX", "x0"], ["sR2", "lR2"], ["sK", "k"]].forEach((p) =>
+    $(p[0]).addEventListener("input", (e) => change(() => { st[p[1]] = Number(e.target.value); })));
+  $("r2on").addEventListener("change", (e) => change(() => { st.r2on = e.target.checked; }));
+  $("switch").addEventListener("click", () => change(() => { st.sw = st.sw === "on" ? "off" : "on"; }));
+  $("reset").addEventListener("click", () => change(() => { Object.assign(st, START); }));
+
+  // the cursor: drag the triangle or press in the plot; arrows step 1/120 of the window, Shift 1/12
+  function setCursorT(t) { st.tn = clamp(t, 0, span()) / T(); drawCursor(); }
+  const tOf = (e) => ((svgPoint(P, e).x - PX0) / (PX1 - PX0)) * span();
+  [tri, hit].forEach((el) => {
+    let on = false;
+    el.addEventListener("pointerdown", (e) => {
+      e.preventDefault(); on = true;
+      try { el.setPointerCapture(e.pointerId); } catch (_) { /* fine without capture */ }
+      tri.focus({ preventScroll: true });
+      setCursorT(tOf(e));
+    });
+    el.addEventListener("pointermove", (e) => { if (on) setCursorT(tOf(e)); });
+    el.addEventListener("pointerup", () => { on = false; });
+    el.addEventListener("pointercancel", () => { on = false; });
+  });
+  tri.addEventListener("keydown", (e) => {
+    const dir = { ArrowLeft: -1, ArrowDown: -1, ArrowRight: 1, ArrowUp: 1 }[e.key];
+    if (!dir) return;
+    e.preventDefault();
+    setCursorT(st.tn * T() + dir * span() / (e.shiftKey ? 12 : 120));
+  });
+
+  $("theme").addEventListener("click", () => {
+    const root = document.documentElement;
+    const dark = root.dataset.theme ? root.dataset.theme === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+    root.dataset.theme = dark ? "light" : "dark";
+    try { localStorage.setItem("momentos-theme", root.dataset.theme); } catch (_) { /* switched, just not remembered */ }
+  });
+
+  sync();
+  render();
+
+  // for checking the numbers from the console
+  window.TOOL = { st: st, stateAt: stateAt, render: render, setCursorT: setCursorT, set: (o) => change(() => Object.assign(st, o)) };
+})();
+</script>
+</body>
+</html>

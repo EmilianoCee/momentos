@@ -1,0 +1,108 @@
+{
+  "bode-plot": {
+    "L1": "States that a pole bends the magnitude down by 20 dB per decade and that the corner of an RC circuit is at 1/(RC), with notes open.",
+    "L2": "Writes H(jω) for an RC or RL filter, computes the corner, and draws the straight-line magnitude and the three-segment phase of a function with real poles and zeros by following the rules.",
+    "L3": "Explains −3 dB and −45° at a corner from 1 + j; predicts how the curve slides when R or C changes; adds the lines of two or three factors without being told the slopes; says a pole's phase is −5.7° a decade below its corner and why the sketch spreads the turn over two decades.",
+    "L4": "Reads poles and zeros off a measured Bode plot; knows the sketch is off by 3 dB per factor at a corner and 6 dB where two coincide, that the phase sketch fails when corners are less than a decade apart, and that complex poles need a peak the straight lines cannot show.",
+    "missteps": [
+      "takes the −3 dB point as half the amplitude",
+      "puts −90° of phase at the corner",
+      "reads 1/(RC) as a frequency in Hz",
+      "starts the phase turn at the corner instead of a decade before it",
+      "adds a pole's slope only from where the previous one ends, instead of from its own corner"
+    ],
+    "seeds": {
+      "predict": "A low-pass RC with its corner at some ω_c; the capacitor is doubled. Where does the corner go, and what is |H| in dB at the old corner?",
+      "explain": "Why the phase of one pole is −45° at its corner and needs two decades to turn by 90°.",
+      "limit": "Two poles brought closer together until they coincide: when does the straight-line sketch stop being good to 1 dB?",
+      "transfer": "An amplifier with a zero at the origin from a coupling capacitor and a high pole from a load capacitor: sketch its midband and say where its bandwidth ends."
+    }
+  },
+  "transfer-function": {
+    "L1": "States that H(s) is the ratio of the output's transform to the input's, with the system at rest.",
+    "L2": "Writes H(s) of an RC, RL or op-amp circuit from impedances, or of a differential equation by replacing d/dt with s.",
+    "L3": "Reads off H(s) what a circuit does at DC and at very high frequency by letting s go to 0 and to infinity, and says which factor of H(s) each element puts there.",
+    "L4": "Chooses the form K·Π(1 + s/z)/Π(1 + s/p) to make corners visible, and knows H(s) says nothing about a circuit that was not at rest or that is not linear.",
+    "missteps": [
+      "writes the impedance of a capacitor as jωC instead of 1/(jωC)",
+      "forgets the zero at the origin of a high-pass",
+      "leaves H(s) in a form whose corners cannot be read off"
+    ],
+    "seeds": {
+      "predict": "A divider of a resistor and a capacitor: which element on top makes it pass low frequencies, and what does H(s) do as s grows?",
+      "explain": "Why replacing d/dt by s turns a differential equation into a ratio of polynomials.",
+      "limit": "Let s go to 0 and to infinity in H(s) of a filter, and say what each limit means for the circuit.",
+      "transfer": "A two-stage circuit with a buffer between the stages: write the overall H(s) and say why the buffer lets the factors multiply."
+    }
+  },
+  "poles-and-zeros": {
+    "L1": "States that a pole is a value of s where H blows up and a zero one where H vanishes.",
+    "L2": "Finds the poles and zeros of a rational H(s) and places them in the s-plane.",
+    "L3": "Explains a pole's effect at s = jω as the vector from the pole to jω: its length sets the magnitude and its angle the phase, so the angle is 45° when ω equals the pole's distance from the origin.",
+    "L4": "Predicts the response from the pole-zero picture alone, including what a right-half-plane zero does to the phase, and knows when a far pole can be dropped.",
+    "missteps": [
+      "puts the pole of 1/(1 + s/p) at +p instead of −p",
+      "treats a zero as removing a frequency completely when it is off the jω axis",
+      "measures the angle from the jω axis instead of the σ axis"
+    ],
+    "seeds": {
+      "predict": "A pole at −1000 rad/s: what angle does its vector to j1000 make, and what is its share of |H| there?",
+      "explain": "Why a zero on the jω axis blocks a sinusoid completely, and one in the left half-plane only bends the Bode plot.",
+      "limit": "A second pole moved further and further from the first: when does it stop mattering at the first pole's corner?",
+      "transfer": "A measured phase that keeps falling where the magnitude has flattened: which pole-zero pattern does that point to?"
+    }
+  },
+  "feedback": {
+    "L1": "States the closed-loop gain G/(1 + GH) and that a large loop gain makes it close to 1/H.",
+    "L2": "Computes the closed-loop gain of a loop from G and H, and the gain of an op-amp circuit from A and β.",
+    "L3": "Explains why the closed-loop gain stops depending on G when GH is large, predicts how much the gain moves when G halves, and identifies the fed-back fraction β in a circuit.",
+    "L4": "Knows the benefits (gain set by H, errors and drift divided by 1 + GH) last only where |GH| is large, that the loop must stay negative, and that a loop with too much phase lag can turn positive and oscillate.",
+    "missteps": [
+      "writes G/(1 − GH) for negative feedback",
+      "assumes the closed-loop gain halves when G halves",
+      "takes H as the gain of the feedback network from input to output instead of output back to input"
+    ],
+    "seeds": {
+      "predict": "A loop with G = 10⁴ and H = 0.01; G drops by a factor of two. By how much does the closed-loop gain change?",
+      "explain": "Why feeding back a fraction of the output makes the gain depend on the resistors and not on the amplifier.",
+      "limit": "Let GH shrink toward 1 and then below it: what is left of the benefits of feedback?",
+      "transfer": "A thermostat that heats in proportion to the temperature error: name G, H and the loop gain, and say what a larger heater does to the steady-state error."
+    }
+  },
+  "first-order-system": {
+    "L1": "States that one energy store gives one time constant, τ = RC or L/R, and that the step response is an exponential.",
+    "L2": "Computes τ for a single resistor and writes x(t) = x_final + (x_start − x_final)·e^(−t/τ) for a given start and final value.",
+    "L3": "Finds the start from the continuity of v_C or i_L, the final value from the t → ∞ circuit and τ from the Thévenin resistance the store sees; says the change is 63% done after τ and 99% after 5τ; connects τ to the corner 1/τ of the frequency response.",
+    "L4": "Handles a switch that moves again before the transient settles; reads τ off a measured curve; knows the model needs a constant input after the switch and ideal parts, and what an inductor does when its current path is broken.",
+    "missteps": [
+      "uses the nearest resistor instead of the Thévenin resistance for τ",
+      "lets v_C or i_L jump at the switching moment",
+      "takes the final value of a capacitor with a resistor across it as V_S instead of the divider's value",
+      "writes the exponential with the start and final values swapped",
+      "thinks the inductor's τ grows with resistance"
+    ],
+    "seeds": {
+      "predict": "A capacitor charged through R₁ with R₂ across it; R₂ is removed. What happens to τ and to the final voltage?",
+      "explain": "Why a capacitor's voltage cannot jump but its current can.",
+      "limit": "The half period of a square wave made much shorter than τ: what does the capacitor's voltage look like?",
+      "transfer": "A sensor with a known time constant read by a sampling circuit: how long after a step must it wait for the reading to be within 0.1%?"
+    }
+  },
+  "step-response": {
+    "L1": "States that the step response is the output for a unit step input.",
+    "L2": "Computes the step response of a first-order circuit or system from its τ and its gain for a constant input.",
+    "L3": "Explains the step response as the running integral of the impulse response, says where it settles from the DC gain, and reads τ from where the starting tangent meets the final value.",
+    "L4": "Uses linearity to build the response to a pulse or a square wave from shifted step responses, and knows when the settled value is undefined (an integrator, an unstable system).",
+    "missteps": [
+      "takes the settled value as the input's size instead of the input times the DC gain",
+      "reads τ as the time to reach the final value",
+      "adds the responses to two steps without shifting the second in time"
+    ],
+    "seeds": {
+      "predict": "A system with DC gain 0.5 and τ = 2 ms gets a 4 V step: where is the output after 2 ms and after 10 ms?",
+      "explain": "Why the step response is the running integral of the impulse response.",
+      "limit": "A pulse made shorter and shorter than τ, with its area kept fixed: what does the response approach?",
+      "transfer": "A pulse of width 3τ into a first-order system: write its response as the difference of two step responses."
+    }
+  }
+}

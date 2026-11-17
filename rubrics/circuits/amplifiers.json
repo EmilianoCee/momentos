@@ -1,0 +1,21 @@
+{
+  "ideal-op-amp": {
+    "L1": "States the two rules of the ideal op-amp, equal input voltages and no input current, and the gains −R₂/R₁ and 1 + R₂/R₁, with notes open.",
+    "L2": "Applies the inverting, non-inverting and follower formulas to find v_out, and solves those three circuits with the two rules.",
+    "L3": "Solves an unfamiliar op-amp circuit with the recipe (V₊ = V₋, no input current, KCL at the pinned node); explains the virtual short as the output moving until the inputs agree, so v₊ − v₋ = v_out/A; predicts the gain error from 1/(1 + Aβ).",
+    "L4": "Checks that the feedback is negative and the output inside the rails before using the virtual short; estimates the error of a finite-gain op-amp; says when input current or output resistance stops being negligible.",
+    "missteps": [
+      "uses the virtual short in a circuit with positive feedback or a saturated output",
+      "lets current flow into the op-amp's inputs when writing KCL",
+      "treats the virtual short as a wire and sends current through it",
+      "takes the non-inverting gain as R₂/R₁",
+      "computes β with the wrong resistor on top"
+    ],
+    "seeds": {
+      "predict": "An inverting amplifier with a given R₁ and R₂ whose op-amp's A falls by a factor of ten: by how much does the gain change?",
+      "explain": "Why the − input of an inverting amplifier sits at ground although nothing connects it to ground.",
+      "limit": "Raise v_in until the output reaches a rail: what happens to v₋, and why does the recipe stop working?",
+      "transfer": "A summing amplifier with two inputs through two resistors into one node: find v_out with the recipe."
+    }
+  }
+}

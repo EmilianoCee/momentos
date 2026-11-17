@@ -166,7 +166,8 @@
       "id": "ideal-op-amp",
       "title": "ideal op-amp",
       "essence": "An op-amp's gain is so large that, with negative feedback, its output moves until its two inputs are at almost the same voltage: the virtual short. No current enters the inputs. Those two facts solve the standard circuits by inspection.",
-      "check": "In an inverting amplifier with 1 kΩ at the input and 10 kΩ in the feedback path, where does the input current go, and what is the gain?"
+      "check": "In an inverting amplifier with 1 kΩ at the input and 10 kΩ in the feedback path, where does the input current go, and what is the gain?",
+      "tools": ["circuits/amplifiers/ideal-op-amp.html"]
     },
     {
       "id": "op-amp-model",

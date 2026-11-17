@@ -108,6 +108,8 @@ The owner's record exists and EE 120 is fully mapped. The user can run `onboard 
   - Expand the first `stub` row of `plans/BACKLOG.md`. The reference script in `plans/checks/` comes first, and
     the plan's check cases are its output, pasted unchanged.
   - Done per plan: status `planned`, and `python3 scripts/check.py plans` passes.
+  - Started 2026-11-17: `bode-plot`, `ideal-op-amp` and `rc-rl-step-response` are full plans with reference
+    scripts, and their topics have rubric entries. Next: `small-signal-analysis`.
 
 - [ ] **5. The pilot.** Model: Opus runs it, a Sonnet subagent builds. Skill: `build-tool`.
   - Once one full plan exists, start a Sonnet subagent with only: "Work in the repo at <path>. Follow
@@ -119,6 +121,10 @@ The owner's record exists and EE 120 is fully mapped. The user can run `onboard 
 
 - [ ] **6. Build tools, in backlog order.** Model: Sonnet, one tool per session. Skill: `build-tool`.
   - Done per tool: the plan's acceptance checklist holds and the plan's status is `built`.
+  - Started 2026-11-17: the three plans above were built in the same session that wrote them (by the plan's
+    author, not a fresh builder), so they do not count as the pilot of task 5. Each plan was edited where the
+    build showed a layout that did not work (figure placement, label positions), and the plan now says what was
+    built.
 
 ## Tier 2: EE 128
 
@@ -177,3 +183,6 @@ The owner's record exists and EE 120 is fully mapped. The user can run `onboard 
 - 2026-11-16: the EE 105 curriculum (108 concepts) and 94 new map topics; `bode-plot` added to EE 120. Fixed a
   map bug: the filters overwrote each topic's list of outgoing links, so clicking a topic or opening
   `index.html#<id>` threw an error.
+- 2026-11-17: the first three EE 105 and EE 120 tools, from full plans: `systems/bode-plot.html`,
+  `circuits/amplifiers/ideal-op-amp.html`, `systems/rc-rl-step-response.html`, with 65 check cases between them
+  and rubric entries for their seven topics.

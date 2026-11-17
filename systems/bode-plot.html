@@ -1,0 +1,775 @@
+<!doctype html>
+<!--
+  Concept:      Each pole bends |H| down by 20 dB per decade from its corner, and each zero bends it up, so a
+                Bode plot is a sum of straight lines with a smooth curve over them.
+  Course:       EE 105 (frequency response of amplifiers); EE 120 (Bode plots, poles and zeros)
+  Play with:    An RC or RL circuit with sliders for R, C and L, or up to three poles and two zeros dragged
+                along the ω axis; a cursor that sets the frequency of the sine waves
+  Should click: At the corner the real and imaginary parts are equal, so |H| is 1/√2 (−3 dB) and the phase
+                is −45°; the phase needs a decade on each side to finish its turn.
+  Plan:         plans/bode-plot.md
+  Checked:      27 check cases pass (node scripts/test-tools.js). Headless Chrome, light and dark, no console errors:
+                RC low-pass 1 kΩ, 1 µF at the corner reads 1.00 krad/s and 159 Hz, −3.01 dB = ×0.707, −45°, delay
+                785 µs, output 707 mV; RL high-pass 1 kΩ, 100 mH at 3.16 krad/s reads −10.41 dB, +72.5°, lead 400 µs;
+                free mode with three poles and a zero draws the corners, the s-plane angles and H(s). Arrow keys move
+                the cursor by 0.05 and, with Shift, 0.5 decade; Shift+→ on p₁ moves it from 100 to 316 rad/s; R = 10 kΩ
+                moves the corner to 100 rad/s; reset restores the start.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bode plot · momentos</title>
+<script>
+  // apply a saved light/dark choice before anything is painted
+  try {
+    var saved = localStorage.getItem("momentos-theme");
+    if (saved === "light" || saved === "dark") document.documentElement.dataset.theme = saved;
+  } catch (e) { /* no storage in some previews: follow the system setting */ }
+</script>
+<style>
+  /* ---- momentos house style: begin (the same block in every tool. Change it only in
+     templates/tool-template.html, then run scripts/sync-house-style.py) ---- */
+  :root {
+    color-scheme: light dark;
+    --bg: light-dark(#f6f4ee, #131312);          /* the page */
+    --surface: light-dark(#fbfaf6, #1b1b19);     /* figures and inputs */
+    --ink: light-dark(#1d1c1a, #ebe8e1);         /* text and the main strokes */
+    --ink-2: light-dark(#5f5c55, #b1ada3);       /* secondary text */
+    --ink-3: light-dark(#77736b, #8a867d);       /* labels, axis numbers */
+    --line: light-dark(rgba(29, 28, 26, 0.16), rgba(235, 232, 225, 0.18));   /* hairlines and borders */
+    --grid: light-dark(rgba(29, 28, 26, 0.07), rgba(235, 232, 225, 0.08));   /* grid lines */
+    --accent: light-dark(#c2410c, #ff8f5a);      /* the one thing being pointed at */
+    /* Colour is for quantities, never for decoration. Give each quantity one of these and keep it
+       the same in the figure, the numbers and the prose. */
+    --c1: light-dark(#2458c4, #7aa7ff);          /* blue */
+    --c2: light-dark(#c2410c, #ff9a62);          /* orange */
+    --c3: light-dark(#0f7f6b, #4fd3b4);          /* teal */
+    --c4: light-dark(#9d3fb0, #d78be6);          /* purple */
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+    --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  }
+  :root[data-theme="light"] { color-scheme: light; }
+  :root[data-theme="dark"] { color-scheme: dark; }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 17px/1.55 var(--serif);
+    -webkit-font-smoothing: antialiased;
+  }
+  .bar {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 22px;
+    font: 12px/1 var(--mono);
+    letter-spacing: 0.06em;
+    color: var(--ink-3);
+  }
+  .bar a { color: var(--ink-2); text-decoration: none; border-bottom: 1px solid var(--line); padding-bottom: 2px; }
+  .bar a:hover { color: var(--accent); border-color: var(--accent); }
+  .bar .grow { flex: 1; }
+  button {
+    font: 12px/1 var(--mono);
+    color: var(--ink-2);
+    background: transparent;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 7px 10px;
+    cursor: pointer;
+  }
+  button:hover { color: var(--ink); border-color: var(--ink-2); }
+  button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  button:disabled { opacity: 0.4; cursor: default; }
+  :focus-visible { outline: 1px dashed var(--ink); outline-offset: 2px; }
+
+  main { max-width: 1120px; margin: 0 auto; padding: 4px 22px 72px; }
+  h1 { font: 400 clamp(30px, 4.6vw, 44px)/1.08 var(--serif); letter-spacing: -0.015em; margin: 14px 0 10px; }
+  .lede { max-width: 62ch; margin: 0 0 26px; color: var(--ink-2); font-size: 18px; }
+  h2 {
+    font: 500 10.5px/1.4 var(--mono);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin: 0 0 10px;
+  }
+  .bench { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(280px, 1fr); gap: 28px; align-items: start; }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-top: 28px; }
+  figure { margin: 0; }
+  .stage { border: 1px solid var(--line); border-radius: 4px; background: var(--surface); overflow: hidden; }
+  .stage svg { display: block; width: 100%; height: auto; touch-action: none; user-select: none; -webkit-user-select: none; }
+  figcaption { padding: 9px 12px; border-top: 1px solid var(--line); font: 11.5px/1.5 var(--mono); color: var(--ink-3); }
+  .controls { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 12px; }
+  .controls label { font: 12px/1 var(--mono); color: var(--ink-2); display: inline-flex; align-items: center; gap: 6px; margin-left: 6px; }
+  input[type="range"] { accent-color: var(--ink); }
+  input[type="checkbox"] { accent-color: var(--ink); }
+
+  .notes { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 44px; margin-top: 46px; padding-top: 28px; border-top: 1px solid var(--line); }
+  .notes p { margin: 0 0 14px; max-width: 62ch; }
+  .notes p b { font-weight: 600; }
+  .notes ul { margin: 0 0 26px; padding: 0; list-style: none; }
+  .notes li { margin: 0 0 12px; padding-left: 14px; border-left: 1px solid var(--line); font-size: 16px; line-height: 1.45; }
+  .notes li a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--line); }
+  .notes li a:hover { color: var(--accent); border-color: var(--accent); }
+  details { margin-top: 4px; }
+  summary { font: 11.5px/1.4 var(--mono); color: var(--ink-3); cursor: pointer; }
+  details span { color: var(--ink-2); font-size: 15px; }
+  sup, sub { font-size: 0.72em; line-height: 0; }
+
+  @media (max-width: 860px) {
+    .bench, .pair, .notes { grid-template-columns: 1fr; }
+    .notes { gap: 28px; }
+  }
+  /* ---- momentos house style: end ---- */
+
+  /* ---- this tool: everything below is yours ---- */
+  var { font-style: italic; font-family: var(--serif); }
+  .grid line { stroke: var(--grid); stroke-width: 1; }
+  .grid .axis { stroke: var(--line); }
+  .tick { font: 10.5px var(--mono); fill: var(--ink-3); }
+  .name { font: italic 14px var(--serif); fill: var(--ink-2); }
+  .corner { stroke: var(--c3); stroke-width: 1; stroke-dasharray: 1 3; }
+  .sk-mag { fill: none; stroke: var(--c1); stroke-width: 1.6; stroke-dasharray: 6 4; opacity: 0.45; }
+  .sk-ph { fill: none; stroke: var(--c2); stroke-width: 1.6; stroke-dasharray: 6 4; opacity: 0.45; }
+  .cv-mag { fill: none; stroke: var(--c1); stroke-width: 2.4; stroke-linejoin: round; }
+  .cv-ph { fill: none; stroke: var(--c2); stroke-width: 2.4; stroke-linejoin: round; }
+  .cursor { stroke: var(--ink-2); stroke-width: 1; stroke-dasharray: 3 3; }
+  .tri { fill: var(--ink-2); cursor: ew-resize; outline: none; }
+  .tri:focus-visible { stroke: var(--ink); stroke-width: 1.5; }
+  .pz { stroke: var(--c3); stroke-width: 2.2; fill: var(--surface); }
+  .pz-handle { fill: transparent; stroke: transparent; stroke-width: 1.5; cursor: ew-resize; outline: none; }
+  .pz-handle:hover, .pz-handle:focus-visible { stroke: var(--ink-2); stroke-dasharray: 3 3; }
+  .hit { fill: transparent; cursor: crosshair; }
+  .lab-c1 { font: 12px var(--mono); fill: var(--c1); }
+  .lab-c2 { font: 12px var(--mono); fill: var(--c2); }
+  .lab-c3 { font: 11px var(--mono); fill: var(--c3); }
+  .dot1 { fill: var(--c1); } .dot2 { fill: var(--c2); }
+  .ax { stroke: var(--line); stroke-width: 1.2; }
+  .ray { stroke: var(--ink-3); stroke-width: 1; }
+  .arc { fill: none; stroke: var(--c2); stroke-width: 1.6; }
+  .el { fill: none; stroke: var(--ink); stroke-width: 1.6; stroke-linejoin: round; }
+  .el-text { font: 12px var(--mono); fill: var(--ink); }
+  .w-in { fill: none; stroke: var(--ink-2); stroke-width: 1.6; }
+  .w-out { fill: none; stroke: var(--c1); stroke-width: 2.4; }
+  .bracket { fill: none; stroke: var(--c2); stroke-width: 1.4; }
+  .read { font: 13px/1.6 var(--mono); font-variant-numeric: tabular-nums; }
+  .read .big { font: 400 30px/1.15 var(--serif); color: var(--c1); margin: 4px 0; }
+  .read p { margin: 0 0 4px; }
+  .q1 { color: var(--c1); } .q2 { color: var(--c2); } .q3 { color: var(--c3); } .q0 { color: var(--ink-3); }
+  .controls .group { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-right: 10px; }
+  .controls .lbl { font: 12px/1 var(--mono); color: var(--ink-3); margin-right: 2px; }
+  .controls output { font: 12px/1 var(--mono); color: var(--ink-2); min-width: 9ch; display: inline-block; }
+  .stack { display: grid; gap: 18px; }
+</style>
+</head>
+<body>
+
+<header class="bar">
+  <a href="../index.html#bode-plot">← map</a>
+  <span>systems</span>
+  <span class="grow"></span>
+  <button type="button" id="theme" aria-label="Switch between light and dark">◐</button>
+</header>
+
+<main>
+  <h1>Bode plot from poles and zeros</h1>
+  <p class="lede">Each pole bends the magnitude down by 20 dB per decade from its corner on, and each zero bends it up.
+    Draw the straight lines, add them, and the true curve follows them except near the corners. Move the cursor and
+    watch a sine wave go in and come out smaller and later.</p>
+
+  <div class="bench">
+    <div class="stack">
+      <figure class="stage">
+        <svg id="mag" viewBox="0 0 640 300" role="group" aria-label="Magnitude of H in decibels against angular frequency on a log axis"></svg>
+        <figcaption>Drag the cursor (or press anywhere in the plot); in free mode drag the crosses and circles along
+          the ω axis. Focused, ← → move one twentieth of a decade, with Shift half a decade.</figcaption>
+      </figure>
+      <figure class="stage">
+        <svg id="phase" viewBox="0 0 640 300" role="group" aria-label="Phase of H in degrees against angular frequency on a log axis"></svg>
+        <figcaption>The same cursor. The dashed lines are the three-segment sketch: flat, a straight turn across two
+          decades, flat.</figcaption>
+      </figure>
+      <div>
+        <div class="controls">
+          <span class="group"><span class="lbl">mode</span>
+            <button type="button" data-mode="circuit">circuit</button>
+            <button type="button" data-mode="free">free</button></span>
+          <span class="group" id="g-circuit">
+            <button type="button" data-kind="rc-low">RC low-pass</button>
+            <button type="button" data-kind="rc-high">RC high-pass</button>
+            <button type="button" data-kind="rl-low">RL low-pass</button>
+            <button type="button" data-kind="rl-high">RL high-pass</button></span>
+          <span class="group" id="g-free"><span class="lbl">poles</span>
+            <button type="button" data-np="1">1</button><button type="button" data-np="2">2</button><button type="button" data-np="3">3</button>
+            <span class="lbl" style="margin-left:10px">zeros</span>
+            <button type="button" data-nz="0">0</button><button type="button" data-nz="1">1</button><button type="button" data-nz="2">2</button></span>
+        </div>
+        <div class="controls" id="g-sliders">
+          <label>R <input type="range" id="sR" min="2" max="5" step="0.05" value="3" aria-label="R, log scale"></label><output id="oR"></output>
+          <label id="lC">C <input type="range" id="sC" min="-8" max="-5" step="0.05" value="-6" aria-label="C, log scale"></label><output id="oC"></output>
+          <label id="lL">L <input type="range" id="sL" min="-2" max="1" step="0.05" value="-1" aria-label="L, log scale"></label><output id="oL"></output>
+        </div>
+        <div class="controls">
+          <button type="button" id="to-corner">cursor to corner</button>
+          <button type="button" id="reset">reset</button>
+        </div>
+      </div>
+      <figure class="stage">
+        <svg id="wave" viewBox="0 0 640 240" role="group" aria-label="The circuit, and the input and output sine waves at the cursor frequency"></svg>
+        <figcaption>The input is 1 V at the cursor frequency. The output is the input scaled by |H| and shifted by the
+          delay.</figcaption>
+      </figure>
+    </div>
+    <aside class="stack">
+      <figure class="stage">
+        <svg id="splane" viewBox="0 0 360 300" role="group" aria-label="The s-plane with the poles, zeros and the point j omega"></svg>
+        <figcaption>The pole is a cross on the σ axis, the zero a circle. The angle of each line to jω is that
+          factor's share of the phase.</figcaption>
+      </figure>
+      <div class="read">
+        <h2>Corners</h2>
+        <div id="corners" class="q3"></div>
+        <h2 style="margin-top:14px">At the cursor</h2>
+        <p id="r-w"></p>
+        <div class="big" id="r-mag"></div>
+        <p class="q2" id="r-ph"></p>
+        <p class="q2" id="r-delay"></p>
+        <p class="q0" id="r-sketch"></p>
+      </div>
+    </aside>
+  </div>
+
+
+  <section class="notes">
+    <div>
+      <h2>What should click</h2>
+      <p><b>The corner is where real and imaginary are equal.</b> At ω = p the factor 1 + jω/p is 1 + j: its length is
+        √2 and its angle 45°. So one pole leaves 1/√2 of the amplitude (−3 dB, half the power) and lags by 45°, never
+        half the amplitude and never 90°.</p>
+      <p><b>On log axes, factors add.</b> 20 log₁₀ of a product is a sum, and the angle of a product is a sum of
+        angles. Each pole is one straight line, bending down 20 dB per decade from its corner; each zero bends up.
+        Draw them one at a time and add.</p>
+      <p><b>The phase is slow.</b> A pole's angle goes from 0° to −90° as ω goes from far below to far above the
+        corner, but a decade below it is already −5.7° and a decade above it still has 5.7° to go. That is why the
+        sketch spreads the turn over two decades.</p>
+      <p><b>rad/s is not Hz.</b> 1/(RC) is an angular frequency. The corner in Hz is 1/(2πRC), six times smaller.</p>
+    </div>
+    <div>
+      <h2>Predict, then try</h2>
+      <ul>
+        <li>RC low-pass, R = 1 kΩ, C = 1 µF. Put the cursor at the corner. Is the output half the input?
+          <details><summary>why</summary><span>No. It is 1/√2 = 0.707 of the amplitude, −3 dB. Half the power, not half the voltage.</span></details></li>
+        <li>At the same corner, what is the phase: −90° or −45°?
+          <details><summary>why</summary><span>−45°. At the corner 1 + jω/ω_c = 1 + j, whose angle is 45°. The phase reaches −90° only far above the corner.</span></details></li>
+        <li>The corner is at 1000 rad/s. What frequency in Hz is that, and where does a 1000 Hz sine land on the plot?
+          <details><summary>why</summary><span>1000 rad/s is 159 Hz. A 1000 Hz sine is ω = 6283 rad/s, almost a decade above the corner, at about −16 dB.</span></details></li>
+        <li>Double C. Which way does the corner move, and by how much on the log axis?
+          <details><summary>why</summary><span>To half the frequency, ω_c = 1/(RC). Halving is 0.301 of a decade to the left, and the whole curve slides with it without changing shape.</span></details></li>
+        <li>Free mode, two poles at 10² and 10⁴ rad/s. What is the slope at 10³ rad/s and at 10⁶ rad/s?
+          <details><summary>why</summary><span>−20 dB per decade between the two corners, −40 dB per decade above both. Each pole adds its own −20.</span></details></li>
+      </ul>
+      <h2>Where this shows up</h2>
+      <ul>
+        <li><a href="../index.html#transfer-function">transfer function</a>: H(s) read off the circuit is the thing being drawn; each factor is one line on the plot.</li>
+        <li><a href="../index.html#poles-and-zeros">poles and zeros</a>: each pole bends the magnitude down and each zero bends it up, at the pole's distance from the origin.</li>
+        <li><a href="../index.html#first-order-system">first-order systems</a>: an RC circuit is one pole; its corner 1/τ is where the gain starts to fall.</li>
+        <li><a href="../index.html#frequency-response">frequency response</a>: the Bode plot is H(jω) drawn on log axes so that products become sums.</li>
+        <li><a href="../index.html#phasors-impedance">phasors &amp; impedance</a>: the divider with Z = 1/(jωC) is where H(jω) comes from.</li>
+        <li><a href="../index.html#loop-gain">loop gain</a>: the phase margin is read off the Bode plot of the loop gain.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<script id="maths">
+// ---- the maths: plain functions with no page behind them. scripts/test-tools.js runs this block on
+// its own and compares it with the check cases below, so nothing in here may touch the DOM.
+// A system is { gain: K, origin: m, poles: [p...], zeros: [z...] }:
+//   H(s) = K s^m (1 + s/z1)(1 + s/z2) / ((1 + s/p1)(1 + s/p2)(1 + s/p3)), corners p, z > 0 in rad/s.
+var MATHS = (function () {
+  "use strict";
+  var DEG = 180 / Math.PI;
+
+  // corner of an RC circuit, rad/s, from ohms and farads
+  function omegaRC(R, C) { return 1 / (R * C); }
+  // corner of an RL circuit, rad/s, from ohms and henries
+  function omegaRL(R, L) { return R / L; }
+  // rad/s to Hz
+  function radToHz(w) { return w / (2 * Math.PI); }
+
+  // the divider of each circuit as a system. X is C in farads (rc) or L in henries (rl).
+  function circuitSystem(kind, R, X) {
+    var wc = kind.indexOf("rc") === 0 ? omegaRC(R, X) : omegaRL(R, X);
+    if (/low$/.test(kind)) return { gain: 1, origin: 0, poles: [wc], zeros: [] };
+    return { gain: 1 / wc, origin: 1, poles: [wc], zeros: [] };      // (s/wc) / (1 + s/wc)
+  }
+
+  // |H(jw)|, a pure number
+  function mag(sys, w) {
+    var m = sys.gain * Math.pow(w, sys.origin), i;
+    for (i = 0; i < sys.zeros.length; i++) m *= Math.sqrt(1 + Math.pow(w / sys.zeros[i], 2));
+    for (i = 0; i < sys.poles.length; i++) m /= Math.sqrt(1 + Math.pow(w / sys.poles[i], 2));
+    return m;
+  }
+  function magDb(sys, w) { return 20 * Math.log10(mag(sys, w)); }
+
+  // phase in degrees, summed term by term (not wrapped). Positive: the output leads.
+  function phaseDeg(sys, w) {
+    var d = 90 * sys.origin, i;
+    for (i = 0; i < sys.zeros.length; i++) d += Math.atan(w / sys.zeros[i]) * DEG;
+    for (i = 0; i < sys.poles.length; i++) d -= Math.atan(w / sys.poles[i]) * DEG;
+    return d;
+  }
+
+  // straight-line magnitude: each factor is 1 below its corner and jw/c above it
+  function asymDb(sys, w) {
+    var d = 20 * Math.log10(sys.gain) + 20 * sys.origin * Math.log10(w), i;
+    for (i = 0; i < sys.zeros.length; i++) d += Math.max(0, 20 * Math.log10(w / sys.zeros[i]));
+    for (i = 0; i < sys.poles.length; i++) d -= Math.max(0, 20 * Math.log10(w / sys.poles[i]));
+    return d;
+  }
+  // 0 below c/10, 1 above 10c, a straight line in log w between
+  function ramp(w, c) { return Math.min(1, Math.max(0, (Math.log10(w / c) + 1) / 2)); }
+  function asymPhaseDeg(sys, w) {
+    var d = 90 * sys.origin, i;
+    for (i = 0; i < sys.zeros.length; i++) d += 90 * ramp(w, sys.zeros[i]);
+    for (i = 0; i < sys.poles.length; i++) d -= 90 * ramp(w, sys.poles[i]);
+    return d;
+  }
+
+  // how long the output lags the input, s (negative: a lead)
+  function delaySec(sys, w) { return -phaseDeg(sys, w) / DEG / w; }
+  // steady-state output, V, for the input 1 V sin(wt)
+  function outputAt(sys, w, t) { return mag(sys, w) * Math.sin(w * t + phaseDeg(sys, w) / DEG); }
+
+  return { omegaRC: omegaRC, omegaRL: omegaRL, radToHz: radToHz, circuitSystem: circuitSystem, mag: mag,
+    magDb: magDb, phaseDeg: phaseDeg, asymDb: asymDb, asymPhaseDeg: asymPhaseDeg, delaySec: delaySec,
+    outputAt: outputAt };
+})();
+</script>
+<script type="application/json" id="check-cases">
+[
+  {"fn": "omegaRC", "args": [1000, 1e-06], "expect": 1000.0, "tol": 1e-09, "units": "rad/s", "tag": "typical", "note": "R = 1 kΩ and C = 1 µF put the corner at 1/(RC) = 1000 rad/s"},
+  {"fn": "radToHz", "args": [1000], "expect": 159.15494309189535, "tol": 1e-09, "units": "Hz", "tag": "typical", "note": "1000 rad/s is 1000/(2π) = 159.2 Hz, not 1000 Hz"},
+  {"fn": "omegaRL", "args": [1000, 0.1], "expect": 10000.0, "tol": 1e-09, "units": "rad/s", "tag": "typical", "note": "R = 1 kΩ and L = 100 mH put the corner at R/L = 10 000 rad/s"},
+  {"fn": "circuitSystem", "args": ["rc-low", 1000, 1e-06], "expect": {"gain": 1.0, "origin": 0, "poles": [1000.0], "zeros": []}, "tol": 1e-09, "units": "", "tag": "typical", "note": "RC low-pass, 1 kΩ and 1 µF: H(s) = 1/(1 + s/1000), one pole at 1000 rad/s"},
+  {"fn": "circuitSystem", "args": ["rl-high", 1000, 0.1], "expect": {"gain": 0.0001, "origin": 1, "poles": [10000.0], "zeros": []}, "tol": 1e-09, "units": "", "tag": "typical", "note": "RL high-pass, 1 kΩ and 100 mH: H(s) = (s/10 000)/(1 + s/10 000), a zero at the origin and a pole at 10 000 rad/s"},
+  {"fn": "mag", "args": [{"gain": 1, "origin": 0, "poles": [1000], "zeros": []}, 1000], "expect": 0.7071067811865476, "tol": 1e-09, "units": "", "tag": "typical", "note": "one pole at 1000 rad/s, at ω = 1000 rad/s: |H| = 1/√2 = 0.707 of the input amplitude, half the power"},
+  {"fn": "magDb", "args": [{"gain": 1, "origin": 0, "poles": [1000], "zeros": []}, 1000], "expect": -3.0102999566398116, "tol": 1e-09, "units": "dB", "tag": "typical", "note": "the same point in decibels: −3.01 dB"},
+  {"fn": "phaseDeg", "args": [{"gain": 1, "origin": 0, "poles": [1000], "zeros": []}, 1000], "expect": -45.0, "tol": 1e-09, "units": "°", "tag": "typical", "note": "one pole at 1000 rad/s, at ω = 1000 rad/s: the phase is −45°, not −90°"},
+  {"fn": "delaySec", "args": [{"gain": 1, "origin": 0, "poles": [1000], "zeros": []}, 1000], "expect": 0.0007853981633974483, "tol": 1e-09, "units": "s", "tag": "typical", "note": "−45° at 1000 rad/s is a delay of (π/4)/1000 = 0.785 ms"},
+  {"fn": "outputAt", "args": [{"gain": 1, "origin": 0, "poles": [1000], "zeros": []}, 1000, 0.002356194490192345], "expect": 0.7071067811865476, "tol": 1e-09, "units": "V", "tag": "typical", "note": "input sin(ωt) of 1 V at 1000 rad/s through one pole at 1000 rad/s: at t = 2.356 ms the output is at its peak, 0.707 V, 0.785 ms after the input's peak at 1.571 ms"},
+  {"fn": "magDb", "args": [{"gain": 1, "origin": 0, "poles": [1000], "zeros": []}, 1], "expect": -4.342942646911995e-06, "tol": 1e-09, "units": "dB", "tag": "limit-zero", "note": "one pole at 1000 rad/s, at ω = 1 rad/s, three decades below: |H| is 1 to within 0.000004 dB"},
+  {"fn": "phaseDeg", "args": [{"gain": 1, "origin": 0, "poles": [1000], "zeros": []}, 1], "expect": -0.057295760414500616, "tol": 1e-09, "units": "°", "tag": "limit-zero", "note": "the same point: the phase is only −0.057°"},
+  {"fn": "magDb", "args": [{"gain": 1, "origin": 0, "poles": [1000], "zeros": []}, 10000000.0], "expect": -80.00000004342944, "tol": 1e-09, "units": "dB", "tag": "limit-infinity", "note": "one pole at 1000 rad/s, at ω = 10⁷ rad/s, four decades above: −80 dB, falling 20 dB per decade"},
+  {"fn": "phaseDeg", "args": [{"gain": 1, "origin": 0, "poles": [1000], "zeros": []}, 10000000.0], "expect": -89.99427042206779, "tol": 1e-09, "units": "°", "tag": "limit-infinity", "note": "the same point: the phase has nearly finished its turn, at −89.994°"},
+  {"fn": "asymDb", "args": [{"gain": 1, "origin": 0, "poles": [1000], "zeros": []}, 1000], "expect": 0.0, "tol": 1e-09, "units": "dB", "tag": "breaks", "note": "the straight-line sketch says 0 dB at the corner of a pole at 1000 rad/s; the true value is −3.01 dB"},
+  {"fn": "magDb", "args": [{"gain": 1, "origin": 0, "poles": [1000, 1000], "zeros": []}, 1000], "expect": -6.020599913279624, "tol": 1e-09, "units": "dB", "tag": "breaks", "note": "two poles both at 1000 rad/s: the sketch still says 0 dB at the corner, the curve is at −6.02 dB"},
+  {"fn": "asymPhaseDeg", "args": [{"gain": 1, "origin": 0, "poles": [1000], "zeros": []}, 100], "expect": 0.0, "tol": 1e-09, "units": "°", "tag": "breaks", "note": "the three-segment phase sketch says 0° a decade below a pole at 1000 rad/s; the true phase there is −5.71°"},
+  {"fn": "phaseDeg", "args": [{"gain": 1, "origin": 0, "poles": [1000], "zeros": []}, 100], "expect": -5.710593137499643, "tol": 1e-09, "units": "°", "tag": "breaks", "note": "the true phase a decade below the pole at 1000 rad/s, at 100 rad/s: −5.71°"},
+  {"fn": "phaseDeg", "args": [{"gain": 0.001, "origin": 1, "poles": [1000], "zeros": []}, 1000], "expect": 45.0, "tol": 1e-09, "units": "°", "tag": "sign", "note": "RC high-pass with its corner at 1000 rad/s: at the corner the output leads by +45°"},
+  {"fn": "delaySec", "args": [{"gain": 0.001, "origin": 1, "poles": [1000], "zeros": []}, 1000], "expect": -0.0007853981633974483, "tol": 1e-09, "units": "s", "tag": "sign", "note": "a lead of 45° at 1000 rad/s is a negative delay: the output peaks 0.785 ms before the input"},
+  {"fn": "magDb", "args": [{"gain": 0.001, "origin": 1, "poles": [1000], "zeros": []}, 1000], "expect": -3.0102999566398116, "tol": 1e-09, "units": "dB", "tag": "typical", "note": "the high-pass is also −3.01 dB at its corner"},
+  {"fn": "asymDb", "args": [{"gain": 1, "origin": 0, "poles": [100, 10000], "zeros": []}, 1000], "expect": -20.0, "tol": 1e-09, "units": "dB", "tag": "typical", "note": "poles at 100 rad/s and 10 000 rad/s, at 1000 rad/s: the sketch is one decade down a −20 dB/decade line, −20 dB"},
+  {"fn": "magDb", "args": [{"gain": 1, "origin": 0, "poles": [100, 10000], "zeros": []}, 1000], "expect": -20.086427475652854, "tol": 1e-09, "units": "dB", "tag": "typical", "note": "the same point on the true curve: −20.09 dB, close to the sketch because both corners are a decade away"},
+  {"fn": "phaseDeg", "args": [{"gain": 1, "origin": 0, "poles": [100, 10000], "zeros": []}, 1000], "expect": -90.0, "tol": 1e-09, "units": "°", "tag": "typical", "note": "the same point: −84.29° from the first pole and −5.71° from the second, −90° in all"},
+  {"fn": "asymPhaseDeg", "args": [{"gain": 1, "origin": 0, "poles": [100, 10000], "zeros": []}, 1000], "expect": -90.0, "tol": 1e-09, "units": "°", "tag": "typical", "note": "the phase sketch at the same point: −90° from the first pole and 0° from the second"},
+  {"fn": "asymDb", "args": [{"gain": 1, "origin": 0, "poles": [100], "zeros": [10000]}, 100000.0], "expect": -40.0, "tol": 1e-09, "units": "dB", "tag": "typical", "note": "a pole at 100 rad/s and a zero at 10 000 rad/s, at 10⁵ rad/s: −60 dB from the pole plus 20 dB from the zero, −40 dB, and the line is flat again"},
+  {"fn": "phaseDeg", "args": [{"gain": 1, "origin": 0, "poles": [100, 10000, 1000000], "zeros": []}, 10000000.0], "expect": -264.23153814429077, "tol": 1e-09, "units": "°", "tag": "limit-infinity", "note": "poles at 100, 10⁴ and 10⁶ rad/s, at 10⁷ rad/s: the phase has gone past −180°, to −264.23°"}
+]
+</script>
+<script>
+(function () {
+  "use strict";
+
+  const NS = "http://www.w3.org/2000/svg";
+  function S(name, attrs, parent) {
+    const el = document.createElementNS(NS, name);
+    for (const k in attrs) el.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(el);
+    return el;
+  }
+  const $ = (id) => document.getElementById(id);
+  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+  function fmt(v, d) {
+    if (d === undefined) d = 2;
+    let s = (Math.round(v * Math.pow(10, d)) / Math.pow(10, d)).toFixed(d);
+    if (s.indexOf(".") >= 0) s = s.replace(/0+$/, "").replace(/\.$/, "");
+    if (s === "-0") s = "0";
+    return s.replace("-", "−");
+  }
+  // three significant figures and an SI prefix: eng(785e-6, "s") is "785 µs"
+  function eng(v, unit) {
+    if (v === 0 || !isFinite(v)) return "0 " + unit;
+    const pre = { "-12": "p", "-9": "n", "-6": "µ", "-3": "m", "0": "", "3": "k", "6": "M", "9": "G" };
+    let e = clamp(Math.floor(Math.log10(Math.abs(v)) / 3) * 3, -12, 9);
+    let m = v / Math.pow(10, e);
+    let s = Math.abs(m).toPrecision(3);
+    if (Number(s) >= 1000 && e < 9) { e += 3; m = v / Math.pow(10, e); s = Math.abs(m).toPrecision(3); }
+    return (v < 0 ? "−" : "") + s + " " + pre[String(e)] + unit;
+  }
+  const sub = (n) => "₀₁₂₃₄₅₆₇₈₉"[n];
+  const sup = (n) => String(n).split("").map((c) => "⁰¹²³⁴⁵⁶⁷⁸⁹"[c]).join("");
+  function svgPoint(svg, e) {
+    const ctm = svg.getScreenCTM();
+    if (!ctm) return { x: 0, y: 0 };
+    const p = new DOMPoint(e.clientX, e.clientY).matrixTransform(ctm.inverse());
+    return { x: p.x, y: p.y };
+  }
+
+  // ------------------------------------------------------------ state
+
+  const START = { mode: "circuit", kind: "rc-low", lR: 3, lC: -6, lL: -1, np: 2, nz: 0,
+    lp: [2, 4, 6], lz: [3, 5], lw: 3 };
+  const st = JSON.parse(JSON.stringify(START));       // every frequency is kept as log10 of rad/s
+
+  function system() {
+    if (st.mode === "circuit") {
+      const X = st.kind.indexOf("rc") === 0 ? Math.pow(10, st.lC) : Math.pow(10, st.lL);
+      return MATHS.circuitSystem(st.kind, Math.pow(10, st.lR), X);
+    }
+    return { gain: 1, origin: 0, poles: st.lp.slice(0, st.np).map((l) => Math.pow(10, l)),
+      zeros: st.lz.slice(0, st.nz).map((l) => Math.pow(10, l)) };
+  }
+  const single = (c) => ({ gain: 1, origin: 0, poles: [c], zeros: [] });
+
+  // ------------------------------------------------------------ the two Bode figures
+
+  const PX0 = 56, PX1 = 620, PY0 = 16, PY1 = 262, DEC = (PX1 - PX0) / 7;
+  const XL = (lw) => PX0 + lw * DEC;
+  const ranges = () => (st.mode === "circuit"
+    ? { mag: [-80, 20, 20, 20], ph: [-90, 90, 45, 45] }
+    : { mag: [-120, 40, 20, 20], ph: [-270, 180, 45, 90] });
+  const YV = (v, r) => PY0 + ((r[1] - v) / (r[1] - r[0])) * (PY1 - PY0);
+  const f1 = (v) => v.toFixed(1);
+
+  function bodeFigure(svg, yname) {
+    const f = {};
+    f.grid = S("g", { class: "grid" }, svg);
+    f.labels = S("g", {}, svg);
+    f.corners = S("g", {}, svg);
+    S("clipPath", { id: svg.id + "-clip" }, svg).appendChild(S("rect", { x: PX0, y: PY0, width: PX1 - PX0, height: PY1 - PY0 }));
+    const clipped = S("g", { "clip-path": "url(#" + svg.id + "-clip)" }, svg);
+    f.sketch = S("path", { class: svg.id === "mag" ? "sk-mag" : "sk-ph" }, clipped);
+    f.curve = S("path", { class: svg.id === "mag" ? "cv-mag" : "cv-ph" }, clipped);
+    f.hit = S("rect", { class: "hit", x: PX0, y: PY0, width: PX1 - PX0, height: PY1 - PY0 }, svg);
+    f.cdot = S("circle", { r: 4, class: svg.id === "mag" ? "dot1" : "dot2" }, svg);
+    f.clab = S("text", { class: svg.id === "mag" ? "lab-c1" : "lab-c2" }, svg);
+    f.cursor = S("line", { class: "cursor", y1: PY0, y2: PY1 }, svg);
+    f.dot = S("circle", { r: 4.5, class: svg.id === "mag" ? "dot1" : "dot2" }, svg);
+    S("text", { x: PX0 + 6, y: PY0 + 13, class: "tick" }, svg).textContent = yname;
+    S("text", { x: PX1, y: 298, "text-anchor": "end", class: "tick" }, svg).textContent = "ω (rad/s)";
+    return f;
+  }
+  const FM = bodeFigure($("mag"), "|H| (dB)");
+  const FP = bodeFigure($("phase"), "∠H (°)");
+
+  function drawGrid(f, r, unit) {
+    f.grid.textContent = ""; f.labels.textContent = "";
+    for (let d = 0; d <= 7; d++) {
+      S("line", { x1: XL(d), x2: XL(d), y1: PY0, y2: PY1, class: d === 0 ? "axis" : "" }, f.grid);
+      S("text", { x: XL(d), y: PY1 + 22, "text-anchor": "middle", class: "tick" }, f.labels).textContent = "10" + sup(d);
+    }
+    for (let v = r[0]; v <= r[1] + 1e-9; v += r[2]) {
+      S("line", { x1: PX0, x2: PX1, y1: YV(v, r), y2: YV(v, r), class: v === 0 || v === r[0] ? "axis" : "" }, f.grid);
+      if (Math.round(v - r[0]) % r[3] === 0)
+        S("text", { x: PX0 - 6, y: YV(v, r) + 3.5, "text-anchor": "end", class: "tick" }, f.labels).textContent = fmt(v, 0) + unit;
+    }
+  }
+
+  // pole and zero markers on the ω axis of figure 1: five handles, shown as needed
+  const markerLayer = S("g", {}, $("mag"));
+  const markers = [];
+  ["p", "p", "p", "z", "z"].forEach((type, i) => {
+    const g = S("g", {}, markerLayer);
+    const shape = type === "p"
+      ? S("path", { class: "pz", d: "M-6 -6L6 6M-6 6L6 -6" }, g)
+      : S("circle", { class: "pz", r: 6 }, g);
+    const idx = type === "p" ? i : i - 3;
+    const h = S("circle", { class: "pz-handle", r: 12, tabindex: 0, role: "slider",
+      "aria-label": (type === "p" ? "pole p" : "zero z") + (idx + 1) }, g);
+    markers.push({ g: g, shape: shape, h: h, type: type, idx: idx });
+  });
+
+  // ------------------------------------------------------------ figure 3: the s-plane
+
+  const SP = $("splane");
+  const OX = 300, OY = 250, UNIT = 200;
+  S("line", { class: "ax", x1: 6, x2: 352, y1: OY, y2: OY }, SP);
+  S("line", { class: "ax", x1: OX, x2: OX, y1: 290, y2: 12 }, SP);
+  S("text", { x: 350, y: OY - 6, "text-anchor": "end", class: "name" }, SP).textContent = "σ";
+  S("text", { x: OX + 8, y: 20, class: "name" }, SP).textContent = "jω";
+  S("text", { x: 8, y: 292, class: "tick" }, SP).textContent = "scale: 200 px = ω, so the dot is always s = jω";
+  const spLayer = S("g", {}, SP);
+  S("circle", { cx: OX, cy: OY - UNIT, r: 5, fill: "var(--ink)" }, SP);
+  const jwText = S("text", { x: OX - 10, y: OY - UNIT - 8, "text-anchor": "end", class: "tick" }, SP);
+
+  // ------------------------------------------------------------ figure 4: circuit and waves
+
+  const WV = $("wave");
+  const circ = S("g", {}, WV);
+  const freeText = S("g", {}, WV);
+  const WX0 = 250, WX1 = 630, WY = 120, WA = 80;
+  S("line", { class: "ax", x1: WX0, x2: WX1, y1: WY, y2: WY }, WV);
+  const wIn = S("path", { class: "w-in" }, WV);
+  const wOut = S("path", { class: "w-out" }, WV);
+  const br = S("path", { class: "bracket" }, WV);
+  const brText = S("text", { class: "lab-c2", "text-anchor": "middle" }, WV);
+  const tText = S("text", { x: WX1, y: 232, "text-anchor": "end", class: "tick" }, WV);
+  const legIn = S("text", { x: WX1, y: 16, "text-anchor": "end", class: "tick" }, WV);
+  const legOut = S("text", { x: WX1, y: 30, "text-anchor": "end", class: "lab-c1" }, WV);
+
+  // one two-terminal element drawn along +x from 0 to 70, then placed and turned
+  function element(type, x, y, vertical, label) {
+    const g = S("g", { transform: "translate(" + x + " " + y + ")" + (vertical ? " rotate(90)" : "") }, circ);
+    let d = "M0 0H15";
+    if (type === "R") { for (let i = 0; i < 6; i++) d += "L" + (18.3 + i * 6.67) + " " + (i % 2 ? 7 : -7); d += "L55 0H70"; }
+    if (type === "C") { d = "M0 0H31M31 -12V12M39 -12V12M39 0H70"; }
+    if (type === "L") { d += "A5 5 0 0 1 25 0A5 5 0 0 1 35 0A5 5 0 0 1 45 0A5 5 0 0 1 55 0H70"; }
+    S("path", { class: "el", d: d }, g);
+    const t = S("text", { class: "el-text" }, circ);
+    if (vertical) { t.setAttribute("x", x - 12); t.setAttribute("y", y + 39); t.setAttribute("text-anchor", "end"); }
+    else { t.setAttribute("x", x + 35); t.setAttribute("y", y - 14); t.setAttribute("text-anchor", "middle"); }
+    t.textContent = label;
+  }
+  function drawCircuit() {
+    circ.textContent = ""; freeText.textContent = "";
+    if (st.mode !== "circuit") {
+      const sys = system();
+      const fac = (c, n, t) => "(1 + s/" + eng(c, "") .trim() + ")";
+      let y = 52;
+      S("text", { x: 20, y: 26, class: "el-text" }, freeText).textContent = "H(s) =";
+      const top = sys.zeros.map(fac), bot = sys.poles.map(fac);
+      (top.length ? top : ["1"]).forEach((t) => { S("text", { x: 34, y: y, class: "el-text" }, freeText).textContent = t; y += 18; });
+      S("line", { x1: 30, x2: 200, y1: y - 9, y2: y - 9, class: "el" }, freeText); y += 10;
+      bot.forEach((t) => { S("text", { x: 34, y: y, class: "el-text" }, freeText).textContent = t; y += 18; });
+      S("text", { x: 20, y: y + 14, class: "tick" }, freeText).textContent = "corners in rad/s";
+      return;
+    }
+    const R = Math.pow(10, st.lR), C = Math.pow(10, st.lC), L = Math.pow(10, st.lL);
+    const rc = st.kind.indexOf("rc") === 0, low = /low$/.test(st.kind);
+    const store = rc ? ["C", eng(C, "F")] : ["L", eng(L, "H")], res = ["R", eng(R, "Ω")];
+    const series = (rc === low) ? res : store, shunt = (rc === low) ? store : res;
+    S("path", { class: "el", d: "M40 114V70H80M150 70H200M40 146V190H200M170 70V95M170 165V190" }, circ);
+    S("circle", { class: "el", cx: 40, cy: 130, r: 16 }, circ);
+    S("path", { class: "el", d: "M30 130C34 120 38 120 40 130S46 140 50 130" }, circ);
+    S("text", { class: "el-text", x: 4, y: 104 }, circ).textContent = "1 V";
+    element(series[0], 80, 70, false, series[1]);
+    element(shunt[0], 170, 95, true, shunt[1]);
+    S("circle", { cx: 200, cy: 70, r: 3, fill: "var(--surface)", stroke: "var(--ink)" }, circ);
+    S("circle", { cx: 200, cy: 190, r: 3, fill: "var(--surface)", stroke: "var(--ink)" }, circ);
+    S("text", { class: "el-text", x: 196, y: 134 }, circ).textContent = "v_out";
+    S("text", { class: "tick", x: 4, y: 222 }, circ).textContent = { "rc-low": "RC low-pass", "rc-high": "RC high-pass", "rl-low": "RL low-pass", "rl-high": "RL high-pass" }[st.kind];
+  }
+
+  // ------------------------------------------------------------ render
+
+  function render(full) {
+    const sys = system(), r = ranges();
+    const w = Math.pow(10, st.lw), cx = XL(st.lw);
+    if (full) {
+      drawGrid(FM, r.mag, ""); drawGrid(FP, r.ph, "°");
+      // curves and sketches, 400 points evenly spaced in log w
+      let m = "", p = "", sm = "", sp = "";
+      for (let i = 0; i <= 400; i++) {
+        const lw = (7 * i) / 400, ww = Math.pow(10, lw), x = f1(XL(lw)), c = i ? "L" : "M";
+        m += c + x + " " + f1(clamp(YV(MATHS.magDb(sys, ww), r.mag), -500, 800));
+        p += c + x + " " + f1(clamp(YV(MATHS.phaseDeg(sys, ww), r.ph), -500, 800));
+        sm += c + x + " " + f1(clamp(YV(MATHS.asymDb(sys, ww), r.mag), -500, 800));
+        sp += c + x + " " + f1(clamp(YV(MATHS.asymPhaseDeg(sys, ww), r.ph), -500, 800));
+      }
+      FM.curve.setAttribute("d", m); FP.curve.setAttribute("d", p);
+      FM.sketch.setAttribute("d", sm); FP.sketch.setAttribute("d", sp);
+      // corner lines and the markers
+      const cs = sys.poles.concat(sys.zeros);
+      [FM, FP].forEach((f) => {
+        f.corners.textContent = "";
+        cs.forEach((c) => { const x = XL(Math.log10(c)); if (x >= PX0 && x <= PX1) S("line", { class: "corner", x1: x, x2: x, y1: PY0, y2: PY1 }, f.corners); });
+      });
+      const seen = {};
+      markers.forEach((mk) => {
+        let on, lv;
+        if (st.mode === "circuit") { on = mk.type === "p" && mk.idx === 0; lv = Math.log10(sys.poles[0]); }
+        else { on = mk.type === "p" ? mk.idx < st.np : mk.idx < st.nz; lv = mk.type === "p" ? st.lp[mk.idx] : st.lz[mk.idx]; }
+        mk.g.style.display = on ? "" : "none";
+        mk.h.style.display = st.mode === "free" ? "" : "none";
+        if (!on) return;
+        const key = lv.toFixed(2), stack = seen[key] || 0; seen[key] = stack + 1;
+        mk.g.setAttribute("transform", "translate(" + f1(XL(clamp(lv, 0, 7))) + " " + (PY1 - 8 * stack) + ")");
+        mk.h.setAttribute("aria-valuetext", eng(Math.pow(10, lv), "rad/s"));
+      });
+      // the −3 dB and ±45° marks at the circuit's corner
+      if (st.mode === "circuit") {
+        const pc = sys.poles[0], xc = XL(Math.log10(pc));
+        const md = MATHS.magDb(sys, pc), pd = MATHS.phaseDeg(sys, pc);
+        place(FM, xc, YV(md, r.mag), fmt(md, 2) + " dB");
+        place(FP, xc, YV(pd, r.ph), (pd > 0 ? "+" : "") + fmt(pd, 1) + "°");
+      } else { FM.cdot.style.display = FP.cdot.style.display = "none"; FM.clab.textContent = FP.clab.textContent = ""; }
+      drawCircuit();
+      corners(sys);
+    }
+
+    // the cursor
+    const md = MATHS.magDb(sys, w), pd = MATHS.phaseDeg(sys, w);
+    [FM, FP].forEach((f) => { f.cursor.setAttribute("x1", f1(cx)); f.cursor.setAttribute("x2", f1(cx)); });
+    dotAt(FM.dot, cx, YV(md, r.mag)); dotAt(FP.dot, cx, YV(pd, r.ph));
+    tri.setAttribute("transform", "translate(" + f1(cx) + " " + (PY0 - 13) + ")");
+    tri.setAttribute("aria-valuetext", eng(w, "rad/s"));
+
+    // s-plane, scaled so that s = jω sits at 200 px up
+    spLayer.textContent = "";
+    const factors = sys.poles.map((c) => ["p", c]).concat(sys.zeros.map((c) => ["z", c]));
+    let off = 0;
+    factors.forEach((fz, i) => {
+      const x = OX - (UNIT * fz[1]) / w;
+      if (x < 14) {
+        S("text", { x: 14, y: OY + 5, "text-anchor": "middle", class: "lab-c3" }, spLayer).textContent = "◂";
+        S("text", { x: 8, y: 26 + 14 * off++, class: "lab-c3" }, spLayer).textContent = "◂ " + (fz[0] === "p" ? "pole at −" : "zero at −") + eng(fz[1], "rad/s");
+        return;
+      }
+      S("line", { class: "ray", x1: f1(x), y1: OY, x2: OX, y2: OY - UNIT }, spLayer);
+      const ang = Math.abs(MATHS.phaseDeg(single(fz[1]), w)), a = (ang * Math.PI) / 180, rr = 22;
+      S("path", { class: "arc", d: "M" + f1(x + rr) + " " + OY + "A" + rr + " " + rr + " 0 0 0 " + f1(x + rr * Math.cos(a)) + " " + f1(OY - rr * Math.sin(a)) }, spLayer);
+      S("text", { class: "lab-c2", x: f1(x + 26), y: OY - 8 - 12 * (i % 2) }, spLayer).textContent = fmt(ang, 0) + "°";
+      if (fz[0] === "p") S("path", { class: "pz", d: "M" + f1(x - 6) + " " + (OY - 6) + "l12 12m-12 0l12 -12" }, spLayer);
+      else S("circle", { class: "pz", cx: f1(x), cy: OY, r: 6 }, spLayer);
+    });
+    if (sys.origin > 0) {
+      S("circle", { class: "pz", cx: OX, cy: OY, r: 6 }, spLayer);
+      S("text", { class: "lab-c2", x: OX - 30, y: OY - 30 }, spLayer).textContent = "90°";
+    }
+    jwText.textContent = "jω = j" + eng(w, "rad/s");
+
+    // waves: two periods of the input
+    const T = (2 * Math.PI) / w, A = MATHS.mag(sys, w), sc = WA / Math.max(1, A);
+    const TX = (t) => WX0 + ((WX1 - WX0) * t) / (2 * T);
+    let pi = "", po = "";
+    for (let i = 0; i <= 240; i++) {
+      const t = (2 * T * i) / 240, c = i ? "L" : "M";
+      pi += c + f1(TX(t)) + " " + f1(WY - sc * Math.sin(w * t));
+      po += c + f1(TX(t)) + " " + f1(WY - sc * MATHS.outputAt(sys, w, t));
+    }
+    wIn.setAttribute("d", pi); wOut.setAttribute("d", po);
+    const d = MATHS.delaySec(sys, w), t0 = d >= 0 ? T / 4 : (5 * T) / 4, t1 = t0 + d, yb = WY - sc * A - 8;
+    br.setAttribute("d", "M" + f1(TX(t0)) + " " + f1(yb + 5) + "V" + f1(yb) + "H" + f1(TX(t1)) + "V" + f1(yb + 5));
+    brText.setAttribute("x", f1((TX(t0) + TX(t1)) / 2)); brText.setAttribute("y", f1(WY - WA - 12));
+    brText.textContent = (d >= 0 ? "delay " : "lead ") + eng(Math.abs(d), "s");
+    tText.textContent = "t (two periods of 2π/ω = " + eng(2 * T, "s") + ")";
+    legIn.textContent = "input 1 V";
+    legOut.textContent = "output " + eng(A, "V");
+
+    // readouts
+    $("r-w").textContent = "ω = " + eng(w, "rad/s") + " (" + eng(MATHS.radToHz(w), "Hz") + ")";
+    $("r-mag").textContent = "|H| = " + fmt(md, 2) + " dB = ×" + Number(A.toPrecision(3));
+    $("r-ph").textContent = "∠H = " + fmt(pd, 1) + "°";
+    $("r-delay").textContent = (d >= 0 ? "delay = " : "lead = ") + eng(Math.abs(d), "s");
+    $("r-sketch").textContent = "sketch: " + fmt(MATHS.asymDb(sys, w), 1) + " dB, " + fmt(MATHS.asymPhaseDeg(sys, w), 1) + "°";
+  }
+  function dotAt(el, x, y) {
+    const inside = y >= PY0 && y <= PY1;
+    el.style.display = inside ? "" : "none";
+    el.setAttribute("cx", f1(x)); el.setAttribute("cy", f1(y));
+  }
+  function place(f, x, y, text) {
+    dotAt(f.cdot, x, y);
+    f.clab.textContent = y >= PY0 && y <= PY1 ? text : "";
+    f.clab.setAttribute("x", f1(x + 8)); f.clab.setAttribute("y", f1(y - 8));
+    f.clab.setAttribute("text-anchor", x > 540 ? "end" : "start");
+    if (x > 540) f.clab.setAttribute("x", f1(x - 8));
+  }
+  function corners(sys) {
+    if (st.mode === "circuit") {
+      const rc = st.kind.indexOf("rc") === 0, c = sys.poles[0];
+      $("corners").innerHTML = "ω<sub>c</sub> = " + (rc ? "1/(RC)" : "R/L") + " = " + eng(c, "rad/s") +
+        " &nbsp;·&nbsp; f<sub>c</sub> = " + (rc ? "1/(2πRC)" : "R/(2πL)") + " = " + eng(MATHS.radToHz(c), "Hz");
+    } else {
+      $("corners").innerHTML = sys.poles.map((c, i) => "pole p" + sub(i + 1) + " = " + eng(c, "rad/s") + " (" + eng(MATHS.radToHz(c), "Hz") + ")")
+        .concat(sys.zeros.map((c, i) => "zero z" + sub(i + 1) + " = " + eng(c, "rad/s") + " (" + eng(MATHS.radToHz(c), "Hz") + ")")).join("<br>");
+    }
+  }
+
+  // ------------------------------------------------------------ interaction
+
+  const tri = S("path", { class: "tri", d: "M0 11L-7 0H7Z", tabindex: 0, role: "slider", "aria-label": "cursor frequency" }, $("mag"));
+  const STEP = 0.05, BIG = 0.5;
+  const snap = (v) => Math.round(v / STEP) * STEP;
+  function setCursor(lw) { st.lw = clamp(snap(lw), 0, 7); render(false); }
+  const lwOf = (svg, e) => (svgPoint(svg, e).x - PX0) / DEC;
+
+  function dragger(el, svg, onMove) {
+    let on = false;
+    el.addEventListener("pointerdown", (e) => {
+      e.preventDefault(); e.stopPropagation(); on = true;
+      try { el.setPointerCapture(e.pointerId); } catch (_) { /* fine without capture */ }
+      if (el.focus) el.focus({ preventScroll: true });
+      onMove(lwOf(svg, e));
+    });
+    el.addEventListener("pointermove", (e) => { if (on) onMove(lwOf(svg, e)); });
+    el.addEventListener("pointerup", () => { on = false; });
+    el.addEventListener("pointercancel", () => { on = false; });
+  }
+  function keys(el, get, set) {
+    el.addEventListener("keydown", (e) => {
+      const dir = { ArrowLeft: -1, ArrowDown: -1, ArrowRight: 1, ArrowUp: 1 }[e.key];
+      if (!dir) return;
+      e.preventDefault();
+      set(get() + dir * (e.shiftKey ? BIG : STEP));
+    });
+  }
+  dragger(tri, $("mag"), setCursor);
+  dragger(FM.hit, $("mag"), setCursor);
+  dragger(FP.hit, $("phase"), setCursor);
+  keys(tri, () => st.lw, setCursor);
+  markers.forEach((mk) => {
+    const arr = mk.type === "p" ? st.lp : st.lz;
+    const set = (v) => { if (st.mode !== "free") return; arr[mk.idx] = clamp(snap(v), 0, 7); render(true); };
+    dragger(mk.h, $("mag"), set);
+    keys(mk.h, () => arr[mk.idx], set);
+  });
+
+  function sync() {
+    document.querySelectorAll("[data-mode]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.mode === st.mode)));
+    document.querySelectorAll("[data-kind]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.kind === st.kind)));
+    document.querySelectorAll("[data-np]").forEach((b) => b.setAttribute("aria-pressed", String(Number(b.dataset.np) === st.np)));
+    document.querySelectorAll("[data-nz]").forEach((b) => b.setAttribute("aria-pressed", String(Number(b.dataset.nz) === st.nz)));
+    const circuit = st.mode === "circuit", rc = st.kind.indexOf("rc") === 0;
+    $("g-circuit").style.display = circuit ? "" : "none";
+    $("g-sliders").style.display = circuit ? "" : "none";
+    $("g-free").style.display = circuit ? "none" : "";
+    $("lC").style.display = $("oC").style.display = rc ? "" : "none";
+    $("lL").style.display = $("oL").style.display = rc ? "none" : "";
+    $("sR").value = st.lR; $("sC").value = st.lC; $("sL").value = st.lL;
+    $("oR").textContent = "R = " + eng(Math.pow(10, st.lR), "Ω");
+    $("oC").textContent = "C = " + eng(Math.pow(10, st.lC), "F");
+    $("oL").textContent = "L = " + eng(Math.pow(10, st.lL), "H");
+  }
+  function change(fn) { fn(); sync(); render(true); }
+
+  document.querySelectorAll("[data-mode]").forEach((b) => b.addEventListener("click", () => change(() => { st.mode = b.dataset.mode; })));
+  document.querySelectorAll("[data-kind]").forEach((b) => b.addEventListener("click", () => change(() => { st.kind = b.dataset.kind; })));
+  document.querySelectorAll("[data-np]").forEach((b) => b.addEventListener("click", () => change(() => { st.np = Number(b.dataset.np); })));
+  document.querySelectorAll("[data-nz]").forEach((b) => b.addEventListener("click", () => change(() => { st.nz = Number(b.dataset.nz); })));
+  [["sR", "lR"], ["sC", "lC"], ["sL", "lL"]].forEach((p) => $(p[0]).addEventListener("input", (e) => change(() => { st[p[1]] = Number(e.target.value); })));
+  $("to-corner").addEventListener("click", () => setCursor(Math.log10(system().poles[0])));
+  $("reset").addEventListener("click", () => change(() => { Object.assign(st, JSON.parse(JSON.stringify(START))); }));
+
+  $("theme").addEventListener("click", () => {
+    const root = document.documentElement;
+    const dark = root.dataset.theme ? root.dataset.theme === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+    root.dataset.theme = dark ? "light" : "dark";
+    try { localStorage.setItem("momentos-theme", root.dataset.theme); } catch (_) { /* switched, just not remembered */ }
+  });
+
+  sync();
+  render(true);
+
+  // for checking the numbers from the console
+  window.TOOL = { st: st, system: system, render: render, sync: sync, setCursor: setCursor,
+    set: (o) => change(() => Object.assign(st, o)) };
+})();
+</script>
+</body>
+</html>

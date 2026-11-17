@@ -1,0 +1,577 @@
+<!doctype html>
+<!--
+  Concept:      With negative feedback an op-amp moves its output until its two inputs agree, so the − input is
+                pinned (the virtual short), no current enters it, and two resistors set the gain.
+  Course:       EE 105 (op-amps and feedback); EE 120 (feedback)
+  Play with:    The topology, R₁, R₂, v_in and the open-loop gain A; the rails; swapping the inputs
+  Should click: As A rises, the voltage between the inputs shrinks toward zero and the gain stops depending
+                on A. The rule needs negative feedback and an output that is free to move.
+  Plan:         plans/ideal-op-amp.md
+  Checked:      17 check cases pass (node scripts/test-tools.js). Headless Chrome, light and dark, no console errors:
+                inverting 1 kΩ, 10 kΩ, v_in = 0.5 V, A = 10⁵ reads v_out = −5.00 V, v₋ = 50.0 µV, 500 µA through both
+                resistors, error −0.011 %; A = 10³ gives a gain of −9.8912; v_in = 2 V stops at the −12 V rail with
+                v₋ = 727 mV; non-inverting swapped goes to −12 V with v_diff = −1.59 V and both current arrows reversed;
+                follower reads 0.4995 V and hides R₁ and R₂; swapping disables the rails box; reset restores the start.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ideal op-amp · momentos</title>
+<script>
+  // apply a saved light/dark choice before anything is painted
+  try {
+    var saved = localStorage.getItem("momentos-theme");
+    if (saved === "light" || saved === "dark") document.documentElement.dataset.theme = saved;
+  } catch (e) { /* no storage in some previews: follow the system setting */ }
+</script>
+<style>
+  /* ---- momentos house style: begin (the same block in every tool. Change it only in
+     templates/tool-template.html, then run scripts/sync-house-style.py) ---- */
+  :root {
+    color-scheme: light dark;
+    --bg: light-dark(#f6f4ee, #131312);          /* the page */
+    --surface: light-dark(#fbfaf6, #1b1b19);     /* figures and inputs */
+    --ink: light-dark(#1d1c1a, #ebe8e1);         /* text and the main strokes */
+    --ink-2: light-dark(#5f5c55, #b1ada3);       /* secondary text */
+    --ink-3: light-dark(#77736b, #8a867d);       /* labels, axis numbers */
+    --line: light-dark(rgba(29, 28, 26, 0.16), rgba(235, 232, 225, 0.18));   /* hairlines and borders */
+    --grid: light-dark(rgba(29, 28, 26, 0.07), rgba(235, 232, 225, 0.08));   /* grid lines */
+    --accent: light-dark(#c2410c, #ff8f5a);      /* the one thing being pointed at */
+    /* Colour is for quantities, never for decoration. Give each quantity one of these and keep it
+       the same in the figure, the numbers and the prose. */
+    --c1: light-dark(#2458c4, #7aa7ff);          /* blue */
+    --c2: light-dark(#c2410c, #ff9a62);          /* orange */
+    --c3: light-dark(#0f7f6b, #4fd3b4);          /* teal */
+    --c4: light-dark(#9d3fb0, #d78be6);          /* purple */
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+    --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  }
+  :root[data-theme="light"] { color-scheme: light; }
+  :root[data-theme="dark"] { color-scheme: dark; }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 17px/1.55 var(--serif);
+    -webkit-font-smoothing: antialiased;
+  }
+  .bar {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 22px;
+    font: 12px/1 var(--mono);
+    letter-spacing: 0.06em;
+    color: var(--ink-3);
+  }
+  .bar a { color: var(--ink-2); text-decoration: none; border-bottom: 1px solid var(--line); padding-bottom: 2px; }
+  .bar a:hover { color: var(--accent); border-color: var(--accent); }
+  .bar .grow { flex: 1; }
+  button {
+    font: 12px/1 var(--mono);
+    color: var(--ink-2);
+    background: transparent;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 7px 10px;
+    cursor: pointer;
+  }
+  button:hover { color: var(--ink); border-color: var(--ink-2); }
+  button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  button:disabled { opacity: 0.4; cursor: default; }
+  :focus-visible { outline: 1px dashed var(--ink); outline-offset: 2px; }
+
+  main { max-width: 1120px; margin: 0 auto; padding: 4px 22px 72px; }
+  h1 { font: 400 clamp(30px, 4.6vw, 44px)/1.08 var(--serif); letter-spacing: -0.015em; margin: 14px 0 10px; }
+  .lede { max-width: 62ch; margin: 0 0 26px; color: var(--ink-2); font-size: 18px; }
+  h2 {
+    font: 500 10.5px/1.4 var(--mono);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin: 0 0 10px;
+  }
+  .bench { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(280px, 1fr); gap: 28px; align-items: start; }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-top: 28px; }
+  figure { margin: 0; }
+  .stage { border: 1px solid var(--line); border-radius: 4px; background: var(--surface); overflow: hidden; }
+  .stage svg { display: block; width: 100%; height: auto; touch-action: none; user-select: none; -webkit-user-select: none; }
+  figcaption { padding: 9px 12px; border-top: 1px solid var(--line); font: 11.5px/1.5 var(--mono); color: var(--ink-3); }
+  .controls { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 12px; }
+  .controls label { font: 12px/1 var(--mono); color: var(--ink-2); display: inline-flex; align-items: center; gap: 6px; margin-left: 6px; }
+  input[type="range"] { accent-color: var(--ink); }
+  input[type="checkbox"] { accent-color: var(--ink); }
+
+  .notes { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 44px; margin-top: 46px; padding-top: 28px; border-top: 1px solid var(--line); }
+  .notes p { margin: 0 0 14px; max-width: 62ch; }
+  .notes p b { font-weight: 600; }
+  .notes ul { margin: 0 0 26px; padding: 0; list-style: none; }
+  .notes li { margin: 0 0 12px; padding-left: 14px; border-left: 1px solid var(--line); font-size: 16px; line-height: 1.45; }
+  .notes li a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--line); }
+  .notes li a:hover { color: var(--accent); border-color: var(--accent); }
+  details { margin-top: 4px; }
+  summary { font: 11.5px/1.4 var(--mono); color: var(--ink-3); cursor: pointer; }
+  details span { color: var(--ink-2); font-size: 15px; }
+  sup, sub { font-size: 0.72em; line-height: 0; }
+
+  @media (max-width: 860px) {
+    .bench, .pair, .notes { grid-template-columns: 1fr; }
+    .notes { gap: 28px; }
+  }
+  /* ---- momentos house style: end ---- */
+
+  /* ---- this tool: everything below is yours ---- */
+  var { font-style: italic; font-family: var(--serif); }
+  .grid line { stroke: var(--grid); stroke-width: 1; }
+  .grid .axis { stroke: var(--line); }
+  .tick { font: 10.5px var(--mono); fill: var(--ink-3); }
+  .w { fill: none; stroke: var(--ink); stroke-width: 1.6; stroke-linejoin: round; stroke-linecap: round; }
+  .amp { fill: var(--surface); stroke: var(--ink); stroke-width: 1.6; stroke-linejoin: round; }
+  .pin { font: 18px var(--mono); fill: var(--ink); }
+  .term { fill: var(--surface); stroke: var(--ink); stroke-width: 1.4; }
+  .t1 { font: 12px var(--mono); fill: var(--c1); }
+  .t2 { font: 11px var(--mono); fill: var(--c2); }
+  .t3 { font: 12px var(--mono); fill: var(--c3); }
+  .t4 { font: 12px var(--mono); fill: var(--c4); }
+  .ta { font: 12px var(--mono); fill: var(--accent); }
+  .arrow { stroke: var(--c2); fill: none; stroke-linecap: round; }
+  .arrow-head { fill: var(--c2); }
+  .track { stroke: var(--line); stroke-width: 6; stroke-linecap: round; }
+  .gbar { stroke: var(--c3); stroke-width: 6; stroke-linecap: butt; }
+  .gtick { stroke: var(--ink-3); stroke-width: 1; }
+  .ideal { stroke: var(--ink-2); stroke-width: 1.4; stroke-dasharray: 6 4; }
+  .curve { fill: none; stroke: var(--c1); stroke-width: 2.4; }
+  .dot { fill: var(--c1); }
+  .unity { stroke: var(--ink-3); stroke-width: 1; stroke-dasharray: 1 3; }
+  .read { font: 13px/1.6 var(--mono); font-variant-numeric: tabular-nums; }
+  .read p { margin: 0 0 4px; }
+  .read .big { font: 400 32px/1.15 var(--serif); color: var(--c1); margin: 6px 0; }
+  .recipe ol { margin: 0 0 10px; padding-left: 20px; font: 15px/1.45 var(--serif); }
+  .recipe .worked { font: 12.5px/1.6 var(--mono); color: var(--ink-2); border-left: 1px solid var(--line); padding-left: 10px; margin-bottom: 18px; }
+  .q1 { color: var(--c1); } .q2 { color: var(--c2); } .q3 { color: var(--c3); } .q4 { color: var(--c4); } .q0 { color: var(--ink-2); }
+  .controls output { font: 12px/1 var(--mono); color: var(--ink-2); min-width: 10ch; display: inline-block; }
+  .note { font: 11.5px/1.5 var(--mono); color: var(--ink-3); margin-top: 6px; }
+</style>
+</head>
+<body>
+
+<header class="bar">
+  <a href="../../index.html#ideal-op-amp">← map</a>
+  <span>circuits / amplifiers</span>
+  <span class="grow"></span>
+  <button type="button" id="theme" aria-label="Switch between light and dark">◐</button>
+</header>
+
+<main>
+  <h1>Ideal op-amp and the virtual short</h1>
+  <p class="lede">An op-amp multiplies the difference between its inputs by a huge number. Wire its output back to the
+    − input and it chases its own tail: the output moves until the two inputs agree. Watch the difference shrink to
+    microvolts as you raise A, and the gain settle on a ratio of two resistors.</p>
+
+  <div class="bench">
+    <div>
+      <figure class="stage">
+        <svg id="circuit" viewBox="0 0 640 360" role="group" aria-label="The op-amp circuit with its node voltages, branch currents and the voltage between the inputs"></svg>
+        <figcaption>Voltages in blue, currents in orange (thicker for more current), resistances in purple. The gauge
+          under the op-amp is the voltage between its inputs, on a log scale.</figcaption>
+      </figure>
+      <div class="controls">
+        <button type="button" data-top="inverting">inverting</button>
+        <button type="button" data-top="non-inverting">non-inverting</button>
+        <button type="button" data-top="follower">follower</button>
+      </div>
+      <div class="controls">
+        <span id="g-r"><label>R₁ <input type="range" id="sR1" min="2" max="5" step="0.05" value="3" aria-label="R1, log scale"></label><output id="oR1"></output>
+        <label>R₂ <input type="range" id="sR2" min="2" max="5" step="0.05" value="4" aria-label="R2, log scale"></label><output id="oR2"></output></span>
+      </div>
+      <div class="controls">
+        <label>v_in <input type="range" id="sV" min="-2" max="2" step="0.05" value="0.5" aria-label="input voltage"></label><output id="oV"></output>
+        <label>A <input type="range" id="sA" min="1" max="6" step="0.1" value="5" aria-label="open-loop gain A, log scale"></label><output id="oA"></output>
+      </div>
+      <div class="controls">
+        <label><input type="checkbox" id="clip" checked> clip at ±12 V</label>
+        <label><input type="checkbox" id="swap"> swap the inputs</label>
+        <button type="button" id="reset">reset</button>
+      </div>
+      <div class="note" id="swap-note"></div>
+    </div>
+    <aside>
+      <div class="recipe">
+        <h2>The recipe</h2>
+        <ol>
+          <li>V₊ = V₋: the output moves until the inputs agree.</li>
+          <li>No current flows into either input.</li>
+          <li>KCL at the pinned node gives v_out.</li>
+        </ol>
+        <div class="worked" id="worked"></div>
+      </div>
+      <div class="read">
+        <h2>Right now</h2>
+        <div class="big" id="r-out"></div>
+        <p class="q0" id="r-ideal"></p>
+        <p class="q3" id="r-diff"></p>
+        <p id="r-err"></p>
+      </div>
+    </aside>
+  </div>
+
+  <div class="pair">
+    <figure class="stage">
+      <svg id="gain" viewBox="0 0 480 300" role="group" aria-label="Closed-loop gain against open-loop gain A"></svg>
+      <figcaption>The gain against the open-loop gain A. It climbs toward the ratio the resistors set and flattens
+        against it.</figcaption>
+    </figure>
+    <div class="read">
+      <h2>Loop gain</h2>
+      <p id="r-beta"></p>
+      <p id="r-loop"></p>
+      <p id="r-e"></p>
+      <p class="q0">Ten times more A, ten times less error.</p>
+    </div>
+  </div>
+
+  <section class="notes">
+    <div>
+      <h2>What should click</h2>
+      <p><b>The output chases the inputs.</b> v_out = A·(v₊ − v₋), so v₊ − v₋ = v_out/A. A few volts out of an
+        amplifier with A = 10⁵ needs only tens of microvolts in. That is the virtual short: not a wire, a difference
+        too small to matter.</p>
+      <p><b>Then the resistors decide.</b> With v₋ pinned and no current into the input, KCL at the pinned node fixes
+        v_out. A no longer appears: the gain is −R₂/R₁ or 1 + R₂/R₁.</p>
+      <p><b>The error is one over the loop gain.</b> The gain falls short of ideal by 1/(1 + Aβ). Ten times more A,
+        ten times less error.</p>
+      <p><b>Only with negative feedback.</b> Swap the inputs and the output runs away from the balance instead of
+        toward it, until a rail stops it. At a rail the output cannot move, and the inputs are no longer pinned.</p>
+    </div>
+    <div>
+      <h2>Predict, then try</h2>
+      <ul>
+        <li>Inverting, R₁ = 1 kΩ, R₂ = 10 kΩ, v_in = 0.5 V. What is v_out, and what voltage sits on the − input?
+          <details><summary>why</summary><span>−5 V, and almost exactly 0 V: the output moves until the − input matches the grounded + input. With A = 10⁵ it is 50 µV off.</span></details></li>
+        <li>Lower A from 10⁵ to 10³. Does the gain change by a factor of 100?
+          <details><summary>why</summary><span>No. It goes from −9.9989 to −9.89, about 1% short. The error is 1/(1 + Aβ), and Aβ is still 91.</span></details></li>
+        <li>Swap the inputs. Where does the output go?
+          <details><summary>why</summary><span>To a rail. Any difference now pushes the output the way that makes the difference bigger, so it runs until the rail stops it. The virtual short needs negative feedback.</span></details></li>
+        <li>Set v_in = 2 V with the rails on. Is the − input still at 0 V?
+          <details><summary>why</summary><span>No. The output wants −20 V but stops at −12 V, so it can no longer pull the − input down: it sits at 0.73 V. The virtual short holds only while the output is free to move.</span></details></li>
+        <li>Follower with A = 1000. What is the gain?
+          <details><summary>why</summary><span>1000/1001 = 0.999. All of the output is fed back, β = 1, so Aβ = 1000 and the error is 0.1%.</span></details></li>
+      </ul>
+      <h2>Where this shows up</h2>
+      <ul>
+        <li><a href="../../index.html#feedback">feedback</a>: the op-amp in a loop is G/(1 + GH) with G = A and H = β; when Aβ is large the gain is 1/β.</li>
+        <li><a href="../../index.html#kcl">KCL</a>: step 3 of the recipe is KCL at the pinned node, with no current into the input.</li>
+        <li><a href="../../index.html#dividers">dividers</a>: β is the divider R₁/(R₁ + R₂) from the output back to the − input.</li>
+        <li><a href="../../index.html#op-amp-model">non-ideal op-amp model</a>: a finite A, input resistance and output resistance give errors of about 1/(1 + Aβ).</li>
+        <li><a href="../../index.html#loop-gain">loop gain</a>: Aβ is the loop gain, and it sets how close the circuit comes to ideal.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<script id="maths">
+// ---- the maths: plain functions with no page behind them. scripts/test-tools.js runs this block on
+// its own and compares it with the check cases below, so nothing in here may touch the DOM.
+// The op-amp: v_out = A (v+ - v-), no input current, no output resistance, rails at +-Vsat when clipping.
+//   inverting      v_in -> R1 -> node N (- pin) -> R2 -> v_out, + pin grounded
+//   non-inverting  v_in -> + pin; v_out -> R2 -> N (- pin) -> R1 -> ground
+//   follower       v_in -> + pin; v_out wired straight to the - pin
+var MATHS = (function () {
+  "use strict";
+
+  // fraction of v_out fed back to the - input
+  function beta(top, R1, R2) { return top === "follower" ? 1 : R1 / (R1 + R2); }
+  // v_out / v_in for an infinite A
+  function idealGain(top, R1, R2) {
+    if (top === "inverting") return -R2 / R1;
+    if (top === "non-inverting") return 1 + R2 / R1;
+    return 1;
+  }
+  // v_out / v_in for a finite A, no rails
+  function closedGain(top, R1, R2, A) {
+    var b = beta(top, R1, R2);
+    if (top === "inverting") return -(R2 / (R1 + R2)) * A / (1 + A * b);
+    return A / (1 + A * b);
+  }
+  // how far the gain falls short, in %: -100 / (1 + A beta)
+  function gainErrorPct(top, R1, R2, A) {
+    var g0 = idealGain(top, R1, R2);
+    return 100 * (closedGain(top, R1, R2, A) - g0) / g0;
+  }
+  // the feedback node N, and the other input's wire, for a given v_out
+  function nodes(top, R1, R2, vin, vout) {
+    if (top === "inverting") return { fb: (R2 * vin + R1 * vout) / (R1 + R2), other: 0 };
+    if (top === "non-inverting") return { fb: R1 * vout / (R1 + R2), other: vin };
+    return { fb: vout, other: vin };
+  }
+  // the whole circuit. Currents: inverting i1 v_in -> N, i2 N -> v_out; non-inverting i2 v_out -> N, i1 N -> ground.
+  function solve(top, R1, R2, A, vin, Vsat, clip, swapped) {
+    var vout, sat, n, vplus, vminus;
+    if (!swapped) {
+      vout = closedGain(top, R1, R2, A) * vin;
+      sat = clip && Math.abs(vout) > Vsat;
+      if (sat) vout = vout > 0 ? Vsat : -Vsat;
+      n = nodes(top, R1, R2, vin, vout);
+      vplus = n.other; vminus = n.fb;
+    } else {
+      // positive feedback: from v_out = 0 the first push carries the output to a rail
+      var n0 = nodes(top, R1, R2, vin, 0), push = n0.fb - n0.other;
+      vout = push === 0 ? 0 : (push > 0 ? Vsat : -Vsat);
+      sat = push !== 0;
+      n = nodes(top, R1, R2, vin, vout);
+      vplus = n.fb; vminus = n.other;
+    }
+    var i1 = 0, i2 = 0;
+    if (top === "inverting") { i1 = (vin - n.fb) / R1; i2 = (n.fb - vout) / R2; }
+    if (top === "non-inverting") { i1 = n.fb / R1; i2 = (vout - n.fb) / R2; }
+    return { vout: vout, vplus: vplus, vminus: vminus, vdiff: vplus - vminus, i1: i1, i2: i2, saturated: sat };
+  }
+
+  return { beta: beta, idealGain: idealGain, closedGain: closedGain, gainErrorPct: gainErrorPct, solve: solve };
+})();
+</script>
+<script type="application/json" id="check-cases">
+[
+  {"fn": "idealGain", "args": ["inverting", 1000, 10000], "expect": -10.0, "tol": 1e-09, "units": "", "tag": "typical", "note": "inverting, R1 = 1 kΩ, R2 = 10 kΩ: the ideal gain is −R2/R1 = −10"},
+  {"fn": "idealGain", "args": ["non-inverting", 1000, 10000], "expect": 11.0, "tol": 1e-09, "units": "", "tag": "typical", "note": "non-inverting, R1 = 1 kΩ, R2 = 10 kΩ: the ideal gain is 1 + R2/R1 = 11"},
+  {"fn": "beta", "args": ["non-inverting", 1000, 10000], "expect": 0.09090909090909091, "tol": 1e-09, "units": "", "tag": "typical", "note": "R1 = 1 kΩ to ground and R2 = 10 kΩ from the output: a fraction 1/11 of v_out is fed back"},
+  {"fn": "closedGain", "args": ["inverting", 1000, 10000, 100000], "expect": -9.99890012098669, "tol": 1e-09, "units": "", "tag": "typical", "note": "inverting, 1 kΩ and 10 kΩ, A = 10⁵: the gain is −9.9989, a hair short of −10"},
+  {"fn": "closedGain", "args": ["non-inverting", 1000, 10000, 100000], "expect": 10.99879013308536, "tol": 1e-09, "units": "", "tag": "typical", "note": "non-inverting, 1 kΩ and 10 kΩ, A = 10⁵: the gain is 10.9988, a hair short of 11"},
+  {"fn": "closedGain", "args": ["follower", 1000, 10000, 1000], "expect": 0.999000999000999, "tol": 1e-09, "units": "", "tag": "typical", "note": "follower with A = 1000 (R1 and R2 unused): the gain is 1000/1001 = 0.999"},
+  {"fn": "gainErrorPct", "args": ["inverting", 1000, 10000, 100000], "expect": -0.01099879013310101, "tol": 1e-09, "units": "%", "tag": "typical", "note": "inverting, 1 kΩ and 10 kΩ, A = 10⁵: the gain is 0.011% short, which is 1/(1 + Aβ) with Aβ = 9091"},
+  {"fn": "solve", "args": ["inverting", 1000, 10000, 100000, 0.5, 12, true, false], "expect": {"vout": -4.999450060493345, "vplus": 0.0, "vminus": 4.99945006050356e-05, "vdiff": -4.99945006050356e-05, "i1": 0.000499950005499395, "i2": 0.000499950005499395, "saturated": false}, "tol": 1e-09, "units": "V, A", "tag": "typical", "note": "inverting, 1 kΩ and 10 kΩ, A = 10⁵, v_in = 0.5 V: v_out = −4.9995 V, the − input sits 50 µV above ground, and 0.5 mA flows through both resistors"},
+  {"fn": "solve", "args": ["non-inverting", 1000, 10000, 100000, 0.5, 12, true, false], "expect": {"vout": 5.49939506654268, "vplus": 0.5, "vminus": 0.49994500604933456, "vdiff": 5.499395066543844e-05, "i1": 0.0004999450060493345, "i2": 0.0004999450060493345, "saturated": false}, "tol": 1e-09, "units": "V, A", "tag": "typical", "note": "non-inverting, 1 kΩ and 10 kΩ, A = 10⁵, v_in = 0.5 V: v_out = 5.4994 V and the two inputs differ by 55 µV"},
+  {"fn": "solve", "args": ["inverting", 1000, 10000, 100000, 0, 12, true, false], "expect": {"vout": -0.0, "vplus": 0.0, "vminus": 0.0, "vdiff": 0.0, "i1": 0.0, "i2": 0.0, "saturated": false}, "tol": 1e-09, "units": "V, A", "tag": "limit-zero", "note": "inverting with v_in = 0 V: everything sits at 0 V and no current flows"},
+  {"fn": "gainErrorPct", "args": ["inverting", 1000, 10000, 10], "expect": -52.38095238095239, "tol": 1e-09, "units": "%", "tag": "limit-zero", "note": "inverting, 1 kΩ and 10 kΩ, with a small A = 10: the gain is −4.76, 52% short of −10. The virtual short needs a large A"},
+  {"fn": "closedGain", "args": ["inverting", 1000, 10000, 1000000000.0], "expect": -9.99999989, "tol": 1e-09, "units": "", "tag": "limit-infinity", "note": "inverting, 1 kΩ and 10 kΩ, A = 10⁹: the gain is −10 to eight figures. The resistors alone set it"},
+  {"fn": "solve", "args": ["inverting", 1000, 10000, 1000000000.0, 0.5, 12, true, false], "expect": {"vout": -4.999999945, "vplus": 0.0, "vminus": 5.000000039052049e-09, "vdiff": -5.000000039052049e-09, "i1": 0.0004999999949999999, "i2": 0.000499999995, "saturated": false}, "tol": 1e-12, "units": "V, A", "tag": "limit-infinity", "note": "the same with v_in = 0.5 V: the input difference has shrunk to 5 nV"},
+  {"fn": "solve", "args": ["inverting", 1000, 10000, 100000, 2, 12, true, false], "expect": {"vout": -12, "vplus": 0.0, "vminus": 0.7272727272727273, "vdiff": -0.7272727272727273, "i1": 0.0012727272727272728, "i2": 0.0012727272727272726, "saturated": true}, "tol": 1e-09, "units": "V, A", "tag": "breaks", "note": "inverting, gain −10, v_in = 2 V asks for −20 V but the rail stops it at −12 V: the − input is pulled to 0.727 V and the virtual short is gone"},
+  {"fn": "solve", "args": ["non-inverting", 1000, 10000, 100000, 0.5, 12, true, true], "expect": {"vout": -12, "vplus": -1.0909090909090908, "vminus": 0.5, "vdiff": -1.5909090909090908, "i1": -0.0010909090909090907, "i2": -0.001090909090909091, "saturated": true}, "tol": 1e-09, "units": "V, A", "tag": "sign", "note": "non-inverting with its inputs swapped, v_in = 0.5 V: the feedback is positive and the output slams to −12 V, with 1.59 V between the inputs"},
+  {"fn": "solve", "args": ["inverting", 1000, 10000, 100000, 0.5, 12, true, true], "expect": {"vout": 12, "vplus": 1.5454545454545454, "vminus": 0.0, "vdiff": 1.5454545454545454, "i1": -0.0010454545454545454, "i2": -0.0010454545454545456, "saturated": true}, "tol": 1e-09, "units": "V, A", "tag": "sign", "note": "inverting with its inputs swapped, v_in = 0.5 V: the output slams to +12 V, not to the −5 V the resistors ask for"},
+  {"fn": "solve", "args": ["inverting", 1000, 10000, 100000, 2, 12, false, false], "expect": {"vout": -19.99780024197338, "vplus": 0.0, "vminus": 0.0001999780024201424, "vdiff": -0.0001999780024201424, "i1": 0.00199980002199758, "i2": 0.00199980002199758, "saturated": false}, "tol": 1e-09, "units": "V, A", "tag": "other", "note": "the same as the clipped case with the rails off: v_out = −19.998 V and the inputs differ by 200 µV"}
+]
+</script>
+<script>
+(function () {
+  "use strict";
+
+  const NS = "http://www.w3.org/2000/svg";
+  function S(name, attrs, parent) {
+    const el = document.createElementNS(NS, name);
+    for (const k in attrs) el.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(el);
+    return el;
+  }
+  const $ = (id) => document.getElementById(id);
+  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+  // three significant figures and an SI prefix: eng(-5e-5, "V") is "−50.0 µV"
+  function eng(v, unit) {
+    if (Math.abs(v) < 1e-15) return "0 " + unit;
+    const pre = { "-15": "f", "-12": "p", "-9": "n", "-6": "µ", "-3": "m", "0": "", "3": "k", "6": "M", "9": "G" };
+    let e = clamp(Math.floor(Math.log10(Math.abs(v)) / 3) * 3, -15, 9);
+    let s = Math.abs(v / Math.pow(10, e)).toPrecision(3);
+    if (Number(s) >= 1000 && e < 9) { e += 3; s = Math.abs(v / Math.pow(10, e)).toPrecision(3); }
+    return (v < 0 ? "−" : "") + s + " " + pre[String(e)] + unit;
+  }
+  const VSAT = 12, IDEAL_A = 1e15;          // the rails, V; an A large enough to stand for "ideal"
+
+  // ------------------------------------------------------------ state
+
+  const START = { top: "inverting", lR1: 3, lR2: 4, vin: 0.5, lA: 5, clip: true, swap: false };
+  const st = Object.assign({}, START);
+  const R1 = () => Math.pow(10, st.lR1), R2 = () => Math.pow(10, st.lR2), A = () => Math.pow(10, st.lA);
+  const now = () => MATHS.solve(st.top, R1(), R2(), A(), st.vin, VSAT, st.clip || st.swap, st.swap);
+  const ideal = () => MATHS.solve(st.top, R1(), R2(), IDEAL_A, st.vin, VSAT, false, false);
+
+  // ------------------------------------------------------------ figure 1: the circuit
+
+  const C = $("circuit");
+  const layer = S("g", {}, C);
+  const T = (x, y, cls, text, anchor) => { const t = S("text", { x: x, y: y, class: cls, "text-anchor": anchor || "start" }, layer); t.textContent = text; return t; };
+  const W = (d) => S("path", { class: "w", d: d }, layer);
+  function resistorH(x0, x1, y) {           // a zigzag from x0 to x1 on the wire at y
+    let d = "M" + x0 + " " + y + "H" + (x0 + 12);
+    const n = 6, w = (x1 - x0 - 24) / n;
+    for (let i = 0; i < n; i++) d += "L" + (x0 + 12 + w * (i + 0.5)) + " " + (y + (i % 2 ? 7 : -7));
+    W(d + "L" + (x1 - 12) + " " + y + "H" + x1);
+  }
+  const ground = (x, y) => W("M" + x + " " + y + "m-12 0h24m-18 5h12m-7 5h2");
+  // a current arrow parallel to a horizontal resistor, below it; i > 0 points from x0 to x1
+  function current(x0, x1, y, i, text) {
+    const w = 1.5 + 5 * Math.min(1, Math.abs(i) / 2e-3);
+    if (Math.abs(i) < 1e-12) { T((x0 + x1) / 2, y + 16, "t2", "0 A", "middle"); return; }
+    const a = i > 0 ? x0 : x1, b = i > 0 ? x1 : x0, dir = i > 0 ? 1 : -1, h = 6 + w;
+    S("path", { class: "arrow", "stroke-width": w.toFixed(2), d: "M" + a + " " + y + "H" + (b - dir * h) }, layer);
+    S("path", { class: "arrow-head", d: "M" + b + " " + y + "l" + (-dir * h) + " " + (-h / 1.6) + "v" + (2 * h / 1.6) + "Z" }, layer);
+    T((x0 + x1) / 2, y + 18 + w / 2, "t2", text, "middle");
+  }
+  function gaugeLen(v) { return 85 * clamp((Math.log10(Math.abs(v)) + 7) / 8, 0, 1); }
+
+  function drawCircuit(r) {
+    layer.textContent = "";
+    const inv = st.top === "inverting", fol = st.top === "follower";
+    // op-amp
+    S("path", { class: "amp", d: "M330 130V250L440 190Z" }, layer);
+    T(338, 171, "pin", st.swap ? "+" : "−"); T(338, 221, "pin", st.swap ? "−" : "+");
+    W("M440 190H560"); S("circle", { class: "term", cx: 560, cy: 190, r: 4 }, layer);
+    // feedback path from N over the top to the output
+    W("M220 165H330M220 165V80H" + (fol ? "500" : "340") + (fol ? "" : "M420 80H500") + "M500 80V190");
+    if (!fol) { resistorH(340, 420, 80); T(380, 62, "t4", "R₂ = " + eng(R2(), "Ω"), "middle"); }
+    if (inv) {
+      S("circle", { class: "term", cx: 70, cy: 165, r: 4 }, layer);
+      W("M74 165H120M200 165H220"); resistorH(120, 200, 165);
+      W("M330 215H290V240"); ground(290, 240);
+      T(20, 145, "t1", "v_in = " + eng(st.vin, "V"));
+      T(160, 130, "t4", "R₁ = " + eng(R1(), "Ω"), "middle");
+      current(120, 200, 180, r.i1, eng(Math.abs(r.i1), "A"));
+      current(340, 420, 96, r.i2, eng(Math.abs(r.i2), "A"));     // N (left) to v_out (right)
+    } else {
+      S("circle", { class: "term", cx: 70, cy: 215, r: 4 }, layer);
+      W("M74 215H330");
+      T(20, 240, "t1", "v_in = " + eng(st.vin, "V"));
+      if (!fol) {
+        W("M100 165H120M200 165H220M100 165V180"); resistorH(120, 200, 165); ground(100, 180);
+        T(160, 130, "t4", "R₁ = " + eng(R1(), "Ω"), "middle");
+        current(200, 120, 180, r.i1, eng(Math.abs(r.i1), "A"));      // N (right) to ground (left)
+        current(420, 340, 96, r.i2, eng(Math.abs(r.i2), "A"));       // v_out (right) into N (left)
+      }
+    }
+    // node voltages at the pins, and no current into them
+    T(322, 157, "t1", "v₋ = " + eng(r.vminus, "V"), "end");
+    T(322, 207, "t1", "v₊ = " + eng(r.vplus, "V"), "end");
+    T(304, 182, "t2", "0 A"); T(304, 232, "t2", "0 A");
+    T(632, 214, "t1", "v_out = " + eng(r.vout, "V"), "end");
+    if (r.saturated) T(632, 232, "ta", "at the rail: " + eng(r.vout, "V"), "end");
+    // the gauge: v_diff on a log scale, centre at x = 385
+    S("line", { class: "track", x1: 300, x2: 470, y1: 300, y2: 300 }, layer);
+    [1e-6, 1e-3, 1].forEach((v) => {
+      const L = gaugeLen(v);
+      S("line", { class: "gtick", x1: 385 + L, x2: 385 + L, y1: 292, y2: 308 }, layer);
+      S("line", { class: "gtick", x1: 385 - L, x2: 385 - L, y1: 292, y2: 308 }, layer);
+      T(385 + L, 322, "tick", eng(v, "V").replace("1.00 ", "1 "), "middle");
+    });
+    S("line", { class: "gtick", x1: 385, x2: 385, y1: 290, y2: 310 }, layer);
+    if (Math.abs(r.vdiff) > 1e-15) {
+      const L = gaugeLen(r.vdiff) * (r.vdiff > 0 ? 1 : -1);
+      S("line", { class: "gbar", x1: 385, x2: 385 + L, y1: 300, y2: 300 }, layer);
+    }
+    T(385, 284, "t3", "v_diff = v₊ − v₋ = " + eng(r.vdiff, "V"), "middle");
+  }
+
+  // ------------------------------------------------------------ figure 2: gain against A
+
+  const G = $("gain");
+  const GX0 = 56, GX1 = 460, GY0 = 20, GY1 = 250;
+  const GX = (la) => GX0 + ((la - 1) / 5) * (GX1 - GX0);
+  const ggrid = S("g", { class: "grid" }, G), glab = S("g", {}, G);
+  const idealLine = S("line", { class: "ideal", x1: GX0, x2: GX1 }, G);
+  const idealText = S("text", { x: GX1, "text-anchor": "end", class: "tick" }, G);
+  const unity = S("line", { class: "unity", y1: GY0, y2: GY1 }, G);
+  const unityText = S("text", { y: GY1 - 6, class: "tick" }, G);
+  const curve = S("path", { class: "curve" }, G);
+  const dot = S("circle", { class: "dot", r: 5 }, G);
+  S("text", { x: GX1, y: 292, "text-anchor": "end", class: "tick" }, G).textContent = "A";
+  S("text", { x: GX0 + 6, y: GY0 + 12, class: "tick" }, G).textContent = "|G|";
+
+  function drawGain() {
+    const g0 = Math.abs(MATHS.idealGain(st.top, R1(), R2())), top = 1.25 * g0;
+    const GY = (v) => GY1 - (v / top) * (GY1 - GY0);
+    ggrid.textContent = ""; glab.textContent = "";
+    for (let d = 1; d <= 6; d++) {
+      S("line", { x1: GX(d), x2: GX(d), y1: GY0, y2: GY1, class: d === 1 ? "axis" : "" }, ggrid);
+      const t = S("text", { x: GX(d), y: GY1 + 18, "text-anchor": "middle", class: "tick" }, glab);
+      t.textContent = "10" + "¹²³⁴⁵⁶"[d - 1];
+    }
+    for (let k = 0; k <= 5; k++) {
+      const v = (top * k) / 5;
+      S("line", { x1: GX0, x2: GX1, y1: GY(v), y2: GY(v), class: k === 0 ? "axis" : "" }, ggrid);
+      S("text", { x: GX0 - 6, y: GY(v) + 3.5, "text-anchor": "end", class: "tick" }, glab).textContent = Number(v.toPrecision(3)).toString().replace("-", "−");
+    }
+    idealLine.setAttribute("y1", GY(g0)); idealLine.setAttribute("y2", GY(g0));
+    idealText.setAttribute("y", GY(g0) - 6); idealText.textContent = "ideal " + Number(g0.toPrecision(3));
+    let d = "";
+    for (let i = 0; i <= 200; i++) {
+      const la = 1 + (5 * i) / 200;
+      d += (i ? "L" : "M") + GX(la).toFixed(1) + " " + GY(Math.abs(MATHS.closedGain(st.top, R1(), R2(), Math.pow(10, la)))).toFixed(1);
+    }
+    curve.setAttribute("d", d);
+    dot.setAttribute("cx", GX(st.lA)); dot.setAttribute("cy", GY(Math.abs(MATHS.closedGain(st.top, R1(), R2(), A()))));
+    // where A beta = 1: A = 1/beta
+    const la1 = Math.log10(1 / MATHS.beta(st.top, R1(), R2()));
+    const show = la1 >= 1 && la1 <= 6;
+    unity.style.display = unityText.style.display = show ? "" : "none";
+    unity.setAttribute("x1", GX(la1)); unity.setAttribute("x2", GX(la1));
+    unityText.setAttribute("x", GX(la1) + 5); unityText.textContent = "Aβ = 1";
+  }
+
+  // ------------------------------------------------------------ words and numbers
+
+  function readouts(r) {
+    const id = ideal(), b = MATHS.beta(st.top, R1(), R2());
+    $("r-out").textContent = "v_out = " + eng(r.vout, "V");
+    const form = { inverting: "−R₂/R₁", "non-inverting": "1 + R₂/R₁", follower: "1" }[st.top];
+    $("r-ideal").textContent = "ideal: " + form + " · v_in = " + eng(id.vout, "V");
+    $("r-diff").textContent = "v_diff = " + eng(r.vdiff, "V");
+    $("r-err").textContent = st.swap ? "gain error: no gain, the output sits on a rail"
+      : r.saturated ? "gain error: none to speak of, the rail holds the output"
+      : "gain error = " + Number(MATHS.gainErrorPct(st.top, R1(), R2(), A()).toPrecision(3)).toString().replace("-", "−") + " %";
+    $("r-beta").innerHTML = "β = " + (st.top === "follower" ? "1 (all of v_out)" : "R₁/(R₁ + R₂) = " + Number(b.toPrecision(3)));
+    $("r-loop").textContent = "Aβ = " + eng(A() * b, "").trim();
+    $("r-e").textContent = "error = 1/(1 + Aβ) = " + Number(Math.abs(MATHS.gainErrorPct(st.top, R1(), R2(), A())).toPrecision(3)) + " %";
+
+    let w;
+    if (st.swap) w = "No negative feedback: step 1 does not hold.";
+    else if (st.top === "inverting") w = "v₋ = v₊ = 0 V<br>i₁ = (v_in − 0)/R₁ = " + eng(id.i1, "A") + ", all of it on through R₂<br>v_out = 0 − i₁R₂ = " + eng(id.vout, "V");
+    else if (st.top === "non-inverting") w = "v₋ = v₊ = v_in = " + eng(st.vin, "V") + "<br>i₁ = v₋/R₁ = " + eng(id.i1, "A") + ", the same current through R₂<br>v_out = v₋ + i₁R₂ = " + eng(id.vout, "V");
+    else w = "v₋ = v₊ = v_in = " + eng(st.vin, "V") + "<br>no current flows in the feedback wire<br>v_out = v₋ = " + eng(id.vout, "V");
+    if (!st.swap && st.clip && Math.abs(id.vout) > VSAT) w += "<br>but that is beyond the ±12 V rails, so the output stops at the rail";
+    $("worked").innerHTML = w;
+  }
+
+  function render() {
+    const r = now();
+    drawCircuit(r); drawGain(); readouts(r);
+  }
+
+  // ------------------------------------------------------------ controls
+
+  function sync() {
+    document.querySelectorAll("[data-top]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.top === st.top)));
+    $("g-r").style.display = st.top === "follower" ? "none" : "";
+    $("sR1").value = st.lR1; $("sR2").value = st.lR2; $("sV").value = st.vin; $("sA").value = st.lA;
+    $("oR1").textContent = "R₁ = " + eng(R1(), "Ω");
+    $("oR2").textContent = "R₂ = " + eng(R2(), "Ω");
+    $("oV").textContent = "v_in = " + st.vin.toFixed(2).replace("-", "−") + " V";
+    $("oA").textContent = "A = " + eng(A(), "").trim();
+    $("clip").checked = st.clip || st.swap; $("clip").disabled = st.swap;
+    $("swap").checked = st.swap;
+    $("swap-note").textContent = st.swap ? "positive feedback: without the rails the output would run away without limit" : "";
+  }
+  function change(fn) { fn(); sync(); render(); }
+
+  document.querySelectorAll("[data-top]").forEach((b) => b.addEventListener("click", () => change(() => { st.top = b.dataset.top; })));
+  [["sR1", "lR1"], ["sR2", "lR2"], ["sV", "vin"], ["sA", "lA"]].forEach((p) =>
+    $(p[0]).addEventListener("input", (e) => change(() => { st[p[1]] = Number(e.target.value); })));
+  $("clip").addEventListener("change", (e) => change(() => { st.clip = e.target.checked; }));
+  $("swap").addEventListener("change", (e) => change(() => { st.swap = e.target.checked; }));
+  $("reset").addEventListener("click", () => change(() => { Object.assign(st, START); }));
+
+  $("theme").addEventListener("click", () => {
+    const root = document.documentElement;
+    const dark = root.dataset.theme ? root.dataset.theme === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+    root.dataset.theme = dark ? "light" : "dark";
+    try { localStorage.setItem("momentos-theme", root.dataset.theme); } catch (_) { /* switched, just not remembered */ }
+  });
+
+  sync();
+  render();
+
+  // for checking the numbers from the console
+  window.TOOL = { st: st, now: now, render: render, set: (o) => change(() => Object.assign(st, o)) };
+})();
+</script>
+</body>
+</html>

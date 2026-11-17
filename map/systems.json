@@ -70,7 +70,8 @@
       "id": "step-response",
       "title": "step response",
       "essence": "The step response is the output for a unit step: the running integral of h. Where it settles is the system's gain for a constant input.",
-      "check": "A system's impulse response has total area 3. Where does its step response settle?"
+      "check": "A system's impulse response has total area 3. Where does its step response settle?",
+      "tools": ["systems/rc-rl-step-response.html"]
     },
     {
       "id": "difference-equations",
@@ -124,7 +125,8 @@
       "id": "first-order-system",
       "title": "first-order systems",
       "essence": "One energy store gives one pole and one time constant τ. The step response covers 63% of what is left every τ seconds, and the gain starts to fall near ω = 1/τ.",
-      "check": "A first-order system's time constant is halved. What happens to how fast its step response settles, and to where its gain begins to fall?"
+      "check": "A first-order system's time constant is halved. What happens to how fast its step response settles, and to where its gain begins to fall?",
+      "tools": ["systems/rc-rl-step-response.html"]
     },
     {
       "id": "second-order-system",
@@ -167,6 +169,7 @@
       "title": "feedback",
       "essence": "Feed a fraction of the output back and subtract it from the input: the closed-loop gain is G/(1 + GH). When the loop gain GH is large, the result is close to 1/H, whatever G is.",
       "check": "An amplifier with gain 1000 is put in a loop with H = 0.1. What is the closed-loop gain? What is it if the amplifier's gain drops to 500?",
+      "tools": ["circuits/amplifiers/ideal-op-amp.html"],
       "later": [
         {
           "course": "EE 140",
@@ -182,7 +185,8 @@
       "id": "transfer-function",
       "title": "transfer function",
       "essence": "With the system at rest beforehand, H(s) is the ratio of the output's transform to the input's: a ratio of two polynomials that can be read straight off the differential equation.",
-      "check": "y″ + 3y′ + 2y = x′. Write H(s) without solving anything. Where are its poles and its zero?"
+      "check": "y″ + 3y′ + 2y = x′. Write H(s) without solving anything. Where are its poles and its zero?",
+      "tools": ["systems/bode-plot.html"]
     },
     {
       "id": "laplace-transform",
@@ -201,6 +205,7 @@
       "title": "poles and zeros",
       "essence": "A pole is a value of s where H blows up, and it is a natural response the system can produce by itself. A zero is a value of s where H vanishes, an input e^(st) that the system blocks completely.",
       "check": "A system has a zero at s = j10 rad/s. What happens to a 10 rad/s sinusoid that goes in?",
+      "tools": ["systems/bode-plot.html"],
       "later": [
         {
           "course": "EE 140",
@@ -282,7 +287,8 @@
       "id": "bode-plot",
       "title": "Bode plot",
       "essence": "On log axes each pole bends |H| down by 20 dB per decade, and each zero bends it up, from its corner frequency on. Draw the straight lines and add them. The phase of each moves by 90°, spread over the two decades around its corner.",
-      "check": "H(s) has poles at 100 rad/s and 10 krad/s and nothing else. What is the slope of |H| at 1 krad/s and above 100 krad/s, and roughly what is the phase at 1 krad/s?"
+      "check": "H(s) has poles at 100 rad/s and 10 krad/s and nothing else. What is the slope of |H| at 1 krad/s and above 100 krad/s, and roughly what is the phase at 1 krad/s?",
+      "tools": ["systems/bode-plot.html"]
     },
     {
       "id": "dominant-pole",

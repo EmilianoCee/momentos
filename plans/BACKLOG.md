@@ -7,9 +7,9 @@ The order is fixed by the curricula: course tier first, then how heavily the pla
 
 | # | Plan | Status | Kind | Courses | Weight | Size |
 |---|---|---|---|---|---|---|
-| 1 | [Bode plot from poles and zeros](bode-plot.md) | stub | tool | EE 105, EE 120 | 37.198 | M |
-| 2 | [Ideal op-amp and the virtual short](ideal-op-amp.md) | stub | tool | EE 105, EE 120 | 29.626 | M |
-| 3 | [RC and RL step response](rc-rl-step-response.md) | stub | tool | EE 105, EE 120 | 21.964 | M |
+| 1 | [Bode plot from poles and zeros](bode-plot.md) | built | tool | EE 105, EE 120 | 37.198 | M |
+| 2 | [Ideal op-amp and the virtual short](ideal-op-amp.md) | built | tool | EE 105, EE 120 | 29.626 | M |
+| 3 | [RC and RL step response](rc-rl-step-response.md) | built | tool | EE 105, EE 120 | 21.964 | M |
 | 4 | [Bias point and small-signal analysis](small-signal-analysis.md) | stub | tool | EE 105 | 9.362 | M |
 | 5 | [Resistance looking in](resistance-looking-in.md) | stub | tool | EE 105 | 8.229 | L |
 | 6 | [Common-source stage: gain and swing](common-source.md) | stub | tool | EE 105 | 6.74 | M |
