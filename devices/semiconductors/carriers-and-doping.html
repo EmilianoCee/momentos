@@ -1,0 +1,564 @@
+<!doctype html>
+<!--
+  Concept:      n and p are mirror images about n_i on a log scale, because np = n_i², and that log scale is an
+                energy scale: E_F moves 59.9 meV per decade of density.
+  Course:       EE 105 (energy bands, intrinsic carriers, mass-action law, doping, potential and doping)
+  Play with:    The donor and acceptor doping and the temperature
+  Should click: Adding electrons removes holes, the dopants cancel to their difference, and every decade of
+                density moves the Fermi level the same 59.9 meV.
+  Plan:         plans/carriers-and-doping.md
+  Checked:      15 check cases pass (node scripts/test-tools.js). Headless Chrome, light and dark, no errors in the
+                page: N_D = 10¹⁶ cm⁻³ at 300 K reads n = 1.00×10¹⁶, p = 1.00×10⁴ cm⁻³, E_F − E_i = +0.359 eV, 0.201 eV
+                below E_c; N_D = 3.98×10¹⁶ with N_A = 10¹⁷ reads p-type, p = 6.02×10¹⁶ cm⁻³; the label turns from
+                n-type to nearly intrinsic between 585 K and 590 K; N_D = 10¹⁹ shows the 3kT warning. The handle moves
+                5 K, Shift 50 K; reset restores the start.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Carriers and doping · momentos</title>
+<script>
+  // apply a saved light/dark choice before anything is painted
+  try {
+    var saved = localStorage.getItem("momentos-theme");
+    if (saved === "light" || saved === "dark") document.documentElement.dataset.theme = saved;
+  } catch (e) { /* no storage in some previews: follow the system setting */ }
+</script>
+<style>
+  /* ---- momentos house style: begin (the same block in every tool. Change it only in
+     templates/tool-template.html, then run scripts/sync-house-style.py) ---- */
+  :root {
+    color-scheme: light dark;
+    --bg: light-dark(#f6f4ee, #131312);          /* the page */
+    --surface: light-dark(#fbfaf6, #1b1b19);     /* figures and inputs */
+    --ink: light-dark(#1d1c1a, #ebe8e1);         /* text and the main strokes */
+    --ink-2: light-dark(#5f5c55, #b1ada3);       /* secondary text */
+    --ink-3: light-dark(#77736b, #8a867d);       /* labels, axis numbers */
+    --line: light-dark(rgba(29, 28, 26, 0.16), rgba(235, 232, 225, 0.18));   /* hairlines and borders */
+    --grid: light-dark(rgba(29, 28, 26, 0.07), rgba(235, 232, 225, 0.08));   /* grid lines */
+    --accent: light-dark(#c2410c, #ff8f5a);      /* the one thing being pointed at */
+    /* Colour is for quantities, never for decoration. Give each quantity one of these and keep it
+       the same in the figure, the numbers and the prose. */
+    --c1: light-dark(#2458c4, #7aa7ff);          /* blue */
+    --c2: light-dark(#c2410c, #ff9a62);          /* orange */
+    --c3: light-dark(#0f7f6b, #4fd3b4);          /* teal */
+    --c4: light-dark(#9d3fb0, #d78be6);          /* purple */
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+    --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  }
+  :root[data-theme="light"] { color-scheme: light; }
+  :root[data-theme="dark"] { color-scheme: dark; }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 17px/1.55 var(--serif);
+    -webkit-font-smoothing: antialiased;
+  }
+  .bar {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 22px;
+    font: 12px/1 var(--mono);
+    letter-spacing: 0.06em;
+    color: var(--ink-3);
+  }
+  .bar a { color: var(--ink-2); text-decoration: none; border-bottom: 1px solid var(--line); padding-bottom: 2px; }
+  .bar a:hover { color: var(--accent); border-color: var(--accent); }
+  .bar .grow { flex: 1; }
+  button {
+    font: 12px/1 var(--mono);
+    color: var(--ink-2);
+    background: transparent;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 7px 10px;
+    cursor: pointer;
+  }
+  button:hover { color: var(--ink); border-color: var(--ink-2); }
+  button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  button:disabled { opacity: 0.4; cursor: default; }
+  :focus-visible { outline: 1px dashed var(--ink); outline-offset: 2px; }
+
+  main { max-width: 1120px; margin: 0 auto; padding: 4px 22px 72px; }
+  h1 { font: 400 clamp(30px, 4.6vw, 44px)/1.08 var(--serif); letter-spacing: -0.015em; margin: 14px 0 10px; }
+  .lede { max-width: 62ch; margin: 0 0 26px; color: var(--ink-2); font-size: 18px; }
+  h2 {
+    font: 500 10.5px/1.4 var(--mono);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin: 0 0 10px;
+  }
+  .bench { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(280px, 1fr); gap: 28px; align-items: start; }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-top: 28px; }
+  figure { margin: 0; }
+  .stage { border: 1px solid var(--line); border-radius: 4px; background: var(--surface); overflow: hidden; }
+  .stage svg { display: block; width: 100%; height: auto; touch-action: none; user-select: none; -webkit-user-select: none; }
+  figcaption { padding: 9px 12px; border-top: 1px solid var(--line); font: 11.5px/1.5 var(--mono); color: var(--ink-3); }
+  .controls { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 12px; }
+  .controls label { font: 12px/1 var(--mono); color: var(--ink-2); display: inline-flex; align-items: center; gap: 6px; margin-left: 6px; }
+  input[type="range"] { accent-color: var(--ink); }
+  input[type="checkbox"] { accent-color: var(--ink); }
+
+  .notes { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 44px; margin-top: 46px; padding-top: 28px; border-top: 1px solid var(--line); }
+  .notes p { margin: 0 0 14px; max-width: 62ch; }
+  .notes p b { font-weight: 600; }
+  .notes ul { margin: 0 0 26px; padding: 0; list-style: none; }
+  .notes li { margin: 0 0 12px; padding-left: 14px; border-left: 1px solid var(--line); font-size: 16px; line-height: 1.45; }
+  .notes li a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--line); }
+  .notes li a:hover { color: var(--accent); border-color: var(--accent); }
+  details { margin-top: 4px; }
+  summary { font: 11.5px/1.4 var(--mono); color: var(--ink-3); cursor: pointer; }
+  details span { color: var(--ink-2); font-size: 15px; }
+  sup, sub { font-size: 0.72em; line-height: 0; }
+
+  @media (max-width: 860px) {
+    .bench, .pair, .notes { grid-template-columns: 1fr; }
+    .notes { gap: 28px; }
+  }
+  /* ---- momentos house style: end ---- */
+
+  /* ---- this tool: everything below is yours ---- */
+  var { font-style: italic; font-family: var(--serif); }
+  .grid line { stroke: var(--grid); stroke-width: 1; }
+  .grid .axis { stroke: var(--line); }
+  .tick { font: 10.5px var(--mono); fill: var(--ink-3); }
+  .lab { font: 11.5px var(--mono); fill: var(--ink-2); }
+  .band { fill: var(--surface); stroke: none; }
+  .bfill { fill: var(--grid); }
+  .edge { stroke: var(--ink); stroke-width: 2.4; }
+  .ei { stroke: var(--ink-3); stroke-width: 1.2; stroke-dasharray: 4 3; }
+  .ef { stroke: var(--c3); stroke-width: 2.4; }
+  .mirror { stroke: var(--c2); stroke-width: 1.6; stroke-dasharray: 5 4; }
+  .arr3 { stroke: var(--c3); stroke-width: 1.4; fill: none; }
+  .arrg { stroke: var(--ink-3); stroke-width: 1; fill: none; }
+  .lvl { stroke: var(--ink-2); stroke-width: 1.6; }
+  .el { fill: var(--c1); }
+  .hole { fill: none; stroke: var(--c2); stroke-width: 1.4; }
+  .axisl { stroke: var(--ink-2); stroke-width: 1; }
+  .t1 { font: 11.5px var(--mono); fill: var(--c1); } .t2 { font: 11.5px var(--mono); fill: var(--c2); }
+  .t3 { font: 11.5px var(--mono); fill: var(--c3); } .t0 { font: 11.5px var(--mono); fill: var(--ink-2); }
+  .small2 { font: 11px var(--mono); fill: var(--c2); }
+  .warn rect { fill: var(--surface); stroke: var(--line); }
+  .warn text { font: 12px var(--mono); fill: var(--ink); }
+  .q1c { fill: none; stroke: var(--c1); stroke-width: 2.2; } .q2c { fill: none; stroke: var(--c2); stroke-width: 2.2; }
+  .nic { fill: none; stroke: var(--ink-2); stroke-width: 1.6; stroke-dasharray: 5 4; }
+  .net { stroke: var(--ink-3); stroke-width: 1; stroke-dasharray: 2 3; }
+  .cursor { stroke: var(--ink-2); stroke-width: 1; stroke-dasharray: 3 3; }
+  .tri { fill: var(--ink-2); cursor: ew-resize; outline: none; }
+  .tri:focus-visible { stroke: var(--ink); stroke-width: 1.5; }
+  .hit { fill: transparent; cursor: crosshair; }
+  .d1 { fill: var(--c1); } .d2 { fill: var(--c2); } .dk { fill: var(--ink-2); }
+  .read { font: 13px/1.6 var(--mono); font-variant-numeric: tabular-nums; }
+  .read p { margin: 0 0 4px; }
+  .read .big { font: 400 26px/1.2 var(--serif); margin: 4px 0 10px; }
+  .q1 { color: var(--c1); } .q2 { color: var(--c2); } .q3 { color: var(--c3); }
+  .controls output { font: 12px/1 var(--mono); color: var(--ink-2); min-width: 16ch; display: inline-block; }
+  .full { margin-top: 18px; }
+</style>
+</head>
+<body>
+
+<header class="bar">
+  <a href="../../index.html#doping">← map</a>
+  <span>devices / semiconductors</span>
+  <span class="grow"></span>
+  <button type="button" id="theme" aria-label="Switch between light and dark">◐</button>
+</header>
+
+<main>
+  <h1>Carriers and doping</h1>
+  <p class="lede">Pure silicon has a few free electrons, each with a hole left behind. Add donors and the electrons
+    outnumber the holes by a million; add acceptors and the reverse. Move the doping and the temperature, and watch the
+    electrons, the holes and the Fermi level move together.</p>
+
+  <div class="bench">
+    <div>
+      <figure class="stage">
+        <svg id="ladder" viewBox="0 0 640 380" role="img" aria-label="Band diagram with the Fermi level, beside a log scale of carrier density"></svg>
+        <figcaption>Left, the bands with the carriers drawn to scale: electrons in blue, holes in orange. Right, the same
+          heights read as densities: n sits as far above n_i as p sits below.</figcaption>
+      </figure>
+      <div class="controls">
+        <label>N_D <input type="range" id="sD" min="11" max="19" step="0.1" value="16" aria-label="donor doping, log scale; the lowest setting is none"></label><output id="oD"></output>
+        <label>N_A <input type="range" id="sA" min="11" max="19" step="0.1" value="11" aria-label="acceptor doping, log scale; the lowest setting is none"></label><output id="oA"></output>
+      </div>
+      <div class="controls">
+        <label>T <input type="range" id="sT" min="200" max="700" step="5" value="300" aria-label="temperature in kelvin"></label><output id="oT"></output>
+        <button type="button" id="reset">reset</button>
+      </div>
+      <figure class="stage full">
+        <svg id="heat" viewBox="0 0 640 300" role="group" aria-label="Electron, hole and intrinsic densities against temperature"></svg>
+        <figcaption>The densities against temperature. Drag the triangle or press anywhere in the plot; focused, ← → move it
+          5 K, with Shift 50 K.</figcaption>
+      </figure>
+    </div>
+    <aside class="read">
+      <h2>The sample</h2>
+      <p id="r-nd"></p>
+      <p id="r-na"></p>
+      <p id="r-t"></p>
+      <p id="r-ni"></p>
+      <p id="r-vt"></p>
+      <div class="big" id="r-kind"></div>
+      <h2>Its carriers</h2>
+      <p id="r-maj"></p>
+      <p id="r-min"></p>
+      <p id="r-np"></p>
+      <h2>Its Fermi level</h2>
+      <p class="q3" id="r-ef"></p>
+      <p class="q3" id="r-phi"></p>
+      <p id="r-dec"></p>
+      <p id="r-edge"></p>
+    </aside>
+  </div>
+
+  <section class="notes">
+    <div>
+      <h2>What should click</h2>
+      <p><b>n and p are mirror images.</b> Pairs are made at a rate set by temperature and destroyed at a rate set by n·p,
+        so in equilibrium np = n_i². On a log scale n sits as far above n_i as p sits below it.</p>
+      <p><b>The dopants cancel.</b> Each donor's spare electron can fill one acceptor's missing bond, so only N_D − N_A
+        counts.</p>
+      <p><b>The log scale is an energy scale.</b> n = n_i·e^((E_F − E_i)/kT), so each tenfold step in density moves E_F by
+        (kT/q)·ln 10 = 59.9 meV. The same number in volts is the material's potential from intrinsic silicon, and every
+        built-in potential is a difference of two of them.</p>
+      <p><b>Heat makes pairs.</b> n_i is a Boltzmann factor in E_g/2kT and doubles about every 9 K near 300 K. A doped
+        sample's majority density stays at the doping until n_i catches up; then it is no longer n-type or p-type.</p>
+    </div>
+    <div>
+      <h2>Predict, then try</h2>
+      <ul>
+        <li>Start from pure silicon (both sliders at none), then add 10¹⁶ cm⁻³ donors. The electrons rise six decades. What do the holes do?
+          <details><summary>why</summary><span>They fall six decades, to 10⁴ cm⁻³. Pairs are still made at the same rate, but with a million times more electrons about, each hole is filled a million times sooner, so np stays at n_i².</span></details></li>
+        <li>Raise N_D from 10¹⁶ to 10¹⁷ cm⁻³. How far does E_F move?
+          <details><summary>why</summary><span>Up by 59.9 meV, one decade's worth. E_F follows the logarithm of the density, so every tenfold step moves it the same amount.</span></details></li>
+        <li>Set N_D to 4×10¹⁶ cm⁻³ (slider at 16.6) and N_A to 10¹⁷ cm⁻³. n-type or p-type, and how many majority carriers?
+          <details><summary>why</summary><span>p-type, with about 6×10¹⁶ cm⁻³ holes. Each donor's spare electron fills one acceptor's missing bond, so the two cancel and only the difference is left.</span></details></li>
+        <li>Keep N_D = 10¹⁶ cm⁻³ and warm the sample from 300 K toward 700 K. When does it stop being n-type?
+          <details><summary>why</summary><span>The label changes at 590 K, where n_i has reached a tenth of the doping and n is no longer 100 times p. Until then n stays pinned at N_D while p climbs as n_i²/N_D; near 700 K heat makes pairs about as fast as the donors gave electrons, and n and p close in.</span></details></li>
+        <li>Push N_D to 10¹⁹ cm⁻³. What does the warning mean?
+          <details><summary>why</summary><span>E_F has come within 3kT of the conduction band. The logarithm assumes most states near E_F are empty, which is no longer true, so it places E_F too low; the silicon is close to degenerate.</span></details></li>
+      </ul>
+      <h2>Where this shows up</h2>
+      <ul>
+        <li><a href="../../index.html#drift-current">drift current</a>: n and p set the current a field drives, J = q(nμ_n + pμ_p)E, and the minority term is decades down.</li>
+        <li><a href="../../index.html#built-in-potential">built-in potential</a>: the step across a junction is φ_n − φ_p, the two potentials read off this ladder.</li>
+        <li><a href="../../index.html#threshold-voltage">threshold voltage</a>: the MOS body's φ_p = −(kT/q)·ln(N_A/n_i) is this tool's E_F for p-type material.</li>
+        <li><a href="../../index.html#diode-iv">diode I–V</a>: the minority densities n_i²/N_A and n_i²/N_D set a diode's saturation current.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<script id="maths">
+// ---- the maths: plain functions with no page behind them. scripts/test-tools.js runs this block on
+// its own and compares it with the check cases below, so nothing in here may touch the DOM.
+// Silicon: E_g = 1.12 eV, E_i at mid-gap, every dopant ionised. kT/q = 0.026 V at 300 K, n_i = 1e10 cm^-3 at 300 K.
+// Densities in cm^-3, T in K, energies in eV measured from E_i.
+var MATHS = (function () {
+  "use strict";
+  var EG = 1.12, VT300 = 0.026, NI300 = 1e10;
+
+  function thermalVoltage(T) { return VT300 * T / 300; }
+  // sqrt(Nc Nv) e^(-Eg/2kT) with Nc Nv ~ T^3, scaled to 1e10 cm^-3 at 300 K; E_g held fixed
+  function intrinsic(T) { return NI300 * Math.pow(T / 300, 1.5) * Math.exp(EG / (2 * VT300) - EG / (2 * thermalVoltage(T))); }
+  // charge neutrality n - p = ND - NA with np = n_i^2
+  function carriers(ND, NA, T) {
+    var ni = intrinsic(T), net = ND - NA, h = Math.abs(net) / 2;
+    var maj = h + Math.sqrt(h * h + ni * ni), mino = ni * ni / maj;
+    var n = net >= 0 ? maj : mino, p = net >= 0 ? mino : maj;
+    var kind = n >= 100 * p ? "n-type" : (p >= 100 * n ? "p-type" : "nearly intrinsic");
+    return { n: n, p: p, kind: kind };
+  }
+  // E_F - E_i in eV: positive for n-type; the same number in volts is the potential from intrinsic silicon
+  function fermiLevel(ND, NA, T) { return thermalVoltage(T) * Math.log(carriers(ND, NA, T).n / intrinsic(T)); }
+  // distance from E_F to the nearer band edge, eV; Boltzmann statistics need at least 3kT
+  function edgeMargin(ND, NA, T) { return EG / 2 - Math.abs(fermiLevel(ND, NA, T)); }
+  // the step in E_F for a tenfold change in density
+  function perDecade(T) { return thermalVoltage(T) * Math.LN10; }
+
+  return { thermalVoltage: thermalVoltage, intrinsic: intrinsic, carriers: carriers, fermiLevel: fermiLevel,
+    edgeMargin: edgeMargin, perDecade: perDecade };
+})();
+</script>
+<script type="application/json" id="check-cases">
+[
+  {"fn": "thermalVoltage", "args": [300], "expect": 0.026, "tol": 1e-09, "units": "V", "tag": "typical", "note": "T = 300 K: kT/q = 26 mV, the course's value"},
+  {"fn": "intrinsic", "args": [300], "expect": 10000000000.0, "tol": 1e-09, "units": "cm⁻³", "tag": "typical", "note": "T = 300 K: n_i = 1.00×10¹⁰ cm⁻³, the course's value"},
+  {"fn": "intrinsic", "args": [309], "expect": 19575076062.66296, "tol": 1e-09, "units": "cm⁻³", "tag": "typical", "note": "T = 309 K, 9 K warmer: n_i = 1.96×10¹⁰ cm⁻³, about double; the gap is crossed by a Boltzmann factor e^(−E_g/2kT)"},
+  {"fn": "intrinsic", "args": [200], "expect": 114510.57989614563, "tol": 1e-09, "units": "cm⁻³", "tag": "limit-zero", "note": "T = 200 K: n_i = 1.14×10⁵ cm⁻³, five decades down; toward 0 K it goes to zero and pure silicon stops conducting"},
+  {"fn": "carriers", "args": [1e+16, 0, 300], "expect": {"n": 1.000000000001e+16, "p": 9999.99999999, "kind": "n-type"}, "tol": 1e-09, "units": "cm⁻³", "tag": "typical", "note": "N_D = 10¹⁶ cm⁻³ at 300 K: n = 1.00×10¹⁶ cm⁻³, p = n_i²/n = 1.00×10⁴ cm⁻³; six decades up for electrons, six down for holes"},
+  {"fn": "carriers", "args": [4e+16, 1e+17, 300], "expect": {"n": 1666.6666666666204, "p": 6.000000000000166e+16, "kind": "p-type"}, "tol": 1e-09, "units": "cm⁻³", "tag": "typical", "note": "N_D = 4×10¹⁶ and N_A = 10¹⁷ cm⁻³: p-type, p = 6.00×10¹⁶ cm⁻³ (the difference), n = 1.67×10³ cm⁻³"},
+  {"fn": "carriers", "args": [1e+16, 1e+16, 300], "expect": {"n": 10000000000.0, "p": 10000000000.0, "kind": "nearly intrinsic"}, "tol": 1e-09, "units": "cm⁻³", "tag": "typical", "note": "N_D = N_A = 10¹⁶ cm⁻³: the two cancel and n = p = n_i, though the crystal is full of ions"},
+  {"fn": "carriers", "args": [0, 0, 300], "expect": {"n": 10000000000.0, "p": 10000000000.0, "kind": "nearly intrinsic"}, "tol": 1e-09, "units": "cm⁻³", "tag": "limit-zero", "note": "no dopants at 300 K: n = p = n_i = 10¹⁰ cm⁻³"},
+  {"fn": "carriers", "args": [1e+16, 0, 700], "expect": {"n": 1.43416663807339e+16, "p": 4341666380733900.0, "kind": "nearly intrinsic"}, "tol": 1e-09, "units": "cm⁻³", "tag": "limit-infinity", "note": "N_D = 10¹⁶ cm⁻³ at 700 K: n_i = 7.9×10¹⁵ cm⁻³ has caught up with the doping; n = 1.43×10¹⁶, p = 4.34×10¹⁵ cm⁻³, nearly intrinsic"},
+  {"fn": "fermiLevel", "args": [1e+16, 0, 300], "expect": 0.3592032745070971, "tol": 1e-09, "units": "eV", "tag": "typical", "note": "N_D = 10¹⁶ cm⁻³ at 300 K: E_F sits 0.359 eV above E_i, 6 decades × 59.9 meV"},
+  {"fn": "fermiLevel", "args": [0, 1e+16, 300], "expect": -0.3592032745070971, "tol": 1e-09, "units": "eV", "tag": "sign", "note": "N_A = 10¹⁶ cm⁻³ at 300 K: E_F sits 0.359 eV below E_i; p-type puts it below the middle"},
+  {"fn": "fermiLevel", "args": [1e+17, 0, 300], "expect": 0.4190704869249166, "tol": 1e-09, "units": "eV", "tag": "typical", "note": "N_D = 10¹⁷ cm⁻³: ten times the doping raises E_F by one step of 59.9 meV, to 0.419 eV"},
+  {"fn": "perDecade", "args": [300], "expect": 0.05986721241784519, "tol": 1e-09, "units": "eV", "tag": "typical", "note": "T = 300 K: (kT/q)·ln 10 = 59.9 mV per decade of density"},
+  {"fn": "edgeMargin", "args": [1e+16, 0, 300], "expect": 0.20079672549290295, "tol": 1e-09, "units": "eV", "tag": "typical", "note": "N_D = 10¹⁶ cm⁻³: E_F is 0.201 eV below the conduction band edge, far more than 3kT = 78 meV, so Boltzmann statistics hold"},
+  {"fn": "edgeMargin", "args": [1e+19, 0, 300], "expect": 0.021195088239393423, "tol": 1e-09, "units": "eV", "tag": "breaks", "note": "N_D = 10¹⁹ cm⁻³: E_F is only 21 meV below the edge, under 3kT; the silicon is nearly degenerate and n = n_i e^((E_F−E_i)/kT) no longer holds"}
+]
+</script>
+<script>
+(function () {
+  "use strict";
+
+  const NS = "http://www.w3.org/2000/svg";
+  function S(name, attrs, parent) {
+    const el = document.createElementNS(NS, name);
+    for (const k in attrs) el.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(el);
+    return el;
+  }
+  const $ = (id) => document.getElementById(id);
+  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+  const f1 = (v) => (Math.round(v * 10) / 10).toString();
+  const SUP = "⁰¹²³⁴⁵⁶⁷⁸⁹";
+  const sup = (n) => (n < 0 ? "⁻" : "") + String(Math.abs(n)).split("").map((c) => SUP[c]).join("");
+  function sci(v) {
+    if (v <= 0) return "0";
+    let e = Math.floor(Math.log10(v)), m = v / Math.pow(10, e);
+    if (Number(m.toFixed(2)) >= 10) { m /= 10; e += 1; }
+    return m.toFixed(2) + "×10" + sup(e);
+  }
+  const ev = (v, plus) => (v < 0 ? "−" : (plus ? "+" : "")) + Math.abs(v).toFixed(3);
+  function svgPoint(svg, e) {
+    const ctm = svg.getScreenCTM();
+    if (!ctm) return { x: 0, y: 0 };
+    const p = new DOMPoint(e.clientX, e.clientY).matrixTransform(ctm.inverse());
+    return { x: p.x, y: p.y };
+  }
+  function T(parent, x, y, cls, text, anchor) {
+    const t = S("text", { x: f1(x), y: f1(y), class: cls, "text-anchor": anchor || "start" }, parent);
+    t.textContent = text;
+    return t;
+  }
+
+  // ------------------------------------------------------------ state
+
+  const START = { lD: 16, lA: 11, T: 300 };
+  const st = Object.assign({}, START);
+  const dens = (l) => (l <= 11.0001 ? 0 : Math.pow(10, l));
+  const ND = () => dens(st.lD), NA = () => dens(st.lA);
+
+  // ------------------------------------------------------------ figure 1: the ladder
+
+  const L = S("g", {}, $("ladder"));
+  const Y = (E) => 190 - 242.857 * E;
+  const EG2 = 0.56;
+
+  function drawLadder() {
+    L.textContent = "";
+    const t = st.T, c = MATHS.carriers(ND(), NA(), t), ni = MATHS.intrinsic(t), vt = MATHS.thermalVoltage(t);
+    const ef = MATHS.fermiLevel(ND(), NA(), t), yC = Y(EG2), yV = Y(-EG2), yF = Y(ef), yM = Y(-ef);
+    // the bands
+    S("rect", { class: "bfill", x: 70, y: 20, width: 260, height: f1(yC - 20) }, L);
+    S("rect", { class: "bfill", x: 70, y: f1(yV), width: 260, height: f1(360 - yV) }, L);
+    T(L, 200, 30, "lab", "conduction band", "middle");
+    T(L, 200, 357, "lab", "valence band", "middle");
+    S("line", { class: "edge", x1: 70, x2: 330, y1: f1(yC), y2: f1(yC) }, L);
+    S("line", { class: "edge", x1: 70, x2: 330, y1: f1(yV), y2: f1(yV) }, L);
+    T(L, 62, yC + 4, "lab", "E_c", "end");
+    T(L, 62, yV + 4, "lab", "E_v", "end");
+    // the gap
+    S("path", { class: "arrg", d: "M90 " + f1(yC + 2) + "V" + f1(yV - 2) + "M86 " + f1(yC + 8) + "L90 " + f1(yC + 2) + "L94 " + f1(yC + 8) + "M86 " + f1(yV - 8) + "L90 " + f1(yV - 2) + "L94 " + f1(yV - 8) }, L);
+    T(L, 96, ef >= 0 ? 230 : 160, "tick", "E_g = 1.12 eV");
+    // dopant levels
+    const dashes = (E, label) => {
+      for (let i = 0; i < 8; i++) { const x = 120 + (i * (140 - 14)) / 7; S("line", { class: "lvl", x1: f1(x), x2: f1(x + 14), y1: f1(Y(E)), y2: f1(Y(E)) }, L); }
+      T(L, 266, Y(E) + 4, "tick", label);
+    };
+    if (ND() > 0) dashes(EG2 - 0.045, "donors");
+    if (NA() > 0) dashes(-EG2 + 0.045, "acceptors");
+    // the carriers, to scale: 30 symbols for the more numerous one
+    const big = Math.max(c.n, c.p), nn = Math.round(30 * c.n / big), np = Math.round(30 * c.p / big);
+    const slot = (i) => ({ x: 110 + (i % 15) * 15, row: Math.floor(i / 15) });
+    for (let i = 0; i < nn; i++) { const s = slot(i); S("circle", { class: "el", cx: s.x, cy: f1(yC - 7 - 7 * s.row), r: 3 }, L); }
+    for (let i = 0; i < np; i++) { const s = slot(i); S("circle", { class: "hole", cx: s.x, cy: f1(yV + 7 + 7 * s.row), r: 3 }, L); }
+    // E_i and E_F
+    S("line", { class: "ei", x1: 70, x2: 470, y1: 190, y2: 190 }, L);
+    T(L, 62, Math.abs(yF - 190) < 10 ? 190 + 16 : 194, "lab", "E_i", "end");
+    S("line", { class: "ef", x1: 70, x2: 470, y1: f1(yF), y2: f1(yF) }, L);
+    // E_F's label steps clear of E_c, E_v and E_i when it comes within 12 px of them
+    let yFl = yF + 4;
+    if (Math.abs(yF - yC) < 12) yFl = yC + 18;
+    if (Math.abs(yF - yV) < 12) yFl = yV - 10;
+    T(L, 62, yFl, "t3", "E_F", "end");
+    if (Math.abs(ef) >= 0.02) {
+      const dir = yF < 190 ? 1 : -1;
+      S("path", { class: "arr3", d: "M300 190V" + f1(yF) + "M296 " + f1(yF + 6 * dir) + "L300 " + f1(yF) + "L304 " + f1(yF + 6 * dir) }, L);
+      T(L, 294, (190 + yF) / 2 + 4, "t3", "E_F − E_i = " + ev(ef) + " eV", "end");
+    }
+    // the warning
+    if (MATHS.edgeMargin(ND(), NA(), t) < 3 * vt) {
+      const g = S("g", { class: "warn" }, L);
+      const wy = ef >= 0 ? 246 : 98;   // on the side of E_i away from E_F, clear of its arrow label
+      S("rect", { x: 52, y: wy, width: 296, height: 36, rx: 3 }, g);
+      T(g, 200, wy + 15, "", "E_F is within 3kT of a band edge:", "middle");
+      T(g, 200, wy + 30, "", "the Boltzmann formulas fail here", "middle");
+    }
+
+    // the density panel
+    S("line", { class: "axisl", x1: 470, x2: 470, y1: 20, y2: 360 }, L);
+    T(L, 470, 12, "tick", "density (cm⁻³), log scale", "middle");
+    const lnni = Math.log(ni);
+    for (let k = -30; k <= 30; k++) {
+      const E = vt * (k * Math.LN10 - lnni);
+      if (Math.abs(E) > 0.7) continue;
+      S("line", { class: "axisl", x1: 464, x2: 476, y1: f1(Y(E)), y2: f1(Y(E)) }, L);
+      if (k % 2 === 0) T(L, 482, Y(E) + 4, "tick", "10" + sup(k));
+    }
+    S("line", { class: "mirror", x1: 330, x2: 470, y1: f1(yM), y2: f1(yM) }, L);
+    if (Math.abs(ef) >= 0.03) T(L, 340, yM + 14, "small2", "mirror of E_F");
+    const close = Math.abs(yF - yM) < 14;
+    S("circle", { class: "d1", cx: 470, cy: f1(yF), r: 5 }, L);
+    T(L, 458, yF - 6, "t1", "n = " + sci(c.n), "end");
+    S("circle", { class: "d2", cx: 470, cy: f1(yM), r: 5 }, L);
+    T(L, 458, close ? yM + 16 : yM - 6, "t2", "p = " + sci(c.p), "end");
+    S("circle", { class: "dk", cx: 470, cy: 190, r: 4 }, L);
+    if (Math.abs(yF - 190) >= 20 && Math.abs(yM - 190) >= 20) T(L, 458, 184, "t0", "n_i", "end");
+  }
+
+  // ------------------------------------------------------------ figure 2: against temperature
+
+  const H = $("heat"), PX0 = 70, PX1 = 610, PY0 = 20, PY1 = 250, TMIN = 200, TMAX = 700;
+  const XT = (t) => PX0 + ((t - TMIN) / (TMAX - TMIN)) * (PX1 - PX0);
+  const YL = (l) => PY1 - (l / 20) * (PY1 - PY0);
+  const defs = S("defs", {}, H);
+  const clip = S("clipPath", { id: "heatclip" }, defs);
+  S("rect", { x: PX0, y: PY0, width: PX1 - PX0, height: PY1 - PY0 }, clip);
+  const grid = S("g", { class: "grid" }, H);
+  for (let t = TMIN; t <= TMAX; t += 50) {
+    S("line", { x1: f1(XT(t)), x2: f1(XT(t)), y1: PY0, y2: PY1, class: t === TMIN ? "axis" : "" }, grid);
+    if (t % 100 === 0) T(H, XT(t), PY1 + 26, "tick", String(t), "middle");
+  }
+  for (let l = 0; l <= 20; l += 2) {
+    S("line", { x1: PX0, x2: PX1, y1: f1(YL(l)), y2: f1(YL(l)), class: l === 0 ? "axis" : "" }, grid);
+    T(H, PX0 - 5, YL(l) + 3.5, "tick", "10" + sup(l), "end");
+  }
+  T(H, PX1, 296, "tick", "T (K)", "end");
+  T(H, 14, 135, "tick", "density (cm⁻³)", "middle").setAttribute("transform", "rotate(-90 14 135)");
+  const curves = S("g", { "clip-path": "url(#heatclip)" }, H), hlabels = S("g", {}, H);
+  const hit = S("rect", { class: "hit", x: PX0, y: PY0, width: PX1 - PX0, height: PY1 - PY0 }, H);
+  const cursor = S("line", { class: "cursor", y1: PY0, y2: PY1 }, H);
+  const dots = S("g", {}, H);
+  const tri = S("path", { class: "tri", d: "M0 0L-7 11H7Z", tabindex: 0, role: "slider", "aria-label": "temperature T" }, H);
+
+  function drawHeat() {
+    curves.textContent = ""; hlabels.textContent = "";
+    const pts = [];
+    for (let i = 0; i <= 200; i++) {
+      const t = TMIN + 2.5 * i, c = MATHS.carriers(ND(), NA(), t);
+      pts.push({ t: t, n: Math.log10(c.n), p: Math.log10(c.p), ni: Math.log10(MATHS.intrinsic(t)) });
+    }
+    const path = (k) => pts.map((q, i) => (i ? "L" : "M") + f1(XT(q.t)) + " " + f1(YL(q[k]))).join("");
+    const net = Math.abs(ND() - NA());
+    if (net >= 1) {
+      S("line", { class: "net", x1: PX0, x2: PX1, y1: f1(YL(Math.log10(net))), y2: f1(YL(Math.log10(net))) }, curves);
+      T(hlabels, PX0 + 6, YL(Math.log10(net)) - 5, "tick", "|N_D − N_A|");
+    }
+    S("path", { class: "nic", d: path("ni") }, curves);
+    S("path", { class: "q1c", d: path("n") }, curves);
+    S("path", { class: "q2c", d: path("p") }, curves);
+    const last = pts[pts.length - 1], yAt = (l) => clamp(YL(l), PY0 + 6, PY1 - 2);
+    if (ND() === NA()) { T(hlabels, 614, yAt(last.n) + 4, "t0", "n = p = n_i").setAttribute("text-anchor", "end"); return; }
+    // the right-hand labels, spread so that they never overlap
+    const labs = [{ y: yAt(last.n), cls: "t1", s: "n" }, { y: yAt(last.p), cls: "t2", s: "p" }, { y: yAt(last.ni), cls: "t0", s: "n_i" }].sort((a, b) => a.y - b.y);
+    for (let i = 1; i < labs.length; i++) labs[i].y = Math.max(labs[i].y, labs[i - 1].y + 11);
+    labs.forEach((l) => T(hlabels, 614, l.y + 4, l.cls, l.s));
+  }
+  function drawCursor() {
+    const x = f1(XT(st.T)), c = MATHS.carriers(ND(), NA(), st.T);
+    cursor.setAttribute("x1", x); cursor.setAttribute("x2", x);
+    tri.setAttribute("transform", "translate(" + x + " " + (PY1 + 3) + ")");
+    tri.setAttribute("aria-valuetext", "T = " + st.T + " K");
+    dots.textContent = "";
+    [[c.n, "d1"], [c.p, "d2"], [MATHS.intrinsic(st.T), "dk"]].forEach((d) => {
+      const y = YL(Math.log10(d[0]));
+      if (y >= PY0 && y <= PY1) S("circle", { class: d[1], cx: x, cy: f1(y), r: 4 }, dots);
+    });
+  }
+
+  // ------------------------------------------------------------ readouts
+
+  function readouts() {
+    const t = st.T, c = MATHS.carriers(ND(), NA(), t), ni = MATHS.intrinsic(t), ef = MATHS.fermiLevel(ND(), NA(), t);
+    $("r-nd").textContent = "N_D = " + (ND() ? sci(ND()) + " cm⁻³" : "none");
+    $("r-na").textContent = "N_A = " + (NA() ? sci(NA()) + " cm⁻³" : "none");
+    $("r-t").textContent = "T = " + t + " K";
+    $("r-ni").textContent = "n_i = " + sci(ni) + " cm⁻³";
+    $("r-vt").textContent = "kT/q = " + (MATHS.thermalVoltage(t) * 1000).toFixed(1) + " mV";
+    $("r-kind").textContent = c.kind;
+    const nFirst = c.n >= c.p;
+    const nText = "n = " + (nFirst ? "" : "n_i²/p = ") + sci(c.n) + " cm⁻³", pText = "p = " + (nFirst ? "n_i²/n = " : "") + sci(c.p) + " cm⁻³";
+    $("r-maj").className = nFirst ? "q1" : "q2"; $("r-maj").textContent = nFirst ? nText : pText;
+    $("r-min").className = nFirst ? "q2" : "q1"; $("r-min").textContent = nFirst ? pText : nText;
+    $("r-np").textContent = "n·p = " + sci(c.n * c.p) + " cm⁻⁶ = n_i²";
+    $("r-ef").textContent = "E_F − E_i = (kT/q)·ln(n/n_i) = " + ev(ef, true) + " eV";
+    const sym = c.kind === "n-type" ? "φ_n" : (c.kind === "p-type" ? "φ_p" : "φ");
+    $("r-phi").textContent = "so the potential from intrinsic is " + sym + " = " + ev(ef, true) + " V";
+    $("r-dec").textContent = "One decade of density = (kT/q)·ln 10 = " + (MATHS.perDecade(t) * 1000).toFixed(1) + " meV";
+    $("r-edge").textContent = "E_F is " + MATHS.edgeMargin(ND(), NA(), t).toFixed(3) + " eV " + (ef >= 0 ? "below E_c" : "above E_v");
+  }
+
+  function renderCursor() { drawLadder(); drawCursor(); readouts(); }
+  function renderAll() { drawHeat(); renderCursor(); }
+
+  // ------------------------------------------------------------ controls
+
+  function sync() {
+    $("sD").value = st.lD; $("sA").value = st.lA; $("sT").value = st.T;
+    $("oD").textContent = "N_D = " + (ND() ? sci(ND()) + " cm⁻³" : "none");
+    $("oA").textContent = "N_A = " + (NA() ? sci(NA()) + " cm⁻³" : "none");
+    $("oT").textContent = "T = " + st.T + " K";
+  }
+  function change(fn) { fn(); sync(); renderAll(); }
+  const setT = (t) => { st.T = clamp(Math.round(t / 5) * 5, TMIN, TMAX); sync(); renderCursor(); };
+
+  $("sD").addEventListener("input", (e) => change(() => { st.lD = Number(e.target.value); }));
+  $("sA").addEventListener("input", (e) => change(() => { st.lA = Number(e.target.value); }));
+  $("sT").addEventListener("input", (e) => setT(Number(e.target.value)));
+  $("reset").addEventListener("click", () => change(() => { Object.assign(st, START); }));
+  [tri, hit].forEach((el) => {
+    let on = false;
+    const tAt = (e) => TMIN + ((svgPoint(H, e).x - PX0) / (PX1 - PX0)) * (TMAX - TMIN);
+    el.addEventListener("pointerdown", (e) => {
+      e.preventDefault(); on = true;
+      try { el.setPointerCapture(e.pointerId); } catch (_) { /* fine without capture */ }
+      tri.focus({ preventScroll: true });
+      setT(tAt(e));
+    });
+    el.addEventListener("pointermove", (e) => { if (on) setT(tAt(e)); });
+    el.addEventListener("pointerup", () => { on = false; });
+    el.addEventListener("pointercancel", () => { on = false; });
+  });
+  tri.addEventListener("keydown", (e) => {
+    const dir = { ArrowLeft: -1, ArrowDown: -1, ArrowRight: 1, ArrowUp: 1 }[e.key];
+    if (!dir) return;
+    e.preventDefault();
+    setT(st.T + dir * (e.shiftKey ? 50 : 5));
+  });
+
+  $("theme").addEventListener("click", () => {
+    const root = document.documentElement;
+    const dark = root.dataset.theme ? root.dataset.theme === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+    root.dataset.theme = dark ? "light" : "dark";
+    try { localStorage.setItem("momentos-theme", root.dataset.theme); } catch (_) { /* switched, just not remembered */ }
+  });
+
+  sync();
+  renderAll();
+
+  // for checking the numbers from the console
+  window.TOOL = { st: st, setT: setT, set: (o) => change(() => Object.assign(st, o)) };
+})();
+</script>
+</body>
+</html>

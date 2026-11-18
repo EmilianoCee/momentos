@@ -112,7 +112,8 @@ The owner's record exists and EE 120 is fully mapped. The user can run `onboard 
     scripts, and their topics have rubric entries. `small-signal-analysis` followed the same day, then
     `single-stage-amplifiers` (common source, common gate and common drain in one tool, at the owner's choice), which
     replaces the `common-source` stub. Then, on the device side, four new full plans built the same day:
-    `drift-and-mobility`, `mos-capacitor`, `mosfet-channel` and `current-mirror` (from its stub). Next:
+    `drift-and-mobility`, `mos-capacitor`, `mosfet-channel` and `current-mirror` (from its stub). Then the pn
+    junction chain, from concepts with no plan: `carriers-and-doping`, `pn-junction` and `diode-current`. Next:
     `resistance-looking-in`.
 
 - [ ] **5. The pilot.** Model: Opus runs it, a Sonnet subagent builds. Skill: `build-tool`.
@@ -196,3 +197,6 @@ The owner's record exists and EE 120 is fully mapped. The user can run `onboard 
 - 2026-11-17: the device chain from carriers to the current mirror: `devices/semiconductors/drift-and-mobility.html`,
   `devices/mos/mos-capacitor.html`, `devices/mos/mosfet-channel.html` and `circuits/amplifiers/current-mirror.html`
   (74 check cases), with rubric entries for their seventeen topics.
+- 2026-11-17: the pn junction chain: `devices/semiconductors/carriers-and-doping.html`,
+  `devices/pn-junction/pn-junction.html` and `devices/pn-junction/diode-current.html` (52 check cases), with rubric
+  entries for their nineteen topics.

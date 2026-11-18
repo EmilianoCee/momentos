@@ -65,5 +65,134 @@
       "limit": "A transistor's length shrunk at fixed voltages: what limits the current growth?",
       "transfer": "A modern short-channel transistor's current against V_GS looks straight instead of a parabola: why?"
     }
+  },
+  "doping": {
+    "L1": "States that donors (phosphorus, arsenic) give electrons and acceptors (boron) give holes, and that a few dopant atoms per million set which carrier dominates.",
+    "L2": "Finds n and p for a given N_D or N_A with np = n_i²; takes N_D − N_A for a compensated sample.",
+    "L3": "Explains why each donor's spare electron can fill an acceptor's missing bond, so only the difference counts; predicts that more majority carriers means fewer minority carriers; places E_F above E_i for n-type and below for p-type.",
+    "L4": "Knows the limits: freeze-out at low temperature, the intrinsic limit at high temperature, degenerate doping near 10¹⁹ cm⁻³; uses the total ionised doping, not the net, for mobility.",
+    "missteps": [
+      "adds N_D and N_A instead of taking the difference",
+      "leaves the minority density at n_i after doping",
+      "puts E_F above E_i for p-type material"
+    ],
+    "seeds": {
+      "predict": "A p-type sample receives donors at half its acceptor density: what happens to its hole and electron densities?",
+      "explain": "Why a crystal full of dopant ions can still have n = p = n_i.",
+      "limit": "The doping raised toward 10²⁰ cm⁻³: which formula fails first, and why?",
+      "transfer": "A resistor is made by counter-doping an n-type well with boron: what sets its sheet resistance?"
+    }
+  },
+  "mass-action-law": {
+    "L1": "States np = n_i² in equilibrium, with n_i = 10¹⁰ cm⁻³ in silicon at 300 K.",
+    "L2": "Uses np = n_i² to find the minority density from the majority density.",
+    "L3": "Explains the law as generation, set by temperature, balancing recombination, set by n·p; pictures n and p as mirror images about n_i on a log scale.",
+    "L4": "Knows the law holds only in equilibrium, and that forward bias raises np above n_i² by e^(V_D/(kT/q)) near a junction, which is where a diode's current comes from.",
+    "missteps": [
+      "uses n + p = 2n_i instead of np = n_i²",
+      "applies np = n_i² inside a forward-biased junction"
+    ],
+    "seeds": {
+      "predict": "The electron density is raised a thousandfold by doping: what happens to the hole density?",
+      "explain": "Why adding electrons removes holes, though no hole was touched.",
+      "limit": "Light shining on the sample makes extra pairs: does np = n_i² still hold?",
+      "transfer": "A diode's minority density at its depletion edge, from the majority density on the other side and the barrier height."
+    }
+  },
+  "intrinsic-carriers": {
+    "L1": "States that pure silicon has n = p = n_i, about 10¹⁰ cm⁻³ at 300 K.",
+    "L2": "Uses n_i in np = n_i²; knows that n_i rises with temperature.",
+    "L3": "Explains n_i as a Boltzmann factor in E_g/2kT, so it roughly doubles every 9 K near room temperature, and why a semiconductor conducts better when hot while a metal conducts worse.",
+    "L4": "Knows that a doped device stops working once n_i approaches its doping, which sets silicon's upper operating temperature, and that a wider gap raises it.",
+    "missteps": [
+      "treats n_i as fixed when the temperature changes",
+      "takes n_i as growing in proportion to T"
+    ],
+    "seeds": {
+      "predict": "The temperature rises from 300 K to 330 K: by roughly what factor does n_i grow?",
+      "explain": "Why pure silicon at 0 K carries no current even with a field across it.",
+      "limit": "Heat a sample doped at 10¹⁵ cm⁻³ until n_i reaches its doping: what does it become?",
+      "transfer": "A wide-gap semiconductor for hot environments: why does its larger E_g help?"
+    }
+  },
+  "energy-bands": {
+    "L1": "States that electrons in a crystal sit in bands, with a gap E_g = 1.12 eV in silicon between the full valence band and the empty conduction band.",
+    "L2": "Draws E_c, E_v, E_i and E_F for a doped sample and places E_F from the doping.",
+    "L3": "Explains that only electrons in the conduction band and holes in the valence band carry current; reads the position of E_F as a density, about 60 mV per decade; says doping moves E_F and not the bands.",
+    "L4": "Uses band diagrams to read junctions and MOS structures, where the bands bend with the potential and E_F stays flat in equilibrium.",
+    "missteps": [
+      "moves the bands instead of E_F when the doping changes",
+      "puts E_F in the conduction band for ordinary doping"
+    ],
+    "seeds": {
+      "predict": "A sample's donor doping is raised a hundredfold: how far does E_F move, and which way?",
+      "explain": "Why a full band carries no current.",
+      "limit": "E_F pushed to within kT of the conduction band: what assumption fails?",
+      "transfer": "The band diagram across a pn junction in equilibrium, from the two separate diagrams."
+    }
+  },
+  "potential-vs-doping": {
+    "L1": "States φ = (kT/q)·ln(n/n_i) for n-type and −(kT/q)·ln(p/n_i) for p-type, measured from intrinsic silicon.",
+    "L2": "Computes the potential of a doped region, using 60 mV per decade at 300 K.",
+    "L3": "Explains the potential as E_F − E_i in volts, and every built-in step as the difference of two of them.",
+    "L4": "Builds φ_bi, φ_p in V_T and the flatband voltage from these potentials, including a degenerately doped gate taken as ±0.55 V.",
+    "missteps": [
+      "uses log₁₀ with 26 mV, or ln with 60 mV",
+      "gives a p-type region a positive potential"
+    ],
+    "seeds": {
+      "predict": "A region's doping rises from 10¹⁵ to 10¹⁸ cm⁻³: how much does its potential change?",
+      "explain": "Why the potential follows the logarithm of the density.",
+      "limit": "The doping toward 10²⁰ cm⁻³: why does the potential stop near 0.55 V?",
+      "transfer": "The potential step between an n+ poly gate and a p-type body at 10¹⁶ cm⁻³."
+    }
+  },
+  "diffusion-current": {
+    "L1": "States J_n = qD_n·dn/dx and J_p = −qD_p·dp/dx.",
+    "L2": "Computes a diffusion current from a concentration gradient with the right sign.",
+    "L3": "Explains diffusion as random motion with no field carrying particles from crowded to sparse; gets the signs of the electron and hole currents from their charge; says why a junction in equilibrium has large diffusion currents that drift cancels.",
+    "L4": "Uses the slope of a minority profile at a depletion edge as a diode's current, and recognises diffusion as the current in a MOSFET below threshold.",
+    "missteps": [
+      "gives electron and hole diffusion currents the same sign for the same gradient",
+      "thinks diffusion needs a field"
+    ],
+    "seeds": {
+      "predict": "Electrons are piled up at the left end of a bar: which way do they move, and which way does their current point?",
+      "explain": "Why the diffusion current in a junction at equilibrium does not charge anything up.",
+      "limit": "The gradient made very steep, over a few nanometres: what else becomes large?",
+      "transfer": "The current of a diode from the shape of its minority-carrier profiles."
+    }
+  },
+  "einstein-relation": {
+    "L1": "States D/μ = kT/q, 26 mV at 300 K.",
+    "L2": "Finds D from μ, or μ from D.",
+    "L3": "Explains that the same collisions limit drift and diffusion, and that drift and diffusion cancelling in a junction at equilibrium forces D/μ = kT/q.",
+    "L4": "Derives the relation from the equilibrium balance in a Boltzmann profile, and knows it holds only near equilibrium (not for hot carriers at high fields).",
+    "missteps": [
+      "uses D = μ·kT without the q",
+      "takes D and μ as independent quantities"
+    ],
+    "seeds": {
+      "predict": "Electron mobility in a sample halves: what happens to the electron diffusion constant?",
+      "explain": "Why the ratio D/μ depends only on temperature.",
+      "limit": "Carriers in a field near velocity saturation: does D/μ = kT/q still hold?",
+      "transfer": "A junction where D/μ were 30 mV instead of 26 mV: what would flow with nothing connected?"
+    }
+  },
+  "recombination-and-lifetime": {
+    "L1": "States that an excess minority carrier survives about a lifetime τ before it recombines.",
+    "L2": "Computes a diffusion length L = √(Dτ) from D and τ.",
+    "L3": "Explains that the excess decays as e^(−t/τ) in time and as e^(−x/L) in space as carriers diffuse; says why a region shorter than L gives a straight-line profile.",
+    "L4": "Knows that defects near mid-gap set τ, and uses the trade between τ and W to decide whether a diode or a BJT base is short or long.",
+    "missteps": [
+      "uses L = Dτ without the square root",
+      "thinks the majority density changes by the same relative amount as the minority"
+    ],
+    "seeds": {
+      "predict": "A diode's lifetime falls a hundredfold: what happens to its diffusion length?",
+      "explain": "Why a short region's minority profile is a straight line.",
+      "limit": "The lifetime made very long: what then sets a diode's current?",
+      "transfer": "Why a BJT's base must be much thinner than the diffusion length of its minority carriers."
+    }
   }
 }

@@ -1,0 +1,180 @@
+{
+  "depletion-region": {
+    "L1": "States that near a junction the free carriers are swept out, leaving bare ions: negative on the p side, positive on the n side.",
+    "L2": "Draws the boxes of charge for given dopings and computes the charge per area on each side.",
+    "L3": "Sketches ρ, E and φ across a junction and explains each from the one before; says the field peaks at the junction; explains the depletion approximation and why it is good to many decades.",
+    "L4": "Knows where the approximation fails: the smeared edges over a few nanometres, and forward bias near φ_bi; uses the same picture for a MOS body and a MOSFET's source and drain.",
+    "missteps": [
+      "puts positive ions on the p side",
+      "draws the field peak at a depletion edge",
+      "draws the depletion region symmetric for unequal doping"
+    ],
+    "seeds": {
+      "predict": "The p side's doping is raised tenfold: what happens to the p box's height and depth?",
+      "explain": "Why the depletion region is nearly empty of carriers.",
+      "limit": "One side doped very heavily: what does the junction look like?",
+      "transfer": "The depletion under a MOS gate, compared with a one-sided junction."
+    }
+  },
+  "pn-equilibrium": {
+    "L1": "States that at equilibrium no net current flows across a junction.",
+    "L2": "Writes the drift and diffusion currents for holes and for electrons and sets each sum to zero.",
+    "L3": "Explains equilibrium as diffusion and drift cancelling for each carrier separately, each current huge; explains why the junction is not a battery.",
+    "L4": "Derives the Einstein relation and φ_bi from the balance; explains forward and reverse bias as tipping it.",
+    "missteps": [
+      "says no current flows anywhere inside at equilibrium",
+      "cancels the hole current with the electron current instead of each with itself"
+    ],
+    "seeds": {
+      "predict": "The barrier is lowered a little: which of the two currents changes, and which stays the same?",
+      "explain": "Why the built-in potential cannot drive a current through a wire connecting the two ends.",
+      "limit": "The doping on one side raised without bound: what happens to the balance?",
+      "transfer": "Why a MOSFET's source junction stays in equilibrium while no current flows in the channel."
+    }
+  },
+  "built-in-potential": {
+    "L1": "States φ_bi = (kT/q)·ln(N_A N_D/n_i²), about 0.6 V to 1 V.",
+    "L2": "Computes φ_bi from the two dopings.",
+    "L3": "Explains φ_bi as the n side's potential from intrinsic minus the p side's; predicts 60 mV per decade of either doping; says why a voltmeter cannot read it.",
+    "L4": "Reads φ_bi off a 1/C_j² plot; uses it in V_FB and in a diode's forward voltage.",
+    "missteps": [
+      "uses ln(N_A N_D/n_i) without the square",
+      "expects a voltmeter to read φ_bi"
+    ],
+    "seeds": {
+      "predict": "The n side's doping is raised a hundredfold: by how much does φ_bi rise?",
+      "explain": "Why the contacts cancel the built-in potential around a closed loop.",
+      "limit": "Doping toward degenerate on both sides: what does φ_bi approach?",
+      "transfer": "The potential step between a MOSFET's n+ source and its p-type body."
+    }
+  },
+  "depletion-width": {
+    "L1": "States that the depletion width grows with the voltage across it and is wider on the lightly doped side.",
+    "L2": "Computes x_n, x_p and W for given dopings and bias.",
+    "L3": "Explains N_A x_p = N_D x_n from equal charge; explains the square root: the step grows as depth squared while the charge grows as depth.",
+    "L4": "Uses the one-sided approximation and knows when it holds; links the width to C_j and to punch-through and breakdown.",
+    "missteps": [
+      "puts the wider depletion on the heavily doped side",
+      "makes W proportional to the voltage instead of its square root"
+    ],
+    "seeds": {
+      "predict": "The total potential across the depletion region quadruples: what happens to W?",
+      "explain": "Why the lightly doped side holds most of the width.",
+      "limit": "N_A ≫ N_D: what does W depend on?",
+      "transfer": "How far a MOSFET's drain depletion reaches toward its source at a given V_DS."
+    }
+  },
+  "pn-reverse-bias": {
+    "L1": "States that reverse bias raises the barrier and widens the depletion region, and the diode carries only a tiny current.",
+    "L2": "Computes the widened W with φ_bi − V_D, V_D negative.",
+    "L3": "Explains why reverse current does not grow with voltage: only the few minority carriers that reach the edge are swept across; says the extra voltage lands across the depletion region.",
+    "L4": "Knows the limits: generation in the depletion region, avalanche breakdown near 4×10⁵ V/cm, and Zener tunnelling at heavy doping.",
+    "missteps": [
+      "adds the reverse voltage with the wrong sign",
+      "expects reverse current to grow like a resistor's"
+    ],
+    "seeds": {
+      "predict": "The reverse voltage doubles: what happens to the current and to W?",
+      "explain": "Why the reverse current is set by minority carriers.",
+      "limit": "The reverse voltage raised without bound: what physical limit comes first?",
+      "transfer": "Why a MOSFET's body and drain junctions are always kept reverse-biased."
+    }
+  },
+  "depletion-capacitance": {
+    "L1": "States C_j = ε_s/W per area, falling as the reverse bias grows.",
+    "L2": "Computes C_j at a bias with C_j = C_j0/√(1 − V_D/φ_bi).",
+    "L3": "Explains that the charge that changes sits at the edges, so the junction acts as a parallel-plate capacitor of spacing W; explains why 1/C_j² is a straight line meeting zero at φ_bi.",
+    "L4": "Extracts φ_bi and the light side's doping from a 1/C_j² plot; uses C_j as a varactor and as a MOSFET's junction capacitances.",
+    "missteps": [
+      "treats C_j as fixed",
+      "uses Q/V instead of dQ/dV"
+    ],
+    "seeds": {
+      "predict": "The reverse bias is raised so that φ_bi − V_D quadruples: what happens to C_j?",
+      "explain": "Why the capacitance is set by W, though the charge is spread through the region.",
+      "limit": "V_D pushed toward φ_bi: what does the formula predict, and what really happens?",
+      "transfer": "Tuning an LC tank with a reverse-biased diode: which way does the frequency move as the bias grows?"
+    }
+  },
+  "pn-forward-bias": {
+    "L1": "States that forward bias lowers the barrier and lets current flow.",
+    "L2": "Computes the minority density at a depletion edge as its equilibrium value times e^(V_D/(kT/q)).",
+    "L3": "Explains that lowering the barrier lets e^(V_D/(kT/q)) times as many carriers over, arriving as minority carriers; says the rest of the story is diffusion.",
+    "L4": "Knows the edge law needs low-level injection, and recognises the same law at a BJT's emitter and in a MOSFET below threshold.",
+    "missteps": [
+      "says the field in the neutral regions drives the forward current",
+      "uses e^(V_D/(kT/q)) for the majority density"
+    ],
+    "seeds": {
+      "predict": "V_D rises by 120 mV: by what factor does the edge minority density rise?",
+      "explain": "Why a lower barrier gives an exponential rise, not a linear one.",
+      "limit": "V_D raised until the injected carriers rival the doping: what fails?",
+      "transfer": "Why a BJT's collector current is exponential in V_BE."
+    }
+  },
+  "minority-carrier-diffusion": {
+    "L1": "States that injected minority carriers diffuse away from the junction and recombine.",
+    "L2": "Writes the profile for a short region (a straight line) and a long one (e^(−x/L)).",
+    "L3": "Explains why the slope at the edge sets the current, why a short region gives a straight line, and why making a short region shorter raises the current.",
+    "L4": "Handles a region of length comparable to L; uses the profile for a BJT's base and its transit time.",
+    "missteps": [
+      "uses L in place of W for a short region",
+      "draws the profile rising toward the contact"
+    ],
+    "seeds": {
+      "predict": "A short diode's neutral region is halved: what happens to the current at the same V_D?",
+      "explain": "Why the current is the slope of the profile, not its height.",
+      "limit": "W made much longer than L: what stops mattering?",
+      "transfer": "The minority profile in a BJT's base, from emitter to collector."
+    }
+  },
+  "diode-iv": {
+    "L1": "States I = I_S(e^(V_D/(kT/q)) − 1).",
+    "L2": "Finds a current from a voltage or a voltage from a current; computes I_S for a short diode.",
+    "L3": "Explains the exponential from the edge law and the slope; says why the lightly doped side dominates I_S and why reverse current saturates; reads ten times per 60 mV off a log plot.",
+    "L4": "Knows where the law fails (high-level injection, series resistance, depletion-region recombination at low current, breakdown) and uses ΔV = (kT/q)·ln(I₂/I₁) without a calculator.",
+    "missteps": [
+      "takes the diode as off below 0.7 V",
+      "forgets the −1, giving a current at V_D = 0",
+      "gives the heavily doped side most of the current"
+    ],
+    "seeds": {
+      "predict": "A diode carries 1 mA at 0.65 V: what voltage gives 100 µA?",
+      "explain": "Why the reverse current does not depend on the reverse voltage.",
+      "limit": "Forward current raised to many milliamps: what bends the log plot away from a straight line?",
+      "transfer": "Two diodes in series carry 1 mA: what is the total voltage, and how does it change with temperature?"
+    }
+  },
+  "diode-small-signal": {
+    "L1": "States r_d = (kT/q)/I_D, 26 Ω at 1 mA.",
+    "L2": "Computes r_d at a bias current and uses it in a small-signal circuit.",
+    "L3": "Explains r_d as the tangent of the exponential at the bias point, and why more current means a smaller r_d; says how small the signal must be (well under 26 mV).",
+    "L4": "Uses the bias current as a knob for a resistance; recognises 1/g_m of a BJT as the same idea.",
+    "missteps": [
+      "uses V_D/I_D as the small-signal resistance",
+      "keeps r_d fixed when the bias current changes"
+    ],
+    "seeds": {
+      "predict": "The bias current is quadrupled: what happens to r_d?",
+      "explain": "Why the small-signal resistance depends on the current and not on I_S.",
+      "limit": "A signal of 50 mV: what goes wrong with the tangent?",
+      "transfer": "A diode biased by a current source used as a voltage-controlled attenuator."
+    }
+  },
+  "diffusion-capacitance": {
+    "L1": "States that a forward-biased diode stores minority charge and has a capacitance that grows with its current.",
+    "L2": "Computes C_d = τ_T·I_D/(kT/q) from a transit time.",
+    "L3": "Explains the stored charge as the area under the minority profiles and C_d as its slope dQ/dV; says why forward C_d dwarfs reverse C_j.",
+    "L4": "Uses the transit time W²/(2D) or τ for short and long diodes, and links it to a diode's switching speed and a BJT's C_π.",
+    "missteps": [
+      "uses Q/V instead of dQ/dV",
+      "expects the diffusion capacitance in reverse bias"
+    ],
+    "seeds": {
+      "predict": "The forward current doubles: what happens to C_d?",
+      "explain": "Why a forward-biased diode's capacitance is much larger than when it is reverse-biased.",
+      "limit": "The neutral region made very short: what does the transit time approach?",
+      "transfer": "Why a diode takes time to turn off after carrying a large forward current."
+    }
+  }
+}

@@ -4,67 +4,78 @@
       "id": "pn-equilibrium",
       "title": "pn junction in equilibrium",
       "essence": "Join p and n silicon and holes diffuse into the n side, electrons into the p side. They leave bare ions behind, whose field pushes carriers back. Equilibrium comes when that drift exactly cancels the diffusion, for each carrier separately.",
-      "check": "In a junction at equilibrium a large diffusion current of holes flows from the p side to the n side. Why is the net hole current still zero?"
+      "check": "In a junction at equilibrium a large diffusion current of holes flows from the p side to the n side. Why is the net hole current still zero?",
+      "tools": ["devices/pn-junction/pn-junction.html"]
     },
     {
       "id": "depletion-region",
       "title": "depletion region",
       "essence": "Near the junction the free carriers are swept out, leaving bare ions: negative on the p side, positive on the n side. The depletion approximation treats them as two boxes of fixed charge with sharp edges, enough to draw the field and potential.",
-      "check": "Sketch the charge density, the field and the potential across a junction doped equally on both sides. Where is the field strongest, and why there?"
+      "check": "Sketch the charge density, the field and the potential across a junction doped equally on both sides. Where is the field strongest, and why there?",
+      "tools": ["devices/pn-junction/pn-junction.html"]
     },
     {
       "id": "built-in-potential",
       "title": "built-in potential",
       "essence": "The potential step across a junction in equilibrium is the difference of the two sides' potentials: φ_bi = (kT/q)·ln(N_A·N_D/n_i²), about 0.6 to 1 V. A voltmeter cannot read it, because the metal contacts add steps that cancel it.",
-      "check": "You raise the doping on the n side tenfold. By how much does the built-in potential rise, and why can you not power anything from it?"
+      "check": "You raise the doping on the n side tenfold. By how much does the built-in potential rise, and why can you not power anything from it?",
+      "tools": ["devices/pn-junction/pn-junction.html"]
     },
     {
       "id": "depletion-width",
       "title": "depletion width",
       "essence": "The charge on the two sides must balance, N_A·x_p = N_D·x_n, so the depletion region reaches deep into the lightly doped side and barely into the heavy one. Its width grows as the square root of the voltage across it.",
-      "check": "One side of a junction is doped 100 times more heavily than the other. Where does most of the depletion region lie, and what happens to its width when reverse bias quadruples the total potential across it?"
+      "check": "One side of a junction is doped 100 times more heavily than the other. Where does most of the depletion region lie, and what happens to its width when reverse bias quadruples the total potential across it?",
+      "tools": ["devices/pn-junction/pn-junction.html"]
     },
     {
       "id": "pn-reverse-bias",
       "title": "reverse bias",
       "essence": "Reverse bias adds to the built-in step, so diffusion over the barrier stops. Only minority carriers that wander to the edge are swept across, a tiny current that does not grow with voltage. The depletion region widens to hold the extra voltage.",
-      "check": "Doubling the reverse voltage across a diode barely changes its current. Why?"
+      "check": "Doubling the reverse voltage across a diode barely changes its current. Why?",
+      "tools": ["devices/pn-junction/pn-junction.html"]
     },
     {
       "id": "depletion-capacitance",
       "title": "depletion capacitance",
       "essence": "A wider depletion region holds more fixed charge, so the junction stores charge like a capacitor whose plate spacing is the depletion width: C_j = εA/W. More reverse bias spreads the plates and lowers C_j, which is how a varactor tunes a circuit.",
-      "check": "You plot 1/C_j² against reverse voltage for a one-sided junction. What shape do you expect, and what does the point where the line meets the voltage axis tell you?"
+      "check": "You plot 1/C_j² against reverse voltage for a one-sided junction. What shape do you expect, and what does the point where the line meets the voltage axis tell you?",
+      "tools": ["devices/pn-junction/pn-junction.html"]
     },
     {
       "id": "pn-forward-bias",
       "title": "forward bias",
       "essence": "Forward bias lowers the barrier by V_D, so e^(qV_D/kT) times as many majority carriers cross and arrive as minority carriers on the far side. The minority density at each depletion edge rises by that factor; the rest of the story is diffusion.",
-      "check": "The forward voltage on a diode rises by 60 mV. By roughly what factor does the minority-carrier density at the depletion edges rise?"
+      "check": "The forward voltage on a diode rises by 60 mV. By roughly what factor does the minority-carrier density at the depletion edges rise?",
+      "tools": ["devices/pn-junction/diode-current.html"]
     },
     {
       "id": "minority-carrier-diffusion",
       "title": "minority-carrier profiles",
       "essence": "Injected minority carriers diffuse away from the junction and recombine as they go. In a long region they die out as e^(−x/L), with L = √(Dτ); in a region much shorter than L they fall in a straight line. The slope at the edge sets the current.",
-      "check": "A diode's n region is shortened from many diffusion lengths to a tenth of one. Does the current at a given voltage go up or down, and why?"
+      "check": "A diode's n region is shortened from many diffusion lengths to a tenth of one. Does the current at a given voltage go up or down, and why?",
+      "tools": ["devices/pn-junction/diode-current.html"]
     },
     {
       "id": "diode-iv",
       "title": "diode I–V",
       "essence": "A diode carries I = I_S(e^(qV_D/kT) − 1): ten times more current for every 60 mV forward, and a tiny −I_S in reverse. I_S is set by the doping, the area and how far the minority carriers diffuse.",
-      "check": "A diode carries 1 mA at 0.65 V. Roughly what voltage gives 10 mA, and what voltage gives 1 μA?"
+      "check": "A diode carries 1 mA at 0.65 V. Roughly what voltage gives 10 mA, and what voltage gives 1 μA?",
+      "tools": ["devices/pn-junction/diode-current.html"]
     },
     {
       "id": "diode-small-signal",
       "title": "diode small-signal model",
       "essence": "Bias a diode at a current I_D and a small wiggle in voltage sees the tangent of the exponential: a resistance r_d = (kT/q)/I_D, which is 26 Ω at 1 mA. More bias current means a smaller resistance.",
-      "check": "A diode is biased first at 0.1 mA and then at 10 mA. What is its small-signal resistance in each case, and how small must the signal be for the tangent to hold?"
+      "check": "A diode is biased first at 0.1 mA and then at 10 mA. What is its small-signal resistance in each case, and how small must the signal be for the tangent to hold?",
+      "tools": ["devices/pn-junction/diode-current.html"]
     },
     {
       "id": "diffusion-capacitance",
       "title": "diffusion capacitance",
       "essence": "A forward-biased diode stores minority charge in its neutral regions, about I_D·τ. Change the voltage and that charge must change too, which looks like a capacitance C_d ≈ I_D·τ/(kT/q) that grows with the bias current.",
-      "check": "Why does a forward-biased diode have a much larger capacitance than the same diode under reverse bias?"
+      "check": "Why does a forward-biased diode have a much larger capacitance than the same diode under reverse bias?",
+      "tools": ["devices/pn-junction/diode-current.html"]
     },
     {
       "id": "photodiode-solar-cell",

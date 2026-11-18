@@ -1,0 +1,726 @@
+<!doctype html>
+<!--
+  Concept:      Two boxes of bare ions with equal charge, a triangle of field and a step of potential
+                φ_bi = (kT/q)·ln(N_A N_D/n_i²); reverse bias raises the step, so the boxes widen as √(φ_bi − V_D)
+                and C_j = ε_s/W falls.
+  Course:       EE 105 (pn junction in equilibrium, depletion width, reverse bias, depletion capacitance, diffusion
+                and the Einstein relation)
+  Play with:    The two dopings, the bias V_D, and D_p/μ_p
+  Should click: The light side holds the width; ρ, E and φ are each the integral of the one before; reverse bias
+                widens the region as a square root and lowers C_j; and equilibrium is two large currents
+                cancelling, which needs D/μ = kT/q.
+  Plan:         plans/pn-junction.md
+  Checked:      19 check cases pass (node scripts/test-tools.js). Headless Chrome, light and dark, no errors in the
+                page: N_A = 10¹⁸, N_D = 10¹⁷ cm⁻³ reads φ_bi = 0.898 V, x_p = 10.3 nm, x_n = 103 nm, 91 % on the light
+                side, |Q| = 165 nC/cm², E_max = −1.59×10⁵ V/cm, C_j = 91.7 nF/cm²; at −3 V, W = 235 nm and
+                C_j = 44.0 nF/cm²; N_D = 10¹⁸ gives φ_bi = 0.958 V; the breakdown note shows near −5 V; D_p/μ_p = 30 mV
+                shows a net hole current of 1.36×10⁵ A/cm². The handle moves 0.05 V, Shift 0.5 V; reset restores
+                the start.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>pn junction · momentos</title>
+<script>
+  // apply a saved light/dark choice before anything is painted
+  try {
+    var saved = localStorage.getItem("momentos-theme");
+    if (saved === "light" || saved === "dark") document.documentElement.dataset.theme = saved;
+  } catch (e) { /* no storage in some previews: follow the system setting */ }
+</script>
+<style>
+  /* ---- momentos house style: begin (the same block in every tool. Change it only in
+     templates/tool-template.html, then run scripts/sync-house-style.py) ---- */
+  :root {
+    color-scheme: light dark;
+    --bg: light-dark(#f6f4ee, #131312);          /* the page */
+    --surface: light-dark(#fbfaf6, #1b1b19);     /* figures and inputs */
+    --ink: light-dark(#1d1c1a, #ebe8e1);         /* text and the main strokes */
+    --ink-2: light-dark(#5f5c55, #b1ada3);       /* secondary text */
+    --ink-3: light-dark(#77736b, #8a867d);       /* labels, axis numbers */
+    --line: light-dark(rgba(29, 28, 26, 0.16), rgba(235, 232, 225, 0.18));   /* hairlines and borders */
+    --grid: light-dark(rgba(29, 28, 26, 0.07), rgba(235, 232, 225, 0.08));   /* grid lines */
+    --accent: light-dark(#c2410c, #ff8f5a);      /* the one thing being pointed at */
+    /* Colour is for quantities, never for decoration. Give each quantity one of these and keep it
+       the same in the figure, the numbers and the prose. */
+    --c1: light-dark(#2458c4, #7aa7ff);          /* blue */
+    --c2: light-dark(#c2410c, #ff9a62);          /* orange */
+    --c3: light-dark(#0f7f6b, #4fd3b4);          /* teal */
+    --c4: light-dark(#9d3fb0, #d78be6);          /* purple */
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+    --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  }
+  :root[data-theme="light"] { color-scheme: light; }
+  :root[data-theme="dark"] { color-scheme: dark; }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 17px/1.55 var(--serif);
+    -webkit-font-smoothing: antialiased;
+  }
+  .bar {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 22px;
+    font: 12px/1 var(--mono);
+    letter-spacing: 0.06em;
+    color: var(--ink-3);
+  }
+  .bar a { color: var(--ink-2); text-decoration: none; border-bottom: 1px solid var(--line); padding-bottom: 2px; }
+  .bar a:hover { color: var(--accent); border-color: var(--accent); }
+  .bar .grow { flex: 1; }
+  button {
+    font: 12px/1 var(--mono);
+    color: var(--ink-2);
+    background: transparent;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 7px 10px;
+    cursor: pointer;
+  }
+  button:hover { color: var(--ink); border-color: var(--ink-2); }
+  button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  button:disabled { opacity: 0.4; cursor: default; }
+  :focus-visible { outline: 1px dashed var(--ink); outline-offset: 2px; }
+
+  main { max-width: 1120px; margin: 0 auto; padding: 4px 22px 72px; }
+  h1 { font: 400 clamp(30px, 4.6vw, 44px)/1.08 var(--serif); letter-spacing: -0.015em; margin: 14px 0 10px; }
+  .lede { max-width: 62ch; margin: 0 0 26px; color: var(--ink-2); font-size: 18px; }
+  h2 {
+    font: 500 10.5px/1.4 var(--mono);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin: 0 0 10px;
+  }
+  .bench { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(280px, 1fr); gap: 28px; align-items: start; }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-top: 28px; }
+  figure { margin: 0; }
+  .stage { border: 1px solid var(--line); border-radius: 4px; background: var(--surface); overflow: hidden; }
+  .stage svg { display: block; width: 100%; height: auto; touch-action: none; user-select: none; -webkit-user-select: none; }
+  figcaption { padding: 9px 12px; border-top: 1px solid var(--line); font: 11.5px/1.5 var(--mono); color: var(--ink-3); }
+  .controls { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 12px; }
+  .controls label { font: 12px/1 var(--mono); color: var(--ink-2); display: inline-flex; align-items: center; gap: 6px; margin-left: 6px; }
+  input[type="range"] { accent-color: var(--ink); }
+  input[type="checkbox"] { accent-color: var(--ink); }
+
+  .notes { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 44px; margin-top: 46px; padding-top: 28px; border-top: 1px solid var(--line); }
+  .notes p { margin: 0 0 14px; max-width: 62ch; }
+  .notes p b { font-weight: 600; }
+  .notes ul { margin: 0 0 26px; padding: 0; list-style: none; }
+  .notes li { margin: 0 0 12px; padding-left: 14px; border-left: 1px solid var(--line); font-size: 16px; line-height: 1.45; }
+  .notes li a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--line); }
+  .notes li a:hover { color: var(--accent); border-color: var(--accent); }
+  details { margin-top: 4px; }
+  summary { font: 11.5px/1.4 var(--mono); color: var(--ink-3); cursor: pointer; }
+  details span { color: var(--ink-2); font-size: 15px; }
+  sup, sub { font-size: 0.72em; line-height: 0; }
+
+  @media (max-width: 860px) {
+    .bench, .pair, .notes { grid-template-columns: 1fr; }
+    .notes { gap: 28px; }
+  }
+  /* ---- momentos house style: end ---- */
+
+  /* ---- this tool: everything below is yours ---- */
+  var { font-style: italic; font-family: var(--serif); }
+  .grid line { stroke: var(--grid); stroke-width: 1; }
+  .grid .axis { stroke: var(--line); }
+  .tick { font: 10.5px var(--mono); fill: var(--ink-3); }
+  .lab { font: 11.5px var(--mono); fill: var(--ink-2); }
+  .side { fill: var(--surface); stroke: var(--line); }
+  .dep { fill: var(--c4); opacity: 0.12; }
+  .dep3 { fill: var(--c4); opacity: 0.08; }
+  .ion { font: 12px var(--mono); fill: var(--c4); }
+  .box { fill: var(--c4); fill-opacity: 0.35; stroke: var(--c4); stroke-width: 1.4; }
+  .edgel { stroke: var(--c4); stroke-width: 1; stroke-dasharray: 3 3; }
+  .jn { stroke: var(--ink-3); stroke-width: 1; stroke-dasharray: 1 3; }
+  .zero { stroke: var(--line); stroke-width: 1; }
+  .fld { fill: var(--ink); fill-opacity: 0.10; stroke: var(--ink); stroke-width: 2.2; stroke-linejoin: round; }
+  .pot { fill: none; stroke: var(--c3); stroke-width: 2.4; stroke-linejoin: round; }
+  .potd { stroke: var(--c3); stroke-width: 1; stroke-dasharray: 2 3; }
+  .arr { stroke: var(--ink-2); stroke-width: 1; fill: none; }
+  .el { fill: var(--c1); }
+  .hole { fill: none; stroke: var(--c2); stroke-width: 1.4; }
+  .t1 { font: 11.5px var(--mono); fill: var(--c1); } .t2 { font: 11.5px var(--mono); fill: var(--c2); }
+  .t3 { font: 11.5px var(--mono); fill: var(--c3); } .t4 { font: 11.5px var(--mono); fill: var(--c4); }
+  .t0 { font: 11.5px var(--mono); fill: var(--ink); } .tk { font: 11.5px var(--mono); fill: var(--ink-2); }
+  .warn rect { fill: var(--surface); stroke: var(--line); }
+  .warn text { font: 12px var(--mono); fill: var(--ink); }
+  .cj { fill: none; stroke: var(--ink); stroke-width: 2.2; }
+  .ic2 { fill: none; stroke: var(--ink-2); stroke-width: 1.8; stroke-dasharray: 5 4; }
+  .fwd { fill: var(--grid); }
+  .q1c { fill: none; stroke: var(--c1); stroke-width: 2.2; } .q2c { fill: none; stroke: var(--c2); stroke-width: 2.2; }
+  .jdiff { fill: none; stroke: var(--c2); stroke-width: 4; stroke-opacity: 0.45; }
+  .jdrift { fill: none; stroke: var(--c2); stroke-width: 1.8; stroke-dasharray: 5 4; }
+  .jnet { fill: none; stroke: var(--ink); stroke-width: 2; }
+  .cursor { stroke: var(--ink-2); stroke-width: 1; stroke-dasharray: 3 3; }
+  .tri { fill: var(--ink-2); cursor: ew-resize; outline: none; }
+  .tri:focus-visible { stroke: var(--ink); stroke-width: 1.5; }
+  .hit { fill: transparent; cursor: crosshair; }
+  .d0 { fill: var(--ink); } .dk { fill: var(--ink-2); }
+  .read { font: 13px/1.6 var(--mono); font-variant-numeric: tabular-nums; }
+  .read p { margin: 0 0 4px; }
+  .read .big { font: 400 24px/1.25 var(--serif); margin: 4px 0 10px; }
+  .q1 { color: var(--c1); } .q2 { color: var(--c2); } .q3 { color: var(--c3); } .q4 { color: var(--c4); }
+  .pair { align-items: start; }
+  .controls output { font: 12px/1 var(--mono); color: var(--ink-2); min-width: 16ch; display: inline-block; }
+</style>
+</head>
+<body>
+
+<header class="bar">
+  <a href="../../index.html#depletion-region">← map</a>
+  <span>devices / pn-junction</span>
+  <span class="grow"></span>
+  <button type="button" id="theme" aria-label="Switch between light and dark">◐</button>
+</header>
+
+<main>
+  <h1>The pn junction: charge, field and potential</h1>
+  <p class="lede">Where p-type meets n-type silicon, carriers spread across and leave bare ions behind. Those ions make a
+    field, and the field makes a step in potential that stops the spreading. Change the dopings and the bias and watch
+    the charge, the field and the potential, each built from the one above it.</p>
+
+  <div class="bench">
+    <div>
+      <figure class="stage">
+        <svg id="junction" viewBox="0 0 640 560" role="img" aria-label="The junction's ions, charge density, field and potential, stacked on one position axis"></svg>
+        <figcaption>From the top: the device with its bare ions, the charge density, the field and the potential. The scales
+          stay fixed while V_D changes, so you can see the region widen.</figcaption>
+      </figure>
+      <div class="controls">
+        <label>N_A <input type="range" id="sA" min="14" max="19" step="0.1" value="18" aria-label="acceptor doping of the p side, log scale"></label><output id="oA"></output>
+        <label>N_D <input type="range" id="sD" min="14" max="19" step="0.1" value="17" aria-label="donor doping of the n side, log scale"></label><output id="oD"></output>
+      </div>
+      <div class="controls">
+        <label>V_D <input type="range" id="sV" min="-5" max="0.4" step="0.05" value="0" aria-label="applied voltage V_D, p side minus n side"></label><output id="oV"></output>
+        <button type="button" id="reset">reset</button>
+      </div>
+    </div>
+    <aside class="read">
+      <h2>The step</h2>
+      <p class="q3" id="r-pbi"></p>
+      <p id="r-v"></p>
+      <div class="big q3" id="r-step"></div>
+      <h2>The depletion region</h2>
+      <p class="q4" id="r-w"></p>
+      <p id="r-share"></p>
+      <p class="q4" id="r-q"></p>
+      <p id="r-e"></p>
+      <p id="r-c"></p>
+    </aside>
+  </div>
+
+  <div class="pair">
+    <figure class="stage">
+      <svg id="cj" viewBox="0 0 480 300" role="group" aria-label="Junction capacitance and its inverse square against V_D"></svg>
+      <figcaption>The junction capacitance against V_D, and 1/C_j², a straight line that meets zero at φ_bi. Drag the
+        triangle or press anywhere in the plot; focused, ← → move it 0.05 V, with Shift 0.5 V. The shaded band is forward
+        bias, which the diode tool covers.</figcaption>
+    </figure>
+    <div>
+      <figure class="stage">
+        <svg id="balance" viewBox="0 0 480 420" role="img" aria-label="Carriers and hole currents across the junction at equilibrium"></svg>
+        <figcaption>At equilibrium. Top, the carriers on a log scale: the region is empty by many decades. Bottom, the two
+          hole currents: huge, and equal and opposite while D_p/μ_p = kT/q.</figcaption>
+      </figure>
+      <div class="controls">
+        <label>D_p/μ_p <input type="range" id="sR" min="20" max="32" step="0.5" value="26" aria-label="the ratio D_p over mu_p in millivolts"></label><output id="oR"></output>
+      </div>
+      <p class="read" id="r-mu"></p>
+    </div>
+  </div>
+
+  <section class="notes">
+    <div>
+      <h2>What should click</h2>
+      <p><b>Equal charge, unequal depth.</b> The ions on the two sides must cancel, N_A x_p = N_D x_n, so the region
+        reaches deep into the lightly doped side and barely into the heavy one.</p>
+      <p><b>Charge, then field, then potential.</b> Gauss's law turns the boxes into a triangle of field that peaks at the
+        junction, and integrating again gives a step of φ_bi − V_D, mostly on the light side.</p>
+      <p><b>Reverse bias widens it as a square root.</b> A bigger step needs more charge, and the charge grows as the
+        depth, but the step grows as the depth squared, so W ∝ √(φ_bi − V_D). The charge that moves sits at the edges, so
+        the junction is a capacitor ε_s/W that shrinks as the bias grows.</p>
+      <p><b>Equilibrium is a tug of war.</b> Holes diffuse toward the n side and the field drives them back, each at about
+        10⁵ A/cm². They cancel only because D/μ = kT/q, and that is the Einstein relation.</p>
+    </div>
+    <div>
+      <h2>Predict, then try</h2>
+      <ul>
+        <li>N_A is ten times N_D. Before looking, where does most of the depletion region lie?
+          <details><summary>why</summary><span>On the n side, the lightly doped one: x_n = 103 nm against x_p = 10.3 nm. The two boxes must hold equal charge, so the side with a tenth of the ions per cm³ needs ten times the depth.</span></details></li>
+        <li>Where is the field strongest, and why there?
+          <details><summary>why</summary><span>At the junction, x = 0. Coming in from the p side the field grows with every negative ion it passes, and from there on it shrinks with every positive ion, so it peaks where the two kinds of charge meet.</span></details></li>
+        <li>Apply 3 V of reverse bias. By how much does W grow, and what happens to C_j?
+          <details><summary>why</summary><span>The step grows from 0.898 V to 3.898 V, 4.34 times, so W grows √4.34 = 2.08 times, to 235 nm, and C_j = ε_s/W falls by the same factor, to 44.0 nF/cm².</span></details></li>
+        <li>Raise N_D tenfold, to 10¹⁸ cm⁻³. How much does φ_bi rise?
+          <details><summary>why</summary><span>By 59.9 mV, one decade: φ_bi is the n side's potential minus the p side's, and the n side's moved up one step on the doping ladder.</span></details></li>
+        <li>In the lower figure the hole diffusion current is 5×10⁵ A/cm², yet nothing flows. Now set D_p/μ_p to 30 mV. What would happen, and what does that tell you?
+          <details><summary>why</summary><span>A net hole current of about 10⁵ A/cm² would flow in a junction with nothing connected, which is impossible in equilibrium. So D/μ must be exactly kT/q: the Einstein relation.</span></details></li>
+      </ul>
+      <h2>Where this shows up</h2>
+      <ul>
+        <li><a href="../../index.html#doping">doping</a>: the dopings set both boxes of charge and both ends of the potential step.</li>
+        <li><a href="../../index.html#potential-vs-doping">potential and doping</a>: φ_bi is the n side's potential from intrinsic minus the p side's.</li>
+        <li><a href="../../index.html#mos-capacitor">MOS capacitor</a>: a MOS capacitor's body depletes exactly like the light side of a one-sided junction.</li>
+        <li><a href="../../index.html#body-effect">body effect</a>: a MOSFET's body is a reverse-biased junction under its channel, and V_SB widens it.</li>
+        <li><a href="../../index.html#mos-capacitances">MOSFET capacitances</a>: the drain and source of a MOSFET are pn junctions with a C_j of their own.</li>
+        <li><a href="../../index.html#pn-forward-bias">forward bias</a>: lowering the step lets diffusion win, which is where a diode's current comes from.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<script id="maths">
+// ---- the maths: plain functions with no page behind them. scripts/test-tools.js runs this block on
+// its own and compares it with the check cases below, so nothing in here may touch the DOM.
+// An abrupt silicon junction: p side x < 0 doped NA, n side x > 0 doped ND, cm, V, C, F, A. kT/q = 0.026 V,
+// n_i = 1e10 cm^-3, eps_s = 11.7 eps_0. VD is the p side minus the n side. Potentials from the neutral p side.
+var MATHS = (function () {
+  "use strict";
+  var Q = 1.602e-19, EPS = 11.7 * 8.854e-14, VT = 0.026, NI = 1e10;
+  var FIT = { n: [88, 1252, 1.26e17, 0.88], p: [54.3, 407, 2.35e17, 0.88] };
+
+  // Caughey-Thomas fit, Arora's 300 K parameters, cm^2/(V s)
+  function mobility(carrier, N) { var f = FIT[carrier]; return f[0] + f[1] / (1 + Math.pow(N / f[2], f[3])); }
+  function builtIn(NA, ND) { return VT * Math.log(NA * ND / (NI * NI)); }
+  // the depletion approximation: N_A x_p = N_D x_n, and the two parabolas add up to phi_bi - V_D
+  function widths(NA, ND, VD) {
+    var V = builtIn(NA, ND) - VD;
+    if (V <= 0) return { xp: 0, xn: 0, W: 0 };
+    var W = Math.sqrt(2 * EPS * V * (1 / NA + 1 / ND) / Q);
+    return { xp: W * ND / (NA + ND), xn: W * NA / (NA + ND), W: W };
+  }
+  // Gauss's law from E = 0 at -x_p; negative points from the n side to the p side
+  function fieldAt(NA, ND, VD, x) {
+    var w = widths(NA, ND, VD);
+    if (-w.xp < x && x <= 0) return -Q * NA * (x + w.xp) / EPS;
+    if (0 < x && x < w.xn) return -Q * ND * (w.xn - x) / EPS;
+    return 0;
+  }
+  function peakField(NA, ND, VD) { return fieldAt(NA, ND, VD, 0); }
+  function potentialAt(NA, ND, VD, x) {
+    var w = widths(NA, ND, VD), V = Math.max(builtIn(NA, ND) - VD, 0);
+    if (x <= -w.xp) return 0;
+    if (x <= 0) return Q * NA * Math.pow(x + w.xp, 2) / (2 * EPS);
+    if (x < w.xn) return V - Q * ND * Math.pow(w.xn - x, 2) / (2 * EPS);
+    return V;
+  }
+  function chargePerArea(NA, ND, VD) { return Q * NA * widths(NA, ND, VD).xp; }
+  function junctionCap(NA, ND, VD) { var W = widths(NA, ND, VD).W; return W === 0 ? Infinity : EPS / W; }
+  // Boltzmann densities in the equilibrium potential
+  function carriersAt(NA, ND, x) {
+    var phi = potentialAt(NA, ND, 0, x), pbi = builtIn(NA, ND);
+    return { n: ND * Math.exp(-(pbi - phi) / VT), p: NA * Math.exp(-phi / VT) };
+  }
+  // hole drift and diffusion at equilibrium with D_p = ratio * mu_p; positive is toward the n side
+  function holeCurrents(NA, ND, x, ratio) {
+    var mu = mobility("p", NA), p = carriersAt(NA, ND, x).p, E = fieldAt(NA, ND, 0, x);
+    var drift = Q * mu * p * E, diffusion = -Q * ratio * mu * p * E / VT;
+    return { drift: drift, diffusion: diffusion, net: drift + diffusion };
+  }
+
+  return { mobility: mobility, builtIn: builtIn, widths: widths, fieldAt: fieldAt, peakField: peakField,
+    potentialAt: potentialAt, chargePerArea: chargePerArea, junctionCap: junctionCap, carriersAt: carriersAt,
+    holeCurrents: holeCurrents };
+})();
+</script>
+<script type="application/json" id="check-cases">
+[
+  {"fn": "builtIn", "args": [1e+18, 1e+17], "expect": 0.8980081862676778, "tol": 1e-09, "units": "V", "tag": "typical", "note": "N_A = 10¹⁸ and N_D = 10¹⁷ cm⁻³: φ_bi = (26 mV)·ln(10³⁵/10²⁰) = 0.898 V"},
+  {"fn": "builtIn", "args": [1e+18, 1e+18], "expect": 0.9578753986855231, "tol": 1e-09, "units": "V", "tag": "typical", "note": "N_D raised tenfold to 10¹⁸ cm⁻³: φ_bi rises by one decade's 59.9 mV, to 0.958 V"},
+  {"fn": "widths", "args": [1e+18, 1e+17, 0], "expect": {"xp": 1.0275198889181624e-06, "xn": 1.0275198889181622e-05, "W": 1.1302718778099785e-05}, "tol": 1e-09, "units": "cm", "tag": "typical", "note": "at equilibrium: x_p = 10.3 nm, x_n = 103 nm, W = 113 nm; ten times the doping, a tenth of the depth"},
+  {"fn": "widths", "args": [1e+18, 1e+17, -3], "expect": {"xp": 2.1407771594285027e-06, "xn": 2.1407771594285027e-05, "W": 2.354854875371353e-05}, "tol": 1e-09, "units": "cm", "tag": "typical", "note": "3 V of reverse bias: the step grows from 0.898 V to 3.898 V, 4.34 times, so every width grows √4.34 = 2.08 times, to W = 235 nm"},
+  {"fn": "widths", "args": [1e+18, 1e+17, 0.897], "expect": {"xp": 3.4428688387568306e-08, "xn": 3.4428688387568303e-07, "W": 3.7871557226325135e-07}, "tol": 1e-09, "units": "cm", "tag": "limit-zero", "note": "V_D = 0.897 V, 1 mV short of φ_bi: the depletion region has shrunk to 3.8 nm; the approximation has long since stopped meaning anything"},
+  {"fn": "widths", "args": [1e+19, 1000000000000000.0, 0], "expect": {"xp": 1.0410779642816793e-08, "xn": 0.00010410779642816793, "W": 0.00010411820720781075}, "tol": 1e-09, "units": "cm", "tag": "limit-infinity", "note": "a one-sided junction, N_A = 10¹⁹ and N_D = 10¹⁵ cm⁻³: W = 1.04 µm, all but 0.1 nm of it on the lightly doped n side"},
+  {"fn": "peakField", "args": [1e+18, 1e+17, 0], "expect": -158901.2703753479, "tol": 1e-09, "units": "V/cm", "tag": "sign", "note": "at equilibrium the field peaks at the junction at −1.59×10⁵ V/cm: negative, pointing from the n side to the p side"},
+  {"fn": "peakField", "args": [1e+18, 1e+17, -20], "expect": -766548.554317289, "tol": 1e-09, "units": "V/cm", "tag": "breaks", "note": "20 V of reverse bias: the model gives −7.67×10⁵ V/cm, but silicon doped like this breaks down by avalanche near 4×10⁵ V/cm, and the model knows nothing of it"},
+  {"fn": "fieldAt", "args": [1e+18, 1e+17, 0, 5e-06], "expect": -81578.54792048172, "tol": 1e-09, "units": "V/cm", "tag": "typical", "note": "50 nm into the n side, about halfway across it: the field has fallen linearly to −8.16×10⁴ V/cm"},
+  {"fn": "potentialAt", "args": [1e+18, 1e+17, 0, 0], "expect": 0.08163710784251617, "tol": 1e-09, "units": "V", "tag": "typical", "note": "at the junction itself: only 0.0816 V of the 0.898 V step has happened; the lightly doped n side holds the rest, 91 %, in proportion to its depth"},
+  {"fn": "chargePerArea", "args": [1e+18, 1e+17, 0], "expect": 1.6460868620468963e-07, "tol": 1e-09, "units": "C/cm²", "tag": "typical", "note": "at equilibrium each side holds |Q| = qN_A x_p = qN_D x_n = 165 nC/cm² of bare ions"},
+  {"fn": "junctionCap", "args": [1e+18, 1e+17, 0], "expect": 9.165210781030851e-08, "tol": 1e-09, "units": "F/cm²", "tag": "typical", "note": "at equilibrium: C_j0 = ε_s/W = 91.7 nF/cm², 9.17 pF for a 100 µm × 100 µm junction"},
+  {"fn": "junctionCap", "args": [1e+18, 1e+17, -3], "expect": 4.399073636487425e-08, "tol": 1e-09, "units": "F/cm²", "tag": "typical", "note": "3 V of reverse bias: the plates are 2.08 times further apart, so C_j falls to 44.0 nF/cm²"},
+  {"fn": "carriersAt", "args": [1e+18, 1e+17, 0], "expect": {"n": 2310.1297000831682, "p": 4.328761281083058e+16}, "tol": 1e-09, "units": "cm⁻³", "tag": "typical", "note": "at the junction, in equilibrium: p = 4.33×10¹⁶ and n = 2.31×10³ cm⁻³; their product is still n_i²"},
+  {"fn": "carriersAt", "args": [1e+18, 1e+17, 5.13e-06], "expect": {"n": 38090467249378.4, "p": 2625328.782272471}, "tol": 1e-09, "units": "cm⁻³", "tag": "typical", "note": "halfway into the n side's depletion: n = 3.81×10¹³ and p = 2.63×10⁶ cm⁻³, both far below the 10¹⁷ cm⁻³ of ions; the region really is nearly empty of carriers"},
+  {"fn": "carriersAt", "args": [1e+18, 1e+17, -9.3e-07], "expect": {"n": 102.86864072686001, "p": 9.721135546597078e+17}, "tol": 1e-09, "units": "cm⁻³", "tag": "breaks", "note": "1 nm inside the p edge of the 'depleted' region: holes are still at 9.72×10¹⁷ cm⁻³, 97 % of N_A; the real edge is smeared over a few nm, not a sharp box"},
+  {"fn": "mobility", "args": ["p", 1e+18], "expect": 143.23226205513964, "tol": 1e-09, "units": "cm²/(V·s)", "tag": "typical", "note": "holes in p-type silicon at 10¹⁸ cm⁻³: μ_p = 143 cm²/(V·s), the drift tool's fit"},
+  {"fn": "holeCurrents", "args": [1e+18, 1e+17, -3e-07, 0.026], "expect": {"drift": -534904.5058036719, "diffusion": 534904.5058036719, "net": 0.0}, "tol": 1e-09, "units": "A/cm²", "tag": "limit-zero", "note": "at equilibrium 3 nm into the p side's depletion, with D_p/μ_p = kT/q: hole diffusion of +5.35×10⁵ A/cm² toward n, drift of −5.35×10⁵ A/cm² back, net zero"},
+  {"fn": "holeCurrents", "args": [1e+18, 1e+17, -3e-07, 0.03], "expect": {"drift": -534904.5058036719, "diffusion": 617197.5066965446, "net": 82293.00089287269}, "tol": 1e-09, "units": "A/cm²", "tag": "other", "note": "the same point with D_p/μ_p set to 30 mV instead of 26 mV: a net hole current of 8.23×10⁴ A/cm² would flow with nothing connected, so D/μ must equal kT/q"}
+]
+</script>
+<script>
+(function () {
+  "use strict";
+
+  const NS = "http://www.w3.org/2000/svg";
+  function S(name, attrs, parent) {
+    const el = document.createElementNS(NS, name);
+    for (const k in attrs) el.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(el);
+    return el;
+  }
+  const $ = (id) => document.getElementById(id);
+  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+  const f1 = (v) => (Math.round(v * 10) / 10).toString();
+  const SUP = "⁰¹²³⁴⁵⁶⁷⁸⁹";
+  const sup = (n) => (n < 0 ? "⁻" : "") + String(Math.abs(n)).split("").map((c) => SUP[c]).join("");
+  function sci(v) {
+    if (v === 0) return "0";
+    const s = v < 0 ? "−" : "";
+    v = Math.abs(v);
+    let e = Math.floor(Math.log10(v)), m = v / Math.pow(10, e);
+    if (Number(m.toFixed(2)) >= 10) { m /= 10; e += 1; }
+    return s + m.toFixed(2) + "×10" + sup(e);
+  }
+  function eng(v, unit) {
+    if (Math.abs(v) < 1e-18) return "0 " + unit;
+    const pre = { "-15": "f", "-12": "p", "-9": "n", "-6": "µ", "-3": "m", "0": "", "3": "k" };
+    let e = clamp(Math.floor(Math.log10(Math.abs(v)) / 3) * 3, -15, 3);
+    let s = Math.abs(v / Math.pow(10, e)).toPrecision(3);
+    if (Number(s) >= 1000 && e < 3) { e += 3; s = Math.abs(v / Math.pow(10, e)).toPrecision(3); }
+    return (v < 0 ? "−" : "") + s + " " + pre[String(e)] + unit;
+  }
+  const volts = (v, d) => (v < 0 ? "−" : "") + Math.abs(v).toFixed(d === undefined ? 3 : d) + " V";
+  const sig3 = (v) => Number(v.toPrecision(3)).toString();
+  function svgPoint(svg, e) {
+    const ctm = svg.getScreenCTM();
+    if (!ctm) return { x: 0, y: 0 };
+    const p = new DOMPoint(e.clientX, e.clientY).matrixTransform(ctm.inverse());
+    return { x: p.x, y: p.y };
+  }
+  function T(parent, x, y, cls, text, anchor) {
+    const t = S("text", { x: f1(x), y: f1(y), class: cls, "text-anchor": anchor || "start" }, parent);
+    t.textContent = text;
+    return t;
+  }
+  function clipRect(svg, id, x, y, w, h) {
+    const defs = S("defs", {}, svg), c = S("clipPath", { id: id }, defs);
+    S("rect", { x: x, y: y, width: w, height: h }, c);
+    return "url(#" + id + ")";
+  }
+
+  // ------------------------------------------------------------ state
+
+  const START = { lA: 18, lD: 17, V: 0, r: 26 };
+  const st = Object.assign({}, START);
+  const NA = () => Math.pow(10, st.lA), ND = () => Math.pow(10, st.lD);
+  const VMIN = -5, VMAX = 0.4, AREA = 1e-4;
+
+  // the shared x axis, fixed by the dopings at V_D = -5 V so the region visibly widens
+  let XL = 0, XH = 1, TICKS = [], TSTEP = 1;
+  function setAxis() {
+    const w = MATHS.widths(NA(), ND(), VMIN);
+    XL = -w.xp - 0.25 * w.W; XH = w.xn + 0.25 * w.W;
+    const lo = XL * 1e7, hi = XH * 1e7;   // nm
+    for (let k = -1; k < 8; k++) {
+      const steps = [1, 2, 5].map((m) => m * Math.pow(10, k));
+      const s = steps.find((st_) => Math.floor(hi / st_) - Math.ceil(lo / st_) + 1 <= 8);
+      if (s) { TSTEP = s; break; }
+    }
+    TICKS = [];
+    for (let v = Math.ceil(lo / TSTEP) * TSTEP; v <= hi + 1e-9; v += TSTEP) TICKS.push(v);
+  }
+  const tickLabel = (nm) => TSTEP >= 1000 ? String(Math.round(nm / 1000 * 1000) / 1000).replace("-", "−") : String(Math.round(nm)).replace("-", "−");
+  const axisName = () => TSTEP >= 1000 ? "x (µm), 0 at the junction" : "x (nm), 0 at the junction";
+
+  // ------------------------------------------------------------ figure 1: the junction
+
+  const J = $("junction"), JL = S("g", {}, J);
+  const XX = (x) => 70 + ((x - XL) / (XH - XL)) * 540;
+
+  function drawJunction() {
+    JL.textContent = "";
+    const na = NA(), nd = ND(), w = MATHS.widths(na, nd, st.V), pbi = MATHS.builtIn(na, nd);
+    const x0 = XX(0), xa = XX(-w.xp), xb = XX(w.xn);
+    // the strip
+    T(JL, 70, 14, "tk", "p side, N_A = " + sci(na) + " cm⁻³");
+    T(JL, 610, 14, "tk", "n side, N_D = " + sci(nd) + " cm⁻³", "end");
+    S("rect", { class: "side", x: 70, y: 22, width: f1(x0 - 70), height: 44 }, JL);
+    S("rect", { class: "side", x: f1(x0), y: 22, width: f1(610 - x0), height: 44 }, JL);
+    S("rect", { class: "dep", x: f1(xa), y: 22, width: f1(xb - xa), height: 44 }, JL);
+    const marks = (a, b, s) => {
+      if (b - a < 14) { [38, 52].forEach((y) => T(JL, (a + b) / 2, y + 4, "ion", s, "middle")); return; }
+      for (let x = a + 7; x <= b - 3; x += 14) [38, 52].forEach((y) => T(JL, x, y + 4, "ion", s, "middle"));
+    };
+    if (w.W > 0) { marks(xa, x0, "−"); marks(x0, xb, "+"); }
+    for (let row = 0; row < 2; row++) {
+      for (let x = 70 + 6 + row * 11; x < 610; x += 22) {
+        const y = row ? 54 : 36;
+        if (x < xa - 4) S("circle", { class: "hole", cx: f1(x), cy: y, r: 3 }, JL);
+        if (x > xb + 4) S("circle", { class: "el", cx: f1(x), cy: y, r: 3 }, JL);
+      }
+    }
+    // junction and edges through the panels
+    S("line", { class: "jn", x1: f1(x0), x2: f1(x0), y1: 22, y2: 500 }, JL);
+    if (w.W > 0) [xa, xb].forEach((x) => S("line", { class: "edgel", x1: f1(x), x2: f1(x), y1: 80, y2: 500 }, JL));
+
+    // the charge
+    S("line", { class: "zero", x1: 70, x2: 610, y1: 150, y2: 150 }, JL);
+    const sc = 50 / Math.max(na, nd), hA = Math.max(na * sc, 2), hD = Math.max(nd * sc, 2);   // at least 2 px, so a light box still shows
+    if (w.W > 0) {
+      S("rect", { class: "box", x: f1(xa), y: 150, width: f1(x0 - xa), height: f1(hA) }, JL);
+      S("rect", { class: "box", x: f1(x0), y: f1(150 - hD), width: f1(xb - x0), height: f1(hD) }, JL);
+      if (x0 - xa < 30) T(JL, xa - 8, 150 + hA / 2 + 4, "t4", "−qN_A", "end"); else T(JL, (xa + x0) / 2, 150 + hA + 14, "t4", "−qN_A", "middle");
+      if (xb - x0 < 30) T(JL, xb + 8, 150 - hD / 2 + 4, "t4", "+qN_D"); else T(JL, (x0 + xb) / 2, 150 - hD - 6, "t4", "+qN_D", "middle");
+    }
+    T(JL, 62, 154, "lab", "ρ", "end");
+
+    // the field: its scale is |E_max| at V_D = -5 V
+    const eref = Math.abs(MATHS.peakField(na, nd, VMIN)), em = MATHS.peakField(na, nd, st.V);
+    const YE = (e) => 240 + (Math.abs(e) / eref) * 100;
+    S("line", { class: "zero", x1: 70, x2: 610, y1: 240, y2: 240 }, JL);
+    if (w.W > 0) {
+      S("path", { class: "fld", d: "M" + f1(xa) + " 240L" + f1(x0) + " " + f1(YE(em)) + "L" + f1(xb) + " 240Z" }, JL);
+      T(JL, x0, YE(em) + 14, "t0", "E_max = " + sci(em) + " V/cm", "middle");
+    }
+    T(JL, 62, 340, "tick", sci(-eref), "end");
+    S("line", { class: "zero", x1: 66, x2: 70, y1: 340, y2: 340 }, JL);
+    T(JL, 62, 244, "lab", "E (V/cm)", "end");
+    S("path", { class: "arr", d: "M604 228H566M572 224L566 228L572 232" }, JL);
+    T(JL, 560, 232, "tk", "E points from n to p", "end");
+
+    // the potential: 0 V at the bottom, phi_bi + 5 V at the top
+    const ptop = pbi - VMIN, YP = (v) => 490 - (v / ptop) * 110;
+    S("line", { class: "zero", x1: 70, x2: 610, y1: 490, y2: 490 }, JL);
+    let d = "";
+    for (let i = 0; i <= 300; i++) {
+      const x = XL + ((XH - XL) * i) / 300;
+      d += (i ? "L" : "M") + f1(XX(x)) + " " + f1(YP(MATHS.potentialAt(na, nd, st.V, x)));
+    }
+    S("path", { class: "pot", d: d }, JL);
+    const step = Math.max(pbi - st.V, 0);
+    if (Math.abs(st.V) > 1e-9) {
+      S("line", { class: "potd", x1: f1(xb), x2: 610, y1: f1(YP(pbi)), y2: f1(YP(pbi)) }, JL);
+      T(JL, 604, YP(pbi) - 2, "t3", "φ_bi = " + volts(pbi), "end");
+    }
+    T(JL, 604, YP(step) - 6 - (Math.abs(st.V) > 1e-9 && Math.abs(YP(step) - YP(pbi)) < 14 ? 12 : 0), "t3", "φ_bi − V_D = " + volts(step), "end");
+    T(JL, 62, 494, "tick", "0 V", "end");
+    T(JL, 62, 384, "tick", volts(ptop, 2), "end");
+    T(JL, 62, 434, "lab", "φ (V)", "end");
+
+    // the x axis
+    S("line", { class: "zero", x1: 70, x2: 610, y1: 510, y2: 510 }, JL);
+    TICKS.forEach((nm) => {
+      const x = XX(nm * 1e-7);
+      S("line", { class: "zero", x1: f1(x), x2: f1(x), y1: 510, y2: 515 }, JL);
+      T(JL, x, 527, "tick", tickLabel(nm), "middle");
+    });
+    T(JL, 340, 548, "tick", axisName(), "middle");
+
+    // the breakdown note, under the charge panel's zero line, on the side away from the p box
+    if (Math.abs(em) > 4e5) {
+      const g = S("g", { class: "warn" }, JL), bx = x0 < 340 ? 374 : 76;
+      S("rect", { x: bx, y: 158, width: 234, height: 50, rx: 3 }, g);
+      T(g, bx + 226, 173, "", "|E_max| > 4×10⁵ V/cm: a real", "end");
+      T(g, bx + 226, 187, "", "junction breaks down here by", "end");
+      T(g, bx + 226, 201, "", "avalanche; the model ignores it", "end");
+    }
+  }
+
+  // ------------------------------------------------------------ figure 2: C_j against V_D
+
+  const C = $("cj"), CX0 = 60, CX1 = 420, CY0 = 20, CY1 = 250, CV0 = -5, CV1 = 1.2;
+  const XV = (v) => CX0 + ((v - CV0) / (CV1 - CV0)) * (CX1 - CX0);
+  const cclip = clipRect(C, "cjclip", CX0, CY0, CX1 - CX0, CY1 - CY0);
+  const cgrid = S("g", { class: "grid" }, C), clabels = S("g", {}, C), ccurves = S("g", { "clip-path": cclip }, C);
+  const chit = S("rect", { class: "hit", x: CX0, y: CY0, width: CX1 - CX0, height: CY1 - CY0 }, C);
+  const ccursor = S("line", { class: "cursor", y1: CY0, y2: CY1 }, C);
+  const cdots = S("g", {}, C);
+  const ctri = S("path", { class: "tri", d: "M0 0L-7 11H7Z", tabindex: 0, role: "slider", "aria-label": "bias V_D" }, C);
+  T(C, CX1, 296, "tick", "V_D (V)", "end");
+  T(C, 12, 135, "tick", "C_j (nF/cm²)", "middle").setAttribute("transform", "rotate(-90 12 135)");
+  T(C, 470, 135, "tick", "1/C_j² (cm²/µF)²", "middle").setAttribute("transform", "rotate(90 470 135)");
+  let CY = null, RY = null;
+  function niceUp(v) { const e = Math.floor(Math.log10(v)); for (const m of [1, 2, 5, 10]) if (m * Math.pow(10, e) >= v) return m * Math.pow(10, e); return 10 * Math.pow(10, e); }
+
+  function drawCj() {
+    cgrid.textContent = ""; clabels.textContent = ""; ccurves.textContent = "";
+    const na = NA(), nd = ND(), pbi = MATHS.builtIn(na, nd);
+    const cn = (v) => MATHS.junctionCap(na, nd, v) * 1e9, ri = (v) => Math.pow(1 / (MATHS.junctionCap(na, nd, v) * 1e6), 2);
+    const ctop = niceUp(cn(0.4)), rtop = 1.1 * ri(VMIN);
+    CY = (c) => CY1 - (c / ctop) * (CY1 - CY0);
+    RY = (r) => CY1 - (r / rtop) * (CY1 - CY0);
+    S("rect", { class: "fwd", x: f1(XV(0.4)), y: CY0, width: f1(CX1 - XV(0.4)), height: CY1 - CY0 }, cgrid);
+    for (let i = 0; i <= 62; i++) {
+      const v = CV0 + i * 0.1;
+      if (i % 5 === 0 || i === 62) S("line", { x1: f1(XV(v)), x2: f1(XV(v)), y1: CY0, y2: CY1, class: i === 0 ? "axis" : "" }, cgrid);
+      if (i % 10 === 0) T(clabels, XV(v), CY1 + 26, "tick", String(Math.round(v)).replace("-", "−"), "middle");
+    }
+    for (let k = 0; k <= 5; k++) {
+      const y = CY0 + ((CY1 - CY0) * k) / 5;
+      S("line", { x1: CX0, x2: CX1, y1: f1(y), y2: f1(y), class: k === 5 ? "axis" : "" }, cgrid);
+      T(clabels, CX0 - 5, y + 3.5, "tick", sig3(ctop * (1 - k / 5)), "end");
+      T(clabels, CX1 + 4, y + 3.5, "tick", sig3(rtop * (1 - k / 5)));
+    }
+    let dc = "", dr = "";
+    for (let i = 0; i <= 300; i++) {
+      const v = CV0 + ((pbi - 0.02 - CV0) * i) / 300;
+      dc += (i ? "L" : "M") + f1(XV(v)) + " " + f1(Math.max(CY(cn(v)), -50));
+    }
+    for (let i = 0; i <= 300; i++) {
+      const v = CV0 + ((pbi - CV0) * i) / 300;
+      dr += (i ? "L" : "M") + f1(XV(v)) + " " + f1(RY(i === 300 ? 0 : ri(v)));
+    }
+    S("path", { class: "cj", d: dc }, ccurves);
+    S("path", { class: "ic2", d: dr }, ccurves);
+    T(clabels, XV(-4.9), CY(cn(-4.9)) - 8, "t0", "C_j");
+    T(clabels, XV(-4.7), RY(ri(-4.7)) - 8, "tk", "1/C_j²");
+    S("line", { class: "zero", x1: f1(XV(pbi)), x2: f1(XV(pbi)), y1: CY1, y2: CY1 + 6 }, clabels);
+    T(clabels, XV(pbi) + 4, CY1 - 6, "t3", "φ_bi");
+  }
+  function drawCjCursor() {
+    const na = NA(), nd = ND(), x = f1(XV(st.V));
+    ccursor.setAttribute("x1", x); ccursor.setAttribute("x2", x);
+    ctri.setAttribute("transform", "translate(" + x + " " + (CY1 + 3) + ")");
+    ctri.setAttribute("aria-valuetext", "V_D = " + st.V.toFixed(2) + " V");
+    cdots.textContent = "";
+    const c = MATHS.junctionCap(na, nd, st.V);
+    S("circle", { class: "d0", cx: x, cy: f1(CY(c * 1e9)), r: 4 }, cdots);
+    S("circle", { class: "dk", cx: x, cy: f1(RY(Math.pow(1 / (c * 1e6), 2))), r: 3.5 }, cdots);
+  }
+
+  // ------------------------------------------------------------ figure 3: the balance at equilibrium
+
+  const B = $("balance"), BX0 = 60, BX1 = 460;
+  const XB = (x) => BX0 + ((x - XL) / (XH - XL)) * (BX1 - BX0);
+  const bclip1 = clipRect(B, "bclip1", BX0, 30, BX1 - BX0, 160), bclip2 = clipRect(B, "bclip2", BX0, 230, BX1 - BX0, 160);
+  const BL = S("g", {}, B), BJ = S("g", {}, B);
+  const YD = (l) => 190 - (l / 20) * 160, YJ = (l) => 390 - (l / 9) * 160;
+
+  function drawBalanceFrame() {
+    BL.textContent = "";
+    const na = NA(), nd = ND(), w = MATHS.widths(na, nd, 0);
+    T(BL, 60, 14, "tk", "at equilibrium, V_D = 0");
+    const g = S("g", { class: "grid" }, BL);
+    [[30, 190], [230, 390]].forEach((p) => {
+      S("rect", { class: "dep3", x: f1(XB(-w.xp)), y: p[0], width: f1(XB(w.xn) - XB(-w.xp)), height: p[1] - p[0] }, BL);
+      TICKS.forEach((nm) => S("line", { x1: f1(XB(nm * 1e-7)), x2: f1(XB(nm * 1e-7)), y1: p[0], y2: p[1] }, g));
+    });
+    for (let l = 0; l <= 20; l += 4) { S("line", { x1: BX0, x2: BX1, y1: f1(YD(l)), y2: f1(YD(l)), class: l === 0 ? "axis" : "" }, g); T(BL, BX0 - 5, YD(l) + 3.5, "tick", "10" + sup(l), "end"); }
+    for (let l = 0; l <= 9; l += 3) { S("line", { x1: BX0, x2: BX1, y1: f1(YJ(l)), y2: f1(YJ(l)), class: l === 0 ? "axis" : "" }, g); T(BL, BX0 - 5, YJ(l) + 3.5, "tick", "10" + sup(l), "end"); }
+    TICKS.forEach((nm) => T(BL, XB(nm * 1e-7), 404, "tick", tickLabel(nm), "middle"));
+    T(BL, BX1, 418, "tick", TSTEP >= 1000 ? "x (µm)" : "x (nm)", "end");
+    T(BL, 456, 24, "tick", "carriers (cm⁻³)", "end");
+    // the densities
+    let dn = "", dp = "";
+    const N = 300;
+    let last = null;
+    for (let i = 0; i <= N; i++) {
+      const x = XL + ((XH - XL) * i) / N, c = MATHS.carriersAt(na, nd, x);
+      dn += (i ? "L" : "M") + f1(XB(x)) + " " + f1(YD(Math.log10(Math.max(c.n, 1e-3))));
+      dp += (i ? "L" : "M") + f1(XB(x)) + " " + f1(YD(Math.log10(Math.max(c.p, 1e-3))));
+      last = c;
+    }
+    const cg = S("g", { "clip-path": bclip1 }, BL);
+    S("path", { class: "q1c", d: dn }, cg);
+    S("path", { class: "q2c", d: dp }, cg);
+    const yn = clamp(YD(Math.log10(last.n)), 36, 188), yp = clamp(YD(Math.log10(Math.max(last.p, 1))), 36, 188);
+    T(BL, BX1 + 4, yn + 4, "t1", "n");
+    T(BL, BX1 + 4, Math.abs(yp - yn) < 11 ? yn + 15 : yp + 4, "t2", "p");
+  }
+  function drawBalanceCurrents() {
+    BJ.textContent = "";
+    const na = NA(), nd = ND(), r = st.r / 1000, N = 300;
+    let dd = "", dr = "", segs = [], cur = "", worst = 0;
+    const L = (v) => YJ(Math.log10(Math.max(Math.abs(v), 1e-3)));
+    for (let i = 0; i <= N; i++) {
+      const x = XL + ((XH - XL) * i) / N, h = MATHS.holeCurrents(na, nd, x, r), X = f1(XB(x));
+      dd += (i ? "L" : "M") + X + " " + f1(L(h.diffusion));
+      dr += (i ? "L" : "M") + X + " " + f1(L(h.drift));
+      worst = Math.max(worst, Math.abs(h.net));
+      if (Math.abs(h.net) >= 1) cur += (cur ? "L" : "M") + X + " " + f1(L(h.net));
+      else if (cur) { segs.push(cur); cur = ""; }
+    }
+    if (cur) segs.push(cur);
+    const g = S("g", { "clip-path": bclip2 }, BJ);
+    S("path", { class: "jdiff", d: dd }, g);
+    S("path", { class: "jdrift", d: dr }, g);
+    segs.forEach((s) => S("path", { class: "jnet", d: s }, g));
+    S("line", { class: "jdiff", x1: 66, x2: 86, y1: 242, y2: 242 }, BJ);
+    T(BJ, 92, 246, "t2", "hole diffusion, toward n");
+    S("line", { class: "jdrift", x1: 66, x2: 86, y1: 258, y2: 258 }, BJ);
+    T(BJ, 92, 262, "t2", "hole drift, toward p");
+    T(BJ, 456, 242, "tick", "hole currents (A/cm²)", "end");
+    if (st.r === 26) T(BJ, 452, 380, "t0", "net = 0", "end");
+    else T(BJ, 452, 380, "t0", "net reaches " + sci(worst) + " A/cm²", "end");
+  }
+
+  // ------------------------------------------------------------ readouts
+
+  function readouts() {
+    const na = NA(), nd = ND(), pbi = MATHS.builtIn(na, nd), w = MATHS.widths(na, nd, st.V);
+    const c = MATHS.junctionCap(na, nd, st.V), light = nd <= na ? w.xn : w.xp;
+    $("r-pbi").textContent = "φ_bi = (kT/q)·ln(N_A N_D/n_i²) = " + volts(pbi);
+    $("r-v").textContent = "V_D = " + volts(st.V, 2);
+    $("r-step").textContent = "φ_bi − V_D = " + volts(pbi - st.V) + " across the depletion region";
+    $("r-w").textContent = "x_p = " + eng(w.xp / 100, "m") + ", x_n = " + eng(w.xn / 100, "m") + ", W = " + eng(w.W / 100, "m");
+    $("r-share").textContent = "N_A x_p = N_D x_n: the light side holds " + Math.round((100 * light) / w.W) + " % of W";
+    $("r-q").textContent = "|Q| = qN_A x_p = " + eng(MATHS.chargePerArea(na, nd, st.V), "C/cm²") + " on each side";
+    $("r-e").textContent = "E_max = " + sci(MATHS.peakField(na, nd, st.V)) + " V/cm, at the junction";
+    $("r-c").textContent = "C_j = ε_s/W = " + eng(c, "F/cm²") + ", " + eng(c * AREA, "F") + " for 100 µm × 100 µm";
+    const mu = MATHS.mobility("p", na);
+    $("r-mu").textContent = "μ_p = " + mu.toPrecision(3) + " cm²/(V·s); D_p = (D_p/μ_p)·μ_p = " + ((st.r / 1000) * mu).toPrecision(3) + " cm²/s";
+  }
+
+  function renderBias() { drawJunction(); drawCjCursor(); readouts(); }
+  function renderAll() { setAxis(); drawCj(); drawBalanceFrame(); drawBalanceCurrents(); renderBias(); }
+
+  // ------------------------------------------------------------ controls
+
+  function sync() {
+    $("sA").value = st.lA; $("sD").value = st.lD; $("sV").value = st.V; $("sR").value = st.r;
+    $("oA").textContent = "N_A = " + sci(NA()) + " cm⁻³";
+    $("oD").textContent = "N_D = " + sci(ND()) + " cm⁻³";
+    $("oV").textContent = "V_D = " + volts(st.V, 2);
+    $("oR").textContent = "D_p/μ_p = " + st.r.toFixed(1) + " mV" + (st.r === 26 ? " (kT/q)" : "");
+  }
+  function change(fn) { fn(); sync(); renderAll(); }
+  const setV = (v) => { st.V = clamp(Math.round(v * 20) / 20, VMIN, VMAX); if (Object.is(st.V, -0)) st.V = 0; sync(); renderBias(); };
+
+  $("sA").addEventListener("input", (e) => change(() => { st.lA = Number(e.target.value); }));
+  $("sD").addEventListener("input", (e) => change(() => { st.lD = Number(e.target.value); }));
+  $("sV").addEventListener("input", (e) => setV(Number(e.target.value)));
+  $("sR").addEventListener("input", (e) => { st.r = Number(e.target.value); sync(); drawBalanceCurrents(); readouts(); });
+  $("reset").addEventListener("click", () => change(() => { Object.assign(st, START); }));
+  [ctri, chit].forEach((el) => {
+    let on = false;
+    const vAt = (e) => CV0 + ((svgPoint(C, e).x - CX0) / (CX1 - CX0)) * (CV1 - CV0);
+    el.addEventListener("pointerdown", (e) => {
+      e.preventDefault(); on = true;
+      try { el.setPointerCapture(e.pointerId); } catch (_) { /* fine without capture */ }
+      ctri.focus({ preventScroll: true });
+      setV(vAt(e));
+    });
+    el.addEventListener("pointermove", (e) => { if (on) setV(vAt(e)); });
+    el.addEventListener("pointerup", () => { on = false; });
+    el.addEventListener("pointercancel", () => { on = false; });
+  });
+  ctri.addEventListener("keydown", (e) => {
+    const dir = { ArrowLeft: -1, ArrowDown: -1, ArrowRight: 1, ArrowUp: 1 }[e.key];
+    if (!dir) return;
+    e.preventDefault();
+    setV(st.V + dir * (e.shiftKey ? 0.5 : 0.05));
+  });
+
+  $("theme").addEventListener("click", () => {
+    const root = document.documentElement;
+    const dark = root.dataset.theme ? root.dataset.theme === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+    root.dataset.theme = dark ? "light" : "dark";
+    try { localStorage.setItem("momentos-theme", root.dataset.theme); } catch (_) { /* switched, just not remembered */ }
+  });
+
+  sync();
+  renderAll();
+
+  // for checking the numbers from the console
+  window.TOOL = { st: st, setV: setV, set: (o) => change(() => Object.assign(st, o)) };
+})();
+</script>
+</body>
+</html>
