@@ -10,13 +10,16 @@ The order is fixed by the curricula: course tier first, then how heavily the pla
 | 1 | [Bode plot from poles and zeros](bode-plot.md) | built | tool | EE 105, EE 120 | 37.198 | M |
 | 2 | [Ideal op-amp and the virtual short](ideal-op-amp.md) | built | tool | EE 105, EE 120 | 29.626 | M |
 | 3 | [RC and RL step response](rc-rl-step-response.md) | built | tool | EE 105, EE 120 | 21.964 | M |
-| 4 | [Bias point and small-signal analysis](small-signal-analysis.md) | built | tool | EE 105 | 9.362 | M |
-| 5 | [Common source, common gate and common drain](single-stage-amplifiers.md) | built | tool | EE 105 | 9.343 | L |
-| 6 | [Resistance looking in](resistance-looking-in.md) | stub | tool | EE 105 | 8.229 | L |
-| 7 | [Loop gain, bandwidth and phase margin](loop-gain.md) | stub | tool | EE 105 | 4.523 | M |
-| 8 | [Current mirror](current-mirror.md) | stub | tool | EE 105 | 2.244 | M |
-| 9 | [Amplifier as a two-port, and loading](amplifier-two-port.md) | stub | tool | EE 105 | 1.028 | S |
-| 10 | [Thévenin and Norton equivalents](thevenin-norton.md) | stub | tool | EE 105 | 0.5 | S |
+| 4 | [Drift and mobility](drift-and-mobility.md) | built | tool | EE 105 | 13.48 | L |
+| 5 | [MOS capacitor and threshold](mos-capacitor.md) | built | tool | EE 105 | 11.061 | L |
+| 6 | [Bias point and small-signal analysis](small-signal-analysis.md) | built | tool | EE 105 | 9.362 | M |
+| 7 | [Common source, common gate and common drain](single-stage-amplifiers.md) | built | tool | EE 105 | 9.343 | L |
+| 8 | [Resistance looking in](resistance-looking-in.md) | stub | tool | EE 105 | 8.229 | L |
+| 9 | [The MOSFET channel: triode, pinch-off and the square law](mosfet-channel.md) | built | tool | EE 105 | 7.531 | L |
+| 10 | [Loop gain, bandwidth and phase margin](loop-gain.md) | stub | tool | EE 105 | 4.523 | M |
+| 11 | [Current mirror](current-mirror.md) | built | tool | EE 105 | 3.297 | M |
+| 12 | [Amplifier as a two-port, and loading](amplifier-two-port.md) | stub | tool | EE 105 | 1.028 | S |
+| 13 | [Thévenin and Norton equivalents](thevenin-norton.md) | stub | tool | EE 105 | 0.5 | S |
 
 ## Concepts with no plan yet
 
@@ -91,52 +94,38 @@ Each needs a plan or a quiz-only plan. Heaviest first within each tier.
 | EE 105 | diode I–V (`diode-iv`) | 5.438 |
 | EE 105 | reverse bias (`pn-reverse-bias`) | 5.36 |
 | EE 120 | all-pass systems (`all-pass`) | 5.029 |
-| EE 105 | drift current (`drift-current`) | 4.859 |
 | EE 120 | correlation (`correlation`) | 4.743 |
 | EE 120 | duality (`ft-duality`) | 4.712 |
 | EE 120 | rectangle and sinc (`rect-and-sinc`) | 4.644 |
 | EE 120 | quadrature modulation (`quadrature-modulation`) | 4.364 |
-| EE 105 | threshold voltage (`threshold-voltage`) | 4.285 |
 | EE 120 | resonance (`resonance`) | 4.015 |
 | EE 105 | depletion capacitance (`depletion-capacitance`) | 3.938 |
 | EE 120 | energy and power (`energy-and-power`) | 3.878 |
-| EE 105 | mobility (`mobility`) | 3.833 |
 | EE 105 | Gauss's law (`gauss-law`) | 3.703 |
 | EE 105 | diode small-signal model (`diode-small-signal`) | 3.597 |
 | EE 105 | built-in potential (`built-in-potential`) | 3.473 |
 | EE 105 | PMOS (`pmos`) | 3.453 |
-| EE 105 | resistivity (`resistivity`) | 3.27 |
 | EE 120 | frequency response from the pole-zero plot (`pole-zero-geometry`) | 3.259 |
 | EE 105 | mass-action law (`mass-action-law`) | 3.182 |
-| EE 105 | MOSFET regions (`mosfet-regions`) | 3.058 |
 | EE 120 | upsampling (`upsampling`) | 3.045 |
 | EE 105 | forward bias (`pn-forward-bias`) | 2.885 |
 | EE 105 | Poisson's equation (`poisson-equation`) | 2.841 |
 | EE 105 | IC capacitor (`ic-capacitor`) | 2.682 |
 | EE 105 | body effect (`body-effect`) | 2.644 |
 | EE 120 | zero-input and zero-state response (`zero-input-zero-state`) | 2.478 |
-| EE 105 | square law (`square-law`) | 2.385 |
 | EE 105 | sheet resistance (`sheet-resistance`) | 2.27 |
-| EE 105 | accumulation, depletion, inversion (`accumulation-depletion-inversion`) | 2.229 |
 | EE 105 | diffusion current (`diffusion-current`) | 2.177 |
 | EE 105 | differential and common mode (`common-and-differential-mode`) | 1.859 |
 | EE 120 | windowing and leakage (`windowing`) | 1.83 |
-| EE 105 | MOS capacitor (`mos-capacitor`) | 1.818 |
 | EE 120 | zero-order hold (`zero-order-hold`) | 1.712 |
-| EE 105 | flatband voltage (`flatband-voltage`) | 1.641 |
-| EE 105 | velocity saturation (`velocity-saturation`) | 1.518 |
 | EE 105 | Einstein relation (`einstein-relation`) | 1.5 |
 | EE 105 | intrinsic carriers (`intrinsic-carriers`) | 1.5 |
 | EE 105 | slew rate (`slew-rate`) | 1.5 |
 | EE 105 | amplifier bandwidth (`amplifier-frequency-response`) | 1.39 |
 | EE 105 | offset voltage (`offset-voltage`) | 1.341 |
-| EE 105 | MOS C–V curve (`mos-cv-curve`) | 1.088 |
-| EE 105 | pinch-off (`pinch-off`) | 1.088 |
 | EE 105 | phasors & impedance (`phasors-impedance`) | 1.074 |
-| EE 105 | channel-length modulation (`channel-length-modulation`) | 1.053 |
 | EE 105 | energy bands (`energy-bands`) | 1 |
 | EE 105 | minority-carrier profiles (`minority-carrier-diffusion`) | 1 |
-| EE 105 | triode region (`triode-region`) | 1 |
 | EE 105 | BJT regions (`bjt-regions`) | 0.829 |
 | EE 105 | BJT action (`bjt-operation`) | 0.812 |
 | EE 120 | linear phase is delay (`linear-phase`) | 0.805 |

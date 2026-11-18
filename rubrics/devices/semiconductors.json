@@ -1,0 +1,69 @@
+{
+  "mobility": {
+    "L1": "States that mobility μ is drift speed per unit field, in cm²/(V·s), and that electrons have a higher mobility than holes.",
+    "L2": "Reads μ off a mobility chart for a doping and uses it in v = μE and ρ = 1/(qNμ).",
+    "L3": "Explains μ = qτ_c/m*: the field's push between collisions, undone at each collision; predicts that more doping, more scattering, lower μ; explains why electrons outrun holes; says why ρ falls less than the doping rises.",
+    "L4": "Uses the total ionised doping (N_D + N_A) in a compensated sample; knows μ falls with temperature from lattice scattering, and that a MOSFET channel's μ is lower than the bulk's because of the surface.",
+    "missteps": [
+      "takes μ at the net doping instead of the total ionised doping",
+      "assumes ρ falls in proportion to the doping",
+      "treats μ as the same for electrons and holes"
+    ],
+    "seeds": {
+      "predict": "A bar's doping goes up a hundredfold. By roughly how much does its resistance fall, and why less than a hundred?",
+      "explain": "Why a carrier with a heavier effective mass, or a crystal with more ions in it, has a lower mobility.",
+      "limit": "Doping pushed toward 10²⁰ cm⁻³: what does the mobility approach, and what sets that floor?",
+      "transfer": "Two transistors, one NMOS and one PMOS, must carry the same current at the same overdrive: what must differ between them, and by about how much?"
+    }
+  },
+  "drift-current": {
+    "L1": "States J = q(nμ_n + pμ_p)E and that a field makes carriers drift.",
+    "L2": "Computes drift velocity, current density and the current in a bar from given densities, mobilities and field.",
+    "L3": "Explains drift as a small average velocity on fast random thermal motion; gets the directions right (electrons against E, both currents along E); explains why the minority carriers add nothing measurable in a doped bar.",
+    "L4": "Combines drift with diffusion; knows μE fails at high field; applies J = qnμE to a MOSFET channel whose charge and field vary along it.",
+    "missteps": [
+      "gives the electron current the electrons' direction",
+      "uses the drift velocity as the carriers' speed",
+      "includes the minority carriers as if they mattered"
+    ],
+    "seeds": {
+      "predict": "Two bars carry the same current; one has twice the electron density. Compare their drift velocities.",
+      "explain": "Why the electron and hole drift currents add although the carriers move in opposite directions.",
+      "limit": "The field raised by decades: where does J = σE stop being true, and what replaces it?",
+      "transfer": "A MOSFET channel carries a fixed current while its electron sheet thins toward the drain: what must the field do along it?"
+    }
+  },
+  "resistivity": {
+    "L1": "States ρ = 1/σ and ρ ≈ 1/(qNμ) for a doped sample, and R = ρL/(Wt).",
+    "L2": "Computes ρ, R_□ and R for a doped layer of given doping and size.",
+    "L3": "Explains why the majority carriers alone set ρ; uses sheet resistance and the count of squares; predicts the change in ρ with doping, including the fall in mobility.",
+    "L4": "Designs an IC resistor from R_□ and squares, and estimates its spread with doping and temperature.",
+    "missteps": [
+      "forgets the mobility depends on doping",
+      "confuses R_□ with ρ",
+      "counts squares as W/L instead of L/W"
+    ],
+    "seeds": {
+      "predict": "A layer's thickness is halved at the same doping: what happens to R_□ and to a 10-square resistor?",
+      "explain": "Why the holes can be ignored in the resistance of an n-type bar.",
+      "limit": "Doping lowered toward n_i: what sets the resistivity then?",
+      "transfer": "A 20 kΩ resistor is needed from a 1 kΩ/□ layer, 2 µm wide: how long is it, and how does it change if the implant is 10% light?"
+    }
+  },
+  "velocity-saturation": {
+    "L1": "States that drift velocity stops growing near 10⁷ cm/s in silicon at high fields.",
+    "L2": "Finds the field above which μE would exceed v_sat for a given mobility.",
+    "L3": "Explains saturation as carriers losing energy to the lattice as fast as the field gives it; predicts that a shorter channel at the same voltage gains less current than 1/L.",
+    "L4": "Knows a velocity-saturated MOSFET's current grows about linearly with V_GS − V_T instead of its square, and lowers g_m per unit current.",
+    "missteps": [
+      "keeps v = μE at fields above 10⁴ V/cm",
+      "expects a channel ten times shorter to carry ten times the current"
+    ],
+    "seeds": {
+      "predict": "A field of 50 kV/cm across a short silicon region: compare μE with the real drift speed.",
+      "explain": "Why the drift speed saturates close to the thermal speed.",
+      "limit": "A transistor's length shrunk at fixed voltages: what limits the current growth?",
+      "transfer": "A modern short-channel transistor's current against V_GS looks straight instead of a parabola: why?"
+    }
+  }
+}

@@ -16,5 +16,175 @@
       "limit": "λ made smaller and smaller: what does r_o become, and what is the transistor then?",
       "transfer": "A PMOS common-source stage with its source on V_DD: draw its small-signal circuit and compare it with the NMOS one."
     }
+  },
+  "mos-capacitor": {
+    "L1": "States that a MOS capacitor is a gate on oxide over a doped body, and that an NMOS capacitor has a p-type body.",
+    "L2": "Computes C_ox = ε_ox/t_ox and names the body's charge (holes, ions, electrons) for a given gate voltage.",
+    "L3": "Explains why the body plate is unlike a metal plate: it answers with holes, then depletion, then an electron sheet; splits the gate voltage into V_ox and ψ_s; says why the flavour is named after the inversion carriers.",
+    "L4": "Uses the MOS capacitor to explain the MOSFET's channel charge and its gate capacitance; knows where the simple picture fails (oxide charge, quantum effects, poly depletion in thin oxides).",
+    "missteps": [
+      "calls the body of an NMOS capacitor n-type",
+      "puts all of the gate voltage across the oxide",
+      "treats the body plate as a metal plate at every voltage"
+    ],
+    "seeds": {
+      "predict": "A gate is raised from just above V_FB to just below V_T: where does the new body charge appear?",
+      "explain": "Why the body answers the gate in three different ways depending on its voltage.",
+      "limit": "The oxide made very thick: what happens to C_ox, to V_T, and to the share of the voltage across the body?",
+      "transfer": "A capacitor on a chip must be linear over a wide voltage range: which region of a MOS capacitor would you bias it in, and why?"
+    }
+  },
+  "accumulation-depletion-inversion": {
+    "L1": "Names the three regimes in order of gate voltage and the body charge in each.",
+    "L2": "Decides the regime from V_GB, V_FB and V_T, and computes the charge in accumulation and inversion from C_ox.",
+    "L3": "Sketches charge and potential through the stack in each regime; explains why the depletion stops widening at V_T (the electron sheet takes any extra charge, at the surface); computes ψ_s and x_d in depletion.",
+    "L4": "Knows the electron density grows exponentially in weak inversion, below V_T, which the charge-sheet model ignores, and why that matters for leakage.",
+    "missteps": [
+      "keeps widening the depletion region above V_T",
+      "puts minority carriers in the depletion region",
+      "confuses accumulation holes with inversion electrons"
+    ],
+    "seeds": {
+      "predict": "V_GB is raised by 1 V above V_T: how much does x_d change, and how much does Q_inv change?",
+      "explain": "Why the depletion region stops growing once the inversion layer forms.",
+      "limit": "V_GB far below V_FB: what is the body charge, and where does all the voltage sit?",
+      "transfer": "A PMOS capacitor on an n body: describe its three regimes with the signs of the voltages and charges."
+    }
+  },
+  "threshold-voltage": {
+    "L1": "States V_T = V_FB + 2|φ_p| + |Q_B,max|/C_ox and names each term.",
+    "L2": "Computes V_T from N_A, t_ox and the gate material.",
+    "L3": "Explains each term as a step: cancel the built-in potential, bend the surface by 2|φ_p|, hold the depletion charge across the oxide; predicts how doping, oxide thickness and gate material move V_T.",
+    "L4": "Adds oxide charge and body bias; knows why V_T is set with a threshold implant in practice, and why it falls in short channels.",
+    "missteps": [
+      "uses |φ_p| instead of 2|φ_p|",
+      "takes V_FB as zero or with the wrong sign",
+      "uses an oxide thickness in nm where cm is needed"
+    ],
+    "seeds": {
+      "predict": "N_A is quadrupled: which terms of V_T change, and does V_T rise or fall?",
+      "explain": "Why holding the depletion charge across the oxide costs |Q_B,max|/C_ox of gate voltage.",
+      "limit": "The oxide made thinner and thinner: which term of V_T shrinks, and what is V_T heading toward?",
+      "transfer": "A designer needs V_T to rise by 0.2 V without changing the oxide: what would they change, and by how much roughly?"
+    }
+  },
+  "flatband-voltage": {
+    "L1": "States V_FB = φ_p − φ_gate (with the course's signs) and that it is the gate voltage that leaves no charge.",
+    "L2": "Computes V_FB for an n+ or p+ poly gate on a given body.",
+    "L3": "Explains V_FB as cancelling the built-in step between gate and body materials; predicts its sign for each gate and body combination.",
+    "L4": "Adds fixed oxide charge to V_FB and knows why gate work function is chosen to set V_T.",
+    "missteps": [
+      "takes V_FB as zero",
+      "gets the sign wrong for an n+ gate on a p body",
+      "uses φ_p with the wrong sign"
+    ],
+    "seeds": {
+      "predict": "An n+ gate is replaced by a p+ gate on the same body: how does V_FB move, and by how much?",
+      "explain": "Why there is charge on a MOS capacitor even with the gate shorted to the body.",
+      "limit": "Body doping raised toward degenerate: what happens to φ_p and to V_FB?",
+      "transfer": "A metal gate with a work function midway in the gap: estimate V_FB on a given p body."
+    }
+  },
+  "mos-cv-curve": {
+    "L1": "States that C = C_ox in accumulation and dips in depletion.",
+    "L2": "Computes the depletion capacitance and the series combination with C_ox at a bias.",
+    "L3": "Explains C as the slope of charge against voltage; explains the dip (the charge moves deeper) and why inversion returns to C_ox only when measured slowly.",
+    "L4": "Extracts t_ox, N_A, V_FB and V_T from a measured C–V curve.",
+    "missteps": [
+      "adds C_ox and C_dep in parallel",
+      "expects the high-frequency curve to return to C_ox",
+      "uses the total charge over voltage instead of the slope"
+    ],
+    "seeds": {
+      "predict": "The doping is raised: what happens to the depth of the dip and to the minimum capacitance?",
+      "explain": "Why the capacitance measured fast stays low in inversion.",
+      "limit": "V_GB far into accumulation: what does C approach, and what does it tell you?",
+      "transfer": "From a measured C–V curve, how would you read off the oxide thickness and the body doping?"
+    }
+  },
+  "mosfet-regions": {
+    "L1": "Names cut-off, triode and saturation and their conditions: V_GS < V_T; V_DS < V_GS − V_T; V_DS ≥ V_GS − V_T.",
+    "L2": "Decides the region from given terminal voltages and picks the right current formula.",
+    "L3": "Explains each region from the channel: no sheet in cut-off; a sheet reaching the drain in triode; a sheet pinched off at the drain in saturation; reads the regions off the output curves and the edge V_DS = V_OV.",
+    "L4": "Checks the region before and after solving a circuit, and guesses a region, solves, then verifies; knows the edges blur in real devices (subthreshold, channel-length modulation).",
+    "missteps": [
+      "compares V_DS with V_GS instead of V_GS − V_T",
+      "takes saturation to mean the transistor is fully on",
+      "uses a formula before checking the region"
+    ],
+    "seeds": {
+      "predict": "A transistor with V_OV = 0.4 V has its drain lowered from 1 V to 0.2 V: which region is it in, and what happens to I_D?",
+      "explain": "Why the boundary between triode and saturation is V_DS = V_GS − V_T and not V_DS = V_GS.",
+      "limit": "V_GS lowered toward V_T at fixed V_DS: which region does the transistor end in, and how does it get there?",
+      "transfer": "A circuit's transistor is assumed saturated, and the solution gives V_DS = 0.1 V with V_OV = 0.3 V: what was wrong, and what do you do next?"
+    }
+  },
+  "triode-region": {
+    "L1": "States I_D = μC_ox(W/L)[(V_GS − V_T)V_DS − V_DS²/2] for V_DS < V_GS − V_T.",
+    "L2": "Computes the triode current and the on-resistance 1/(μC_ox(W/L)V_OV) for small V_DS.",
+    "L3": "Derives the current as drift of the channel charge C_ox(V_OV − V(x)) and explains the −V_DS²/2 as the sheet thinning toward the drain; explains the transistor as a gate-controlled resistor at small V_DS.",
+    "L4": "Uses a triode transistor as a switch or variable resistor and knows how big the signal can be before its resistance changes; knows the body effect varies V_T along the channel.",
+    "missteps": [
+      "drops the V_DS²/2 term at V_DS comparable to V_OV",
+      "takes the channel charge as uniform at large V_DS",
+      "uses the triode formula past V_DS = V_OV"
+    ],
+    "seeds": {
+      "predict": "A transistor in deep triode has its V_GS raised by 0.2 V: what happens to its resistance, roughly?",
+      "explain": "Why the triode current bends over as V_DS grows.",
+      "limit": "V_DS made much smaller than V_OV: what does the transistor become, and what sets its value?",
+      "transfer": "A transistor used as an analog switch carries a 0.3 V signal with V_OV = 1 V: how far from constant is its resistance across the swing?"
+    }
+  },
+  "pinch-off": {
+    "L1": "States that pinch-off happens when V_DS = V_GS − V_T, where the channel charge at the drain falls to zero.",
+    "L2": "Finds V_DS,sat = V_OV for a given bias.",
+    "L3": "Explains pinch-off as the gate-to-channel voltage at the drain falling to V_T; explains why the current does not stop (a short high-field gap carries it) and why it stops growing.",
+    "L4": "Knows the gap lengthens with V_DS and shortens the channel (channel-length modulation), and that velocity saturation, not an infinite field, governs the region near the drain.",
+    "missteps": [
+      "thinks pinch-off stops the current",
+      "puts the pinch-off condition at V_DS = V_GS",
+      "thinks the whole channel vanishes at pinch-off"
+    ],
+    "seeds": {
+      "predict": "V_DS is raised past V_OV by 1 V: where does that extra volt drop, and what happens to I_D?",
+      "explain": "Why the drain current keeps flowing through a region with no channel charge.",
+      "limit": "The channel made very short: why does the long-channel picture of pinch-off fail?",
+      "transfer": "Why does a saturated transistor look like a current source to the drain circuit, and what spoils that?"
+    }
+  },
+  "square-law": {
+    "L1": "States I_D = ½μC_ox(W/L)(V_GS − V_T)² in saturation.",
+    "L2": "Computes I_D from V_OV, or V_OV from I_D, and scales the current with W/L and V_OV.",
+    "L3": "Explains the square as charge per area times the voltage drifted through, both proportional to V_OV; gets it from the triode formula at V_DS = V_OV; predicts four times the current for twice the overdrive.",
+    "L4": "Knows the square law fails with velocity saturation (current more nearly linear in V_OV) and in weak inversion (exponential); uses g_m = 2I_D/V_OV from it.",
+    "missteps": [
+      "forgets the ½",
+      "squares V_GS instead of V_GS − V_T",
+      "doubles the current for twice the overdrive"
+    ],
+    "seeds": {
+      "predict": "A saturated transistor carries 100 µA at V_OV = 0.2 V: what at 0.3 V, and what at 0.2 V with W doubled?",
+      "explain": "Why the saturated current goes as the square of the overdrive.",
+      "limit": "V_OV made very small: what does the square law predict, and what really happens near threshold?",
+      "transfer": "Two transistors must carry currents in a ratio of 4 to 1 at the same V_GS: what ratio of W/L do you choose?"
+    }
+  },
+  "channel-length-modulation": {
+    "L1": "States I_D = ½μC_ox(W/L)V_OV²(1 + λV_DS) and r_o = 1/(λI_D).",
+    "L2": "Computes r_o and the change in saturated current for a change in V_DS.",
+    "L3": "Explains it as the pinch-off point moving toward the source as V_DS grows, shortening the channel; predicts that longer channels have smaller λ and larger r_o; connects it to the copy error of a mirror and the intrinsic gain.",
+    "L4": "Uses longer L to raise r_o where gain or copy accuracy matters, and knows the cost in area and speed; knows λ itself depends on L.",
+    "missteps": [
+      "writes r_o = λI_D",
+      "ignores λ when comparing currents at different V_DS",
+      "thinks a longer channel has a larger λ"
+    ],
+    "seeds": {
+      "predict": "Two transistors carry the same current, one twice as long: which has the larger r_o, and by roughly how much?",
+      "explain": "Why the saturated current still grows a little with V_DS.",
+      "limit": "λ set to zero: what does a saturated transistor become, and which gains become infinite?",
+      "transfer": "A current mirror's output must stay within 1 % over a 1 V swing: what λ does that need?"
+    }
   }
 }

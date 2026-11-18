@@ -1,0 +1,588 @@
+<!doctype html>
+<!--
+  Concept:      The body answers the gate with holes, then with a widening layer of bare acceptors, then, once
+                its surface has moved by 2|φ_p|, with a sheet of electrons; V_T = V_FB + 2|φ_p| + |Q_B,max|/C_ox.
+  Course:       EE 105 (MOS capacitor, flatband and threshold, C–V curve)
+  Play with:    The gate voltage, the body doping, the oxide thickness and the gate material
+  Should click: Below threshold the body answers deeper, with depletion; above it, at the surface, with
+                electrons: the depletion stops growing and every further volt buys C_ox worth of channel charge.
+  Plan:         plans/mos-capacitor.md
+  Checked:      18 check cases pass (node scripts/test-tools.js). Headless Chrome, light and dark, no console errors:
+                n+ gate, N_A = 5×10¹⁶ cm⁻³, t_ox = 20 nm reads φ_p = −0.401 V, V_FB = −0.951 V, C_ox = 173 nF/cm²,
+                V_T = −0.951 + 0.802 + 0.668 = 0.519 V; at 0 V depletion with ψ_s = 0.450 V, x_d = 108 nm, C = 0.357 C_ox;
+                at 1.8 V inversion with x_d stopped at 144 nm; at −2 V accumulation with 181 nC/cm² of holes.
+                N_A = 5×10¹⁷ gives V_T = 2.176 V; t_ox = 5 nm gives 0.018 V; a p+ gate gives V_FB = 0.149 V. Arrow
+                keys move V_GB 0.01 V, Shift 0.1 V; reset restores the start.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MOS capacitor · momentos</title>
+<script>
+  // apply a saved light/dark choice before anything is painted
+  try {
+    var saved = localStorage.getItem("momentos-theme");
+    if (saved === "light" || saved === "dark") document.documentElement.dataset.theme = saved;
+  } catch (e) { /* no storage in some previews: follow the system setting */ }
+</script>
+<style>
+  /* ---- momentos house style: begin (the same block in every tool. Change it only in
+     templates/tool-template.html, then run scripts/sync-house-style.py) ---- */
+  :root {
+    color-scheme: light dark;
+    --bg: light-dark(#f6f4ee, #131312);          /* the page */
+    --surface: light-dark(#fbfaf6, #1b1b19);     /* figures and inputs */
+    --ink: light-dark(#1d1c1a, #ebe8e1);         /* text and the main strokes */
+    --ink-2: light-dark(#5f5c55, #b1ada3);       /* secondary text */
+    --ink-3: light-dark(#77736b, #8a867d);       /* labels, axis numbers */
+    --line: light-dark(rgba(29, 28, 26, 0.16), rgba(235, 232, 225, 0.18));   /* hairlines and borders */
+    --grid: light-dark(rgba(29, 28, 26, 0.07), rgba(235, 232, 225, 0.08));   /* grid lines */
+    --accent: light-dark(#c2410c, #ff8f5a);      /* the one thing being pointed at */
+    /* Colour is for quantities, never for decoration. Give each quantity one of these and keep it
+       the same in the figure, the numbers and the prose. */
+    --c1: light-dark(#2458c4, #7aa7ff);          /* blue */
+    --c2: light-dark(#c2410c, #ff9a62);          /* orange */
+    --c3: light-dark(#0f7f6b, #4fd3b4);          /* teal */
+    --c4: light-dark(#9d3fb0, #d78be6);          /* purple */
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+    --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  }
+  :root[data-theme="light"] { color-scheme: light; }
+  :root[data-theme="dark"] { color-scheme: dark; }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 17px/1.55 var(--serif);
+    -webkit-font-smoothing: antialiased;
+  }
+  .bar {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 22px;
+    font: 12px/1 var(--mono);
+    letter-spacing: 0.06em;
+    color: var(--ink-3);
+  }
+  .bar a { color: var(--ink-2); text-decoration: none; border-bottom: 1px solid var(--line); padding-bottom: 2px; }
+  .bar a:hover { color: var(--accent); border-color: var(--accent); }
+  .bar .grow { flex: 1; }
+  button {
+    font: 12px/1 var(--mono);
+    color: var(--ink-2);
+    background: transparent;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 7px 10px;
+    cursor: pointer;
+  }
+  button:hover { color: var(--ink); border-color: var(--ink-2); }
+  button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  button:disabled { opacity: 0.4; cursor: default; }
+  :focus-visible { outline: 1px dashed var(--ink); outline-offset: 2px; }
+
+  main { max-width: 1120px; margin: 0 auto; padding: 4px 22px 72px; }
+  h1 { font: 400 clamp(30px, 4.6vw, 44px)/1.08 var(--serif); letter-spacing: -0.015em; margin: 14px 0 10px; }
+  .lede { max-width: 62ch; margin: 0 0 26px; color: var(--ink-2); font-size: 18px; }
+  h2 {
+    font: 500 10.5px/1.4 var(--mono);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin: 0 0 10px;
+  }
+  .bench { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(280px, 1fr); gap: 28px; align-items: start; }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-top: 28px; }
+  figure { margin: 0; }
+  .stage { border: 1px solid var(--line); border-radius: 4px; background: var(--surface); overflow: hidden; }
+  .stage svg { display: block; width: 100%; height: auto; touch-action: none; user-select: none; -webkit-user-select: none; }
+  figcaption { padding: 9px 12px; border-top: 1px solid var(--line); font: 11.5px/1.5 var(--mono); color: var(--ink-3); }
+  .controls { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 12px; }
+  .controls label { font: 12px/1 var(--mono); color: var(--ink-2); display: inline-flex; align-items: center; gap: 6px; margin-left: 6px; }
+  input[type="range"] { accent-color: var(--ink); }
+  input[type="checkbox"] { accent-color: var(--ink); }
+
+  .notes { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 44px; margin-top: 46px; padding-top: 28px; border-top: 1px solid var(--line); }
+  .notes p { margin: 0 0 14px; max-width: 62ch; }
+  .notes p b { font-weight: 600; }
+  .notes ul { margin: 0 0 26px; padding: 0; list-style: none; }
+  .notes li { margin: 0 0 12px; padding-left: 14px; border-left: 1px solid var(--line); font-size: 16px; line-height: 1.45; }
+  .notes li a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--line); }
+  .notes li a:hover { color: var(--accent); border-color: var(--accent); }
+  details { margin-top: 4px; }
+  summary { font: 11.5px/1.4 var(--mono); color: var(--ink-3); cursor: pointer; }
+  details span { color: var(--ink-2); font-size: 15px; }
+  sup, sub { font-size: 0.72em; line-height: 0; }
+
+  @media (max-width: 860px) {
+    .bench, .pair, .notes { grid-template-columns: 1fr; }
+    .notes { gap: 28px; }
+  }
+  /* ---- momentos house style: end ---- */
+
+  /* ---- this tool: everything below is yours ---- */
+  var { font-style: italic; font-family: var(--serif); }
+  .grid line { stroke: var(--grid); stroke-width: 1; }
+  .grid .axis { stroke: var(--line); }
+  .tick { font: 10.5px var(--mono); fill: var(--ink-3); }
+  .gate { fill: var(--grid); stroke: var(--line); }
+  .oxide { fill: var(--surface); stroke: var(--line); }
+  .body { fill: none; stroke: var(--line); }
+  .dep { fill: var(--c4); opacity: 0.12; }
+  .ion { font: 11px var(--mono); fill: var(--c4); }
+  .hole { fill: var(--surface); stroke: var(--c2); stroke-width: 1.2; }
+  .hole-t { font: 8px var(--mono); fill: var(--c2); }
+  .el { fill: var(--c1); }
+  .gq { font: 11px var(--mono); fill: var(--ink-2); }
+  .pot { fill: none; stroke: var(--c3); stroke-width: 2.4; stroke-linejoin: round; }
+  .zero { stroke: var(--line); stroke-width: 1; }
+  .twophi { stroke: var(--ink-3); stroke-width: 1; stroke-dasharray: 1 3; }
+  .t1 { font: 11.5px var(--mono); fill: var(--c1); } .t2 { font: 11.5px var(--mono); fill: var(--c2); }
+  .t3 { font: 11.5px var(--mono); fill: var(--c3); } .t4 { font: 11.5px var(--mono); fill: var(--c4); }
+  .t0 { font: 11.5px var(--mono); fill: var(--ink-2); }
+  .region { font: 400 15px var(--serif); fill: var(--ink); }
+  .q1c { fill: none; stroke: var(--c1); stroke-width: 2.2; } .q2c { fill: none; stroke: var(--c2); stroke-width: 2.2; }
+  .q4c { fill: none; stroke: var(--c4); stroke-width: 2.2; }
+  .cl { fill: none; stroke: var(--ink); stroke-width: 2.2; } .ch { fill: none; stroke: var(--ink-2); stroke-width: 1.6; stroke-dasharray: 5 4; }
+  .mark { stroke: var(--ink-2); stroke-width: 1; stroke-dasharray: 4 3; }
+  .cursor { stroke: var(--ink-2); stroke-width: 1; stroke-dasharray: 3 3; }
+  .tri { fill: var(--ink-2); cursor: ew-resize; outline: none; }
+  .tri:focus-visible { stroke: var(--ink); stroke-width: 1.5; }
+  .hit { fill: transparent; cursor: crosshair; }
+  .d1 { fill: var(--c1); } .d2 { fill: var(--c2); } .d4 { fill: var(--c4); } .d0 { fill: var(--ink); } .dk { fill: var(--ink-2); }
+  .read { font: 13px/1.6 var(--mono); font-variant-numeric: tabular-nums; }
+  .read p { margin: 0 0 4px; }
+  .read .big { font: 400 26px/1.2 var(--serif); margin: 4px 0 10px; }
+  .q1 { color: var(--c1); } .q2 { color: var(--c2); } .q3 { color: var(--c3); } .q4 { color: var(--c4); } .q0 { color: var(--ink-2); }
+  .controls output { font: 12px/1 var(--mono); color: var(--ink-2); min-width: 14ch; display: inline-block; }
+</style>
+</head>
+<body>
+
+<header class="bar">
+  <a href="../../index.html#threshold-voltage">← map</a>
+  <span>devices / mos</span>
+  <span class="grow"></span>
+  <button type="button" id="theme" aria-label="Switch between light and dark">◐</button>
+</header>
+
+<main>
+  <h1>MOS capacitor and threshold</h1>
+  <p class="lede">Put a metal plate on thin glass over p-type silicon and raise its voltage. The silicon must answer with
+    an equal and opposite charge, and it has three ways to do it: holes, bare acceptor ions, or a sheet of electrons.
+    Drag the gate voltage and watch which answer it gives, and where the voltage goes.</p>
+
+  <div class="bench">
+    <div>
+      <figure class="stage">
+        <svg id="stack" viewBox="0 0 640 340" role="group" aria-label="Cross-section of the MOS capacitor with its charges, and the potential through it"></svg>
+        <figcaption>Left, the charges: holes in orange, bare acceptors in purple, electrons in blue. Right, the potential
+          through the same stack, measured from the neutral body.</figcaption>
+      </figure>
+      <div class="controls">
+        <button type="button" data-gate="n+">n+ poly gate</button>
+        <button type="button" data-gate="p+">p+ poly gate</button>
+        <button type="button" id="reset">reset</button>
+      </div>
+      <div class="controls">
+        <label>N_A <input type="range" id="sN" min="14.69897" max="17.69897" step="0.1" value="16.69897" aria-label="body doping, log scale"></label><output id="oN"></output>
+        <label>t_ox <input type="range" id="sT" min="2" max="50" step="1" value="20" aria-label="oxide thickness in nanometres"></label><output id="oT"></output>
+      </div>
+    </div>
+    <aside class="read">
+      <h2>The device</h2>
+      <p id="r-phi"></p>
+      <p id="r-vfb"></p>
+      <p id="r-cox"></p>
+      <p id="r-qb"></p>
+      <p id="r-vt1"></p>
+      <div class="big" id="r-vt2"></div>
+      <h2>At the cursor</h2>
+      <p id="r-v"></p>
+      <p class="q3" id="r-psi"></p>
+      <p class="q3" id="r-vox"></p>
+      <p class="q4" id="r-xd"></p>
+      <p class="q4" id="r-qdep"></p>
+      <p class="q2" id="r-qacc"></p>
+      <p class="q1" id="r-qinv"></p>
+      <p id="r-c"></p>
+    </aside>
+  </div>
+
+  <div class="pair">
+    <figure class="stage">
+      <svg id="charge" viewBox="0 0 480 300" role="group" aria-label="The body's charges against gate voltage"></svg>
+      <figcaption>The body's charge against the gate voltage. Drag the cursor or press anywhere in the plot; focused,
+        ← → move it 0.01 V, with Shift 0.1 V.</figcaption>
+    </figure>
+    <figure class="stage">
+      <svg id="cv" viewBox="0 0 480 300" role="group" aria-label="Capacitance against gate voltage, measured slowly and fast"></svg>
+      <figcaption>The capacitance is the slope of the charge. Measured fast, the electrons cannot keep up.</figcaption>
+    </figure>
+  </div>
+
+  <section class="notes">
+    <div>
+      <h2>What should click</h2>
+      <p><b>The body has three answers.</b> Below V_FB, holes pile up at the surface. Above it, holes are pushed away and
+        bare acceptors answer, deeper and deeper. Above V_T, electrons answer, right at the surface.</p>
+      <p><b>The voltage splits.</b> V_GB − V_FB = V_ox + ψ_s: part across the oxide, part bending the body's surface. In
+        depletion the body takes a large share; in inversion its share is pinned at 2|φ_p|.</p>
+      <p><b>Threshold is three steps.</b> Cancel the built-in step (V_FB), bend the surface by 2|φ_p| so it is as n-type
+        as the body is p-type, and put |Q_B,max|/C_ox across the oxide to hold the depletion charge.</p>
+      <p><b>Above V_T, a volt buys C_ox of electrons.</b> Q_inv = −C_ox(V_GB − V_T). That sheet of electrons is the channel
+        of a MOSFET, and its charge per volt is why C_ox appears in every MOSFET equation.</p>
+    </div>
+    <div>
+      <h2>Predict, then try</h2>
+      <ul>
+        <li>Start at V_GB = 0 V and raise it slowly. Where does the extra gate charge find its partner in the body, below V_T and above it?
+          <details><summary>why</summary><span>Below V_T, deeper in: the depletion region widens and uncovers more acceptors. Above V_T, at the surface: electrons gather there and the depletion stops at 144 nm.</span></details></li>
+        <li>With an n+ gate, is V_FB positive or negative?
+          <details><summary>why</summary><span>Negative, −0.951 V. The n+ gate sits 0.55 V above intrinsic and the p body 0.40 V below it, so the gate must be pulled down by their difference to flatten the bands.</span></details></li>
+        <li>Raise N_A tenfold. Does V_T go up or down, and which part grows most?
+          <details><summary>why</summary><span>Up, from 0.52 V to 2.18 V. 2|φ_p| grows by only 0.12 V; the depletion charge the oxide must hold grows about 3.4 times (√10, and a little more because 2|φ_p| grew too), and that term dominates.</span></details></li>
+        <li>Thin the oxide from 20 nm to 5 nm. What happens to V_T, and to the channel charge per volt above it?
+          <details><summary>why</summary><span>V_T falls to about 0.02 V, because a thinner oxide holds the same depletion charge with less voltage; and C_ox quadruples, so each volt above V_T buys four times the electrons.</span></details></li>
+        <li>In inversion, why does the slowly measured capacitance come back to C_ox while the fast one stays low?
+          <details><summary>why</summary><span>Slowly, new electrons have time to appear right at the surface, one oxide-thickness from the gate. Fast, they do not, and the charge has to come from the edge of the depletion region, far below.</span></details></li>
+      </ul>
+      <h2>Where this shows up</h2>
+      <ul>
+        <li><a href="../../index.html#mos-capacitor">MOS capacitor</a>: the gate, oxide and body as a capacitor whose body plate can answer three ways.</li>
+        <li><a href="../../index.html#accumulation-depletion-inversion">accumulation, depletion, inversion</a>: the three answers, in the first two figures.</li>
+        <li><a href="../../index.html#threshold-voltage">threshold voltage</a>: V_T = V_FB + 2|φ_p| + |Q_B,max|/C_ox, built term by term in the readout.</li>
+        <li><a href="../../index.html#flatband-voltage">flatband voltage</a>: V_FB = φ_p − φ_gate, where all charges vanish.</li>
+        <li><a href="../../index.html#mos-cv-curve">MOS C–V curve</a>: C/C_ox against V_GB in the third figure.</li>
+        <li><a href="../../index.html#triode-region">triode region</a>: above V_T the electron sheet C_ox(V_GB − V_T) is the channel that carries the drain current.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<script id="maths">
+// ---- the maths: plain functions with no page behind them. scripts/test-tools.js runs this block on
+// its own and compares it with the check cases below, so nothing in here may touch the DOM.
+// NMOS capacitor on a p body, in cm, F, C, V. kT/q = 0.026 V, n_i = 1e10 cm^-3. Holes positive, ions and electrons
+// negative. psi_s is measured from the neutral bulk.
+var MATHS = (function () {
+  "use strict";
+  var Q = 1.602e-19, KT = 0.026, NI = 1e10, EPS0 = 8.854e-14, EOX = 3.9 * EPS0, ESI = 11.7 * EPS0;
+  var PHI_GATE = { "n+": 0.55, "p+": -0.55 };
+
+  function phiP(NA) { return -KT * Math.log(NA / NI); }
+  function flatband(gate, NA) { return phiP(NA) - PHI_GATE[gate]; }
+  function cox(tox) { return EOX / tox; }
+  function qbMax(NA) { return Math.sqrt(2 * Q * ESI * NA * 2 * Math.abs(phiP(NA))); }
+  function threshold(gate, NA, tox) { return flatband(gate, NA) + 2 * Math.abs(phiP(NA)) + qbMax(NA) / cox(tox); }
+  function surface(gate, NA, tox, VGB) {
+    var vfb = flatband(gate, NA), vt = threshold(gate, NA, tox), c = cox(tox), twoPhi = 2 * Math.abs(phiP(NA)), xd;
+    if (VGB <= vfb) return { region: "accumulation", psiS: 0, xd: 0, Qacc: c * (vfb - VGB), Qdep: 0, Qinv: 0, Vox: VGB - vfb };
+    if (VGB <= vt) {
+      var gamma = Math.sqrt(2 * Q * ESI * NA) / c;
+      var root = (-gamma + Math.sqrt(gamma * gamma + 4 * (VGB - vfb))) / 2, psi = root * root;
+      xd = Math.sqrt(2 * ESI * psi / (Q * NA));
+      return { region: "depletion", psiS: psi, xd: xd, Qacc: 0, Qdep: -Q * NA * xd, Qinv: 0, Vox: gamma * root };
+    }
+    xd = Math.sqrt(2 * ESI * twoPhi / (Q * NA));
+    return { region: "inversion", psiS: twoPhi, xd: xd, Qacc: 0, Qdep: -qbMax(NA), Qinv: -c * (VGB - vt), Vox: VGB - vfb - twoPhi };
+  }
+  // small-signal capacitance per area; high = measured too fast for the electrons to follow
+  function capacitance(gate, NA, tox, VGB, high) {
+    var s = surface(gate, NA, tox, VGB), c = cox(tox);
+    if (s.region === "accumulation" || s.xd === 0) return c;
+    if (s.region === "inversion" && !high) return c;
+    var cdep = ESI / s.xd;
+    return c * cdep / (c + cdep);
+  }
+  // potential at depth x below the surface, relative to the neutral body
+  function potentialAt(gate, NA, tox, VGB, x) {
+    var s = surface(gate, NA, tox, VGB);
+    if (s.xd === 0 || x >= s.xd) return 0;
+    return s.psiS * Math.pow(1 - x / s.xd, 2);
+  }
+
+  return { phiP: phiP, flatband: flatband, cox: cox, qbMax: qbMax, threshold: threshold, surface: surface,
+    capacitance: capacitance, potentialAt: potentialAt };
+})();
+</script>
+<script type="application/json" id="check-cases">
+[
+  {"fn": "phiP", "args": [5e+16], "expect": -0.40104866023035773, "tol": 1e-09, "units": "V", "tag": "typical", "note": "p-type body, N_A = 5×10¹⁶ cm⁻³: φ_p = −(26 mV)·ln(5×10⁶) = −0.401 V"},
+  {"fn": "flatband", "args": ["n+", 5e+16], "expect": -0.9510486602303578, "tol": 1e-09, "units": "V", "tag": "sign", "note": "n+ poly gate (+0.55 V) on that body: V_FB = φ_p − φ_gate = −0.951 V, negative"},
+  {"fn": "flatband", "args": ["p+", 5e+16], "expect": 0.1489513397696423, "tol": 1e-09, "units": "V", "tag": "sign", "note": "p+ poly gate (−0.55 V) on the same body: V_FB = +0.149 V"},
+  {"fn": "cox", "args": [2e-06], "expect": 1.72653e-07, "tol": 1e-15, "units": "F/cm²", "tag": "typical", "note": "20 nm of oxide: C_ox = ε_ox/t_ox = 173 nF/cm²"},
+  {"fn": "qbMax", "args": [5e+16], "expect": 1.1537387474343017e-07, "tol": 1e-15, "units": "C/cm²", "tag": "typical", "note": "N_A = 5×10¹⁶ cm⁻³ at the onset of inversion: |Q_B,max| = √(2qε_si N_A·2|φ_p|) = 115 nC/cm²"},
+  {"fn": "threshold", "args": ["n+", 5e+16, 2e-06], "expect": 0.5192900156856939, "tol": 1e-09, "units": "V", "tag": "typical", "note": "n+ gate, N_A = 5×10¹⁶ cm⁻³, t_ox = 20 nm: V_T = −0.951 + 0.802 + 0.668 = 0.519 V"},
+  {"fn": "threshold", "args": ["n+", 5e+17, 2e-06], "expect": 2.176319786699292, "tol": 1e-09, "units": "V", "tag": "typical", "note": "ten times the doping: V_T rises to 2.18 V, mostly through the depletion charge the oxide must hold"},
+  {"fn": "threshold", "args": ["n+", 5e+16, 5e-07], "expect": 0.018108999094191697, "tol": 1e-09, "units": "V", "tag": "typical", "note": "the same body with 5 nm of oxide: V_T falls to 0.018 V; a thinner oxide holds the same charge with less voltage"},
+  {"fn": "surface", "args": ["n+", 5e+16, 2e-06, -2], "expect": {"region": "accumulation", "psiS": 0.0, "xd": 0.0, "Qacc": 1.8110459566524802e-07, "Qdep": 0.0, "Qinv": 0.0, "Vox": -1.0489513397696422}, "tol": 1e-12, "units": "V, cm, C/cm²", "tag": "typical", "note": "V_GB = −2 V, below V_FB: accumulation, 181 nC/cm² of holes at the surface, all of V_GB − V_FB across the oxide"},
+  {"fn": "surface", "args": ["n+", 5e+16, 2e-06, 0], "expect": {"region": "depletion", "psiS": 0.45033631334047974, "xd": 1.0792695234404256e-05, "Qacc": 0.0, "Qdep": -8.644948882757809e-08, "Qinv": 0.0, "Vox": 0.5007123468898779}, "tol": 1e-12, "units": "V, cm, C/cm²", "tag": "typical", "note": "V_GB = 0 V: depletion, the surface 0.450 V above the bulk, 108 nm of bare acceptors, 0.501 V across the oxide"},
+  {"fn": "surface", "args": ["n+", 5e+16, 2e-06, 1.5], "expect": {"region": "inversion", "psiS": 0.8020973204607155, "xd": 1.4403729680827737e-05, "Qacc": 0.0, "Qdep": -1.1537387474343017e-07, "Qinv": -1.693225209218179e-07, "Vox": 1.648951339769642}, "tol": 1e-12, "units": "V, cm, C/cm²", "tag": "typical", "note": "V_GB = 1.5 V: inversion, ψ_s pinned at 2|φ_p| = 0.802 V, the depletion stopped at 144 nm, and 169 nC/cm² of electrons"},
+  {"fn": "surface", "args": ["n+", 5e+16, 2e-06, -0.951], "expect": {"region": "depletion", "psiS": 4.2523869747576116e-09, "xd": 1.048764115431572e-09, "Qacc": 0.0, "Qdep": -8.400600564606892e-12, "Qinv": 0.0, "Vox": 4.865597797088316e-05}, "tol": 1e-09, "units": "V, cm, C/cm²", "tag": "limit-zero", "note": "V_GB just above V_FB = −0.9512 V: almost no charge anywhere; the bands are nearly flat"},
+  {"fn": "surface", "args": ["n+", 5e+16, 2e-06, 4], "expect": {"region": "inversion", "psiS": 0.8020973204607155, "xd": 1.4403729680827737e-05, "Qacc": 0.0, "Qdep": -1.1537387474343017e-07, "Qinv": -6.00955020921818e-07, "Vox": 4.148951339769642}, "tol": 1e-12, "units": "V, cm, C/cm²", "tag": "limit-infinity", "note": "V_GB = 4 V: the depletion has not grown past 144 nm; every extra volt adds C_ox·1 V = 173 nC/cm² of electrons"},
+  {"fn": "surface", "args": ["n+", 5e+16, 2e-06, 0.519], "expect": {"region": "depletion", "psiS": 0.8018925917560956, "xd": 1.440189134710197e-05, "Qacc": 0.0, "Qdep": -1.1535914969028677e-07, "Qinv": 0.0, "Vox": 0.668156068474262}, "tol": 1e-09, "units": "V, cm, C/cm²", "tag": "breaks", "note": "at threshold the model says no electrons at all, though the surface is as n-type as the body is p-type (5×10¹⁶ cm⁻³ at the surface): the charge-sheet picture ignores the electrons below threshold"},
+  {"fn": "capacitance", "args": ["n+", 5e+16, 2e-06, 0, false], "expect": 6.168860838239053e-08, "tol": 1e-15, "units": "F/cm²", "tag": "typical", "note": "in depletion at 0 V: C_ox in series with ε_si/x_d gives 61.7 nF/cm², 0.357 of C_ox"},
+  {"fn": "capacitance", "args": ["n+", 5e+16, 2e-06, 2, true], "expect": 5.0771011780919404e-08, "tol": 1e-15, "units": "F/cm²", "tag": "typical", "note": "in inversion at high frequency the electrons cannot follow: C stays at its minimum, 50.8 nF/cm²"},
+  {"fn": "capacitance", "args": ["n+", 5e+16, 2e-06, 2, false], "expect": 1.72653e-07, "tol": 1e-15, "units": "F/cm²", "tag": "typical", "note": "the same, measured slowly: the electron sheet answers at the surface and C is back to C_ox"},
+  {"fn": "potentialAt", "args": ["n+", 5e+16, 2e-06, 0, 5.4e-06], "expect": 0.11243173047878438, "tol": 1e-09, "units": "V", "tag": "typical", "note": "at 0 V, 54 nm down, halfway through the 108 nm depletion region: the potential is a quarter of ψ_s, 0.112 V"}
+]
+</script>
+<script>
+(function () {
+  "use strict";
+
+  const NS = "http://www.w3.org/2000/svg";
+  function S(name, attrs, parent) {
+    const el = document.createElementNS(NS, name);
+    for (const k in attrs) el.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(el);
+    return el;
+  }
+  const $ = (id) => document.getElementById(id);
+  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+  const f1 = (v) => v.toFixed(1);
+  const SUP = "⁰¹²³⁴⁵⁶⁷⁸⁹";
+  const sup = (n) => (n < 0 ? "⁻" : "") + String(Math.abs(n)).split("").map((c) => SUP[c]).join("");
+  function sci(v) { let e = Math.floor(Math.log10(v)), m = v / Math.pow(10, e); if (Number(m.toFixed(2)) >= 10) { m /= 10; e += 1; } return m.toFixed(2) + "×10" + sup(e); }
+  function eng(v, unit) {
+    if (Math.abs(v) < 1e-15) return "0 " + unit;
+    const pre = { "-15": "f", "-12": "p", "-9": "n", "-6": "µ", "-3": "m", "0": "", "3": "k" };
+    let e = clamp(Math.floor(Math.log10(Math.abs(v)) / 3) * 3, -15, 3);
+    let s = Math.abs(v / Math.pow(10, e)).toPrecision(3);
+    if (Number(s) >= 1000 && e < 3) { e += 3; s = Math.abs(v / Math.pow(10, e)).toPrecision(3); }
+    return (v < 0 ? "−" : "") + s + " " + pre[String(e)] + unit;
+  }
+  const volts = (v) => (v < 0 ? "−" : "") + Math.abs(v).toFixed(3) + " V";
+  function svgPoint(svg, e) {
+    const ctm = svg.getScreenCTM();
+    if (!ctm) return { x: 0, y: 0 };
+    const p = new DOMPoint(e.clientX, e.clientY).matrixTransform(ctm.inverse());
+    return { x: p.x, y: p.y };
+  }
+
+  // ------------------------------------------------------------ state
+
+  const START = { V: 0, lN: 16.69897, t: 20, gate: "n+" };
+  const st = Object.assign({}, START);
+  const NA = () => Math.pow(10, st.lN), TOX = () => st.t * 1e-7;
+  const at = (v) => MATHS.surface(st.gate, NA(), TOX(), v);
+
+  // ------------------------------------------------------------ figure 1: the stack and its potential
+
+  const F = $("stack");
+  const layer = S("g", {}, F);
+  const T = (x, y, cls, text, anchor, parent) => { const t = S("text", { x: x, y: y, class: cls, "text-anchor": anchor || "start" }, parent || layer); t.textContent = text; return t; };
+  function spread(n, x0, x1) { const out = []; for (let i = 0; i < n; i++) out.push(x0 + ((i + 0.5) * (x1 - x0)) / n); return out; }
+  const per = (q) => Math.min(40, Math.round(Math.abs(q) / 1e-8));    // one symbol per 10 nC/cm²
+
+  function drawStack() {
+    layer.textContent = "";
+    const s = at(st.V), vfb = MATHS.flatband(st.gate, NA()), twoPhi = 2 * Math.abs(MATHS.phiP(NA()));
+    const xdMax = MATHS.surface(st.gate, NA(), TOX(), 1e3).xd, D = 1.25 * xdMax;
+    const Yd = (x) => 90 + (x / D) * 240;
+    // the layers
+    S("rect", { class: "gate", x: 20, y: 20, width: 280, height: 40 }, layer);
+    S("rect", { class: "oxide", x: 20, y: 60, width: 280, height: 30 }, layer);
+    if (s.xd > 0) S("rect", { class: "dep", x: 20, y: 90, width: 280, height: f1(Yd(s.xd) - 90) }, layer);
+    S("rect", { class: "body", x: 20, y: 90, width: 280, height: 240 }, layer);
+    T(26, 34, "tick", "gate, " + st.gate + " poly");
+    T(26, 79, "tick", "oxide, t_ox = " + st.t + " nm (not to scale)");
+    T(26, 324, "tick", "p-type body, N_A = " + sci(NA()) + " cm⁻³");
+    T(160, 14, "region", s.region, "middle");
+    // depth ticks
+    const step = [10, 20, 50, 100, 200, 500, 1000].find((v) => D * 1e7 / v <= 6);
+    for (let nm = 0; nm * 1e-7 <= D; nm += step) {
+      S("line", { x1: 300, x2: 306, y1: f1(Yd(nm * 1e-7)), y2: f1(Yd(nm * 1e-7)), stroke: "var(--ink-3)" }, layer);
+      T(309, f1(Yd(nm * 1e-7) + 3.5), "tick", nm + (nm === 0 ? "" : ""));
+    }
+    T(309, 340 - 4, "tick", "nm");
+    // the depletion ions
+    if (s.xd > 0) for (let y = 100; y < Yd(s.xd); y += 20) for (let x = 30; x < 300; x += 20) T(x, y + 4, "ion", "−", "middle");
+    // gate charge, holes, electrons
+    const QG = -(s.Qacc + s.Qdep + s.Qinv);
+    spread(per(QG), 24, 296).forEach((x) => T(f1(x), 57, "gq", QG > 0 ? "+" : "−", "middle"));
+    spread(per(s.Qacc), 24, 296).forEach((x) => { S("circle", { class: "hole", cx: f1(x), cy: 97, r: 3.6 }, layer); T(f1(x), 99.8, "hole-t", "+", "middle"); });
+    spread(per(s.Qinv), 24, 296).forEach((x, i) => S("circle", { class: "el", cx: f1(x), cy: i % 2 ? 93.5 : 96.5, r: 2.2 }, layer));
+    if (s.xd > 0) T(f1(296), f1(Yd(s.xd) - 4), "t4", "x_d = " + eng(s.xd / 100, "m"), "end");
+
+    // the potential, on the same vertical axis
+    const top = st.V - vfb, pmin = Math.min(-0.5, top), pmax = Math.max(1, top);
+    const P = (v) => 360 + ((v - pmin) / (pmax - pmin)) * 260;
+    for (let v = Math.ceil(pmin * 2) / 2; v <= pmax + 1e-9; v += 0.5) {
+      S("line", { x1: f1(P(v)), x2: f1(P(v)), y1: 20, y2: 330, class: v === 0 ? "zero" : "", stroke: v === 0 ? "" : "var(--grid)" }, layer);
+      T(f1(P(v)), 334, "tick", (v < 0 ? "−" : "") + Math.abs(v).toFixed(1), "middle").setAttribute("y", 16);
+    }
+    T(620, 330, "tick", "potential (V)", "end");
+    S("line", { class: "twophi", x1: f1(P(twoPhi)), x2: f1(P(twoPhi)), y1: 90, y2: 330 }, layer);
+    T(f1(P(twoPhi) + 3), 120, "tick", "2|φ_p|");
+    let d = "M" + f1(P(top)) + " 20V60L" + f1(P(s.psiS)) + " 90";
+    for (let i = 1; i <= 120; i++) { const x = (D * i) / 120; d += "L" + f1(P(MATHS.potentialAt(st.gate, NA(), TOX(), st.V, x))) + " " + f1(Yd(x)); }
+    S("path", { class: "pot", d: d }, layer);
+    // each label sits beside the curve at its own height, on whichever side has room (the values are in the readouts)
+    [[top, 44, "V_GB − V_FB"], [(top + s.psiS) / 2, s.psiS >= top ? 72 : 88, "V_ox"], [s.psiS, 104, "ψ_s"]].forEach((l) => {
+      const x = P(l[0]), w = l[2].length * 7, right = x + 8 + w <= 620;
+      T(f1(right ? x + 8 : x - 8), l[1], "t3", l[2], right ? "start" : "end");
+    });
+  }
+
+  // ------------------------------------------------------------ figures 2 and 3
+
+  const PX0 = 60, PX1 = 460, PY0 = 20, PY1 = 260, VMIN = -3, VMAX = 3;
+  const XV = (v) => PX0 + ((v - VMIN) / (VMAX - VMIN)) * (PX1 - PX0);
+  function plot(svg, yname) {
+    const f = { svg: svg };
+    f.grid = S("g", { class: "grid" }, svg); f.labels = S("g", {}, svg); f.curves = S("g", {}, svg); f.marks = S("g", {}, svg);
+    f.hit = S("rect", { class: "hit", x: PX0, y: PY0, width: PX1 - PX0, height: PY1 - PY0 }, svg);
+    f.cursor = S("line", { class: "cursor", y1: PY0, y2: PY1 }, svg);
+    f.dots = S("g", {}, svg);
+    f.tri = S("path", { class: "tri", d: "M0 0L-7 11H7Z", tabindex: 0, role: "slider", "aria-label": "gate voltage V_GB" }, svg);
+    S("text", { x: PX1, y: 296, "text-anchor": "end", class: "tick" }, svg).textContent = "V_GB (V)";
+    S("text", { x: 4, y: 12, class: "tick" }, svg).textContent = yname;
+    return f;
+  }
+  const FQ = plot($("charge"), "|Q| (nC/cm²)"), FC = plot($("cv"), "C / C_ox");
+
+  function axes(f, Y, ymax, ystep, fmtY) {
+    f.grid.textContent = ""; f.labels.textContent = "";
+    for (let v = VMIN; v <= VMAX + 1e-9; v += 0.5) {
+      S("line", { x1: XV(v), x2: XV(v), y1: PY0, y2: PY1, class: v === VMIN ? "axis" : "" }, f.grid);
+      if (Number.isInteger(v)) S("text", { x: XV(v), y: PY1 + 26, "text-anchor": "middle", class: "tick" }, f.labels).textContent = (v < 0 ? "−" : "") + Math.abs(v);
+    }
+    for (let y = 0; y <= ymax + 1e-12; y += ystep) {
+      S("line", { x1: PX0, x2: PX1, y1: f1(Y(y)), y2: f1(Y(y)), class: y === 0 ? "axis" : "" }, f.grid);
+      S("text", { x: PX0 - 5, y: f1(Y(y) + 3.5), "text-anchor": "end", class: "tick" }, f.labels).textContent = fmtY(y);
+    }
+  }
+  function marks(f) {
+    f.marks.textContent = "";
+    const vfb = MATHS.flatband(st.gate, NA()), vt = MATHS.threshold(st.gate, NA(), TOX());
+    [[vfb, "V_FB"], [vt, "V_T"]].forEach((m) => {
+      if (m[0] < VMIN || m[0] > VMAX) return;
+      S("line", { class: "mark", x1: f1(XV(m[0])), x2: f1(XV(m[0])), y1: PY0, y2: PY1 }, f.marks);
+      S("text", { x: f1(XV(m[0]) + 3), y: PY0 + 10, class: "tick" }, f.marks).textContent = m[1];
+    });
+  }
+  let QY = null, CY = null;
+  function drawPlots() {
+    const N = 300, pts = [];
+    let qmax = 0;
+    for (let i = 0; i <= N; i++) {
+      const v = VMIN + ((VMAX - VMIN) * i) / N, s = at(v);
+      pts.push({ v: v, s: s, cl: MATHS.capacitance(st.gate, NA(), TOX(), v, false), ch: MATHS.capacitance(st.gate, NA(), TOX(), v, true) });
+      qmax = Math.max(qmax, s.Qacc, -s.Qdep, -s.Qinv);
+    }
+    const top = Math.max(1e-7, Math.ceil(qmax / 1e-7) * 1e-7), c = MATHS.cox(TOX());
+    QY = (q) => PY1 - (q / top) * (PY1 - PY0);
+    CY = (r) => PY1 - (r / 1.1) * (PY1 - PY0);
+    axes(FQ, QY, top, top / 5, (y) => String(Math.round(y * 1e9)));
+    axes(FC, CY, 1.0, 0.2, (y) => y.toFixed(1));
+    FQ.curves.textContent = ""; FC.curves.textContent = "";
+    const path = (fn) => pts.map((p, i) => (i ? "L" : "M") + f1(XV(p.v)) + " " + f1(fn(p))).join("");
+    S("path", { class: "q2c", d: path((p) => QY(p.s.Qacc)) }, FQ.curves);
+    S("path", { class: "q4c", d: path((p) => QY(-p.s.Qdep)) }, FQ.curves);
+    S("path", { class: "q1c", d: path((p) => QY(-p.s.Qinv)) }, FQ.curves);
+    S("text", { x: PX0 + 6, y: PY0 + 24, class: "t2" }, FQ.curves).textContent = "holes |Q_acc|";
+    S("text", { x: PX1 - 6, y: PY0 + 24, "text-anchor": "end", class: "t1" }, FQ.curves).textContent = "electrons |Q_inv|";
+    S("text", { x: PX1 - 6, y: f1(QY(MATHS.qbMax(NA())) - 6), "text-anchor": "end", class: "t4" }, FQ.curves).textContent = "ions |Q_dep|";
+    S("path", { class: "cl", d: path((p) => CY(p.cl / c)) }, FC.curves);
+    S("path", { class: "ch", d: path((p) => CY(p.ch / c)) }, FC.curves);
+    S("text", { x: PX1 - 6, y: f1(CY(1) - 6), "text-anchor": "end", class: "t0" }, FC.curves).textContent = "measured slowly";
+    S("text", { x: PX1 - 6, y: f1(CY(MATHS.capacitance(st.gate, NA(), TOX(), VMAX, true) / c) + 16), "text-anchor": "end", class: "t0" }, FC.curves).textContent = "measured fast";
+    marks(FQ); marks(FC);
+  }
+
+  function drawCursor() {
+    const s = at(st.V), x = f1(XV(st.V)), c = MATHS.cox(TOX());
+    [FQ, FC].forEach((f) => {
+      f.cursor.setAttribute("x1", x); f.cursor.setAttribute("x2", x);
+      f.tri.setAttribute("transform", "translate(" + x + " " + (PY1 + 3) + ")");
+      f.tri.setAttribute("aria-valuetext", "V_GB = " + st.V.toFixed(2) + " V");
+      f.dots.textContent = "";
+    });
+    [[s.Qacc, "d2"], [-s.Qdep, "d4"], [-s.Qinv, "d1"]].forEach((q) => S("circle", { class: q[1], r: 4, cx: x, cy: f1(QY(q[0])) }, FQ.dots));
+    S("circle", { class: "d0", r: 4, cx: x, cy: f1(CY(MATHS.capacitance(st.gate, NA(), TOX(), st.V, false) / c)) }, FC.dots);
+    S("circle", { class: "dk", r: 3.5, cx: x, cy: f1(CY(MATHS.capacitance(st.gate, NA(), TOX(), st.V, true) / c)) }, FC.dots);
+  }
+
+  // ------------------------------------------------------------ readouts
+
+  function readouts() {
+    const n = NA(), phi = MATHS.phiP(n), vfb = MATHS.flatband(st.gate, n), c = MATHS.cox(TOX()), qb = MATHS.qbMax(n);
+    const vt = MATHS.threshold(st.gate, n, TOX()), s = at(st.V), C = MATHS.capacitance(st.gate, n, TOX(), st.V, false);
+    $("r-phi").textContent = "φ_p = −(kT/q)·ln(N_A/n_i) = " + volts(phi);
+    $("r-vfb").textContent = "V_FB = φ_p − φ_gate = " + volts(vfb);
+    $("r-cox").textContent = "C_ox = ε_ox/t_ox = " + eng(c, "F/cm²");
+    $("r-qb").textContent = "|Q_B,max| = √(2qε_si N_A·2|φ_p|) = " + eng(qb, "C/cm²");
+    $("r-vt1").textContent = "V_T = V_FB + 2|φ_p| + |Q_B,max|/C_ox";
+    $("r-vt2").textContent = "= " + volts(vfb) + " + " + volts(2 * Math.abs(phi)) + " + " + volts(qb / c) + " = " + volts(vt);
+    $("r-v").innerHTML = "V_GB = " + volts(st.V) + ": <b>" + s.region + "</b>";
+    $("r-psi").textContent = "ψ_s = " + volts(s.psiS);
+    $("r-vox").textContent = "V_ox = " + volts(s.Vox);
+    $("r-xd").textContent = "x_d = " + eng(s.xd / 100, "m");
+    $("r-qdep").textContent = "Q_dep = " + eng(s.Qdep, "C/cm²");
+    $("r-qacc").textContent = "Q_acc = " + eng(s.Qacc, "C/cm²");
+    $("r-qinv").textContent = "Q_inv = " + eng(s.Qinv, "C/cm²");
+    $("r-c").textContent = "C = " + eng(C, "F/cm²") + " (" + (C / c).toFixed(3) + " C_ox)";
+  }
+
+  function renderCursor() { drawStack(); drawCursor(); readouts(); }
+  function renderAll() { drawPlots(); renderCursor(); }
+
+  // ------------------------------------------------------------ controls
+
+  function sync() {
+    document.querySelectorAll("[data-gate]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.gate === st.gate)));
+    $("sN").value = st.lN; $("sT").value = st.t;
+    $("oN").textContent = "N_A = " + sci(NA()) + " cm⁻³";
+    $("oT").textContent = "t_ox = " + st.t + " nm";
+  }
+  function change(fn) { fn(); sync(); renderAll(); }
+  const setV = (v) => { st.V = clamp(Math.round(v * 100) / 100, VMIN, VMAX); renderCursor(); };
+
+  document.querySelectorAll("[data-gate]").forEach((b) => b.addEventListener("click", () => change(() => { st.gate = b.dataset.gate; })));
+  $("sN").addEventListener("input", (e) => change(() => { st.lN = Number(e.target.value); }));
+  $("sT").addEventListener("input", (e) => change(() => { st.t = Number(e.target.value); }));
+  $("reset").addEventListener("click", () => change(() => { Object.assign(st, START); }));
+  [FQ, FC].forEach((f) => {
+    [f.tri, f.hit].forEach((el) => {
+      let on = false;
+      const vAt = (e) => VMIN + ((svgPoint(f.svg, e).x - PX0) / (PX1 - PX0)) * (VMAX - VMIN);
+      el.addEventListener("pointerdown", (e) => {
+        e.preventDefault(); on = true;
+        try { el.setPointerCapture(e.pointerId); } catch (_) { /* fine without capture */ }
+        f.tri.focus({ preventScroll: true });
+        setV(vAt(e));
+      });
+      el.addEventListener("pointermove", (e) => { if (on) setV(vAt(e)); });
+      el.addEventListener("pointerup", () => { on = false; });
+      el.addEventListener("pointercancel", () => { on = false; });
+    });
+    f.tri.addEventListener("keydown", (e) => {
+      const dir = { ArrowLeft: -1, ArrowDown: -1, ArrowRight: 1, ArrowUp: 1 }[e.key];
+      if (!dir) return;
+      e.preventDefault();
+      setV(st.V + dir * (e.shiftKey ? 0.1 : 0.01));
+    });
+  });
+
+  $("theme").addEventListener("click", () => {
+    const root = document.documentElement;
+    const dark = root.dataset.theme ? root.dataset.theme === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+    root.dataset.theme = dark ? "light" : "dark";
+    try { localStorage.setItem("momentos-theme", root.dataset.theme); } catch (_) { /* switched, just not remembered */ }
+  });
+
+  sync();
+  renderAll();
+
+  // for checking the numbers from the console
+  window.TOOL = { st: st, setV: setV, set: (o) => change(() => Object.assign(st, o)) };
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,584 @@
+<!doctype html>
+<!--
+  Concept:      A diode-connected transistor turns I_REF into V_GS; a second transistor at the same V_GS copies the
+                current times its W/L ratio, exactly only when its drain sits where the first's does, and not at
+                all below V_OV.
+  Course:       EE 105 (current mirrors, diode-connected transistors, current-source loads)
+  Play with:    I_REF, the width ratio n, λ, the output voltage, and a resistor or a mirror as a common-source load
+  Should click: The copy is exact only when the two drains sit at the same voltage; any difference costs about
+                λΔV, and below V_OV the mirror stops being a current source.
+  Plan:         plans/current-mirror.md
+  Checked:      15 check cases pass (node scripts/test-tools.js). Headless Chrome, light and dark, no console errors:
+                I_REF = 100 µA, n = 1, λ = 0.1 /V, V_out = 1.5 V reads V_GS = 0.804 V, V_OV = 0.304 V, I_out = 106 µA,
+                copy error +6.44 %, r_o = 108 kΩ, M1 at 1.50 kΩ against V_GS/I_REF = 8.04 kΩ, and load gains −13.0 and
+                −50.0; V_out = 0.80 V gives −0.04 %; n = 3 at V_out = 0.2 V reads triode, 250 µA against 300 µA.
+                Arrow keys move V_out 0.01 V, Shift 0.1 V; the I_REF, λ, n and load controls and reset work.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>current mirror · momentos</title>
+<script>
+  // apply a saved light/dark choice before anything is painted
+  try {
+    var saved = localStorage.getItem("momentos-theme");
+    if (saved === "light" || saved === "dark") document.documentElement.dataset.theme = saved;
+  } catch (e) { /* no storage in some previews: follow the system setting */ }
+</script>
+<style>
+  /* ---- momentos house style: begin (the same block in every tool. Change it only in
+     templates/tool-template.html, then run scripts/sync-house-style.py) ---- */
+  :root {
+    color-scheme: light dark;
+    --bg: light-dark(#f6f4ee, #131312);          /* the page */
+    --surface: light-dark(#fbfaf6, #1b1b19);     /* figures and inputs */
+    --ink: light-dark(#1d1c1a, #ebe8e1);         /* text and the main strokes */
+    --ink-2: light-dark(#5f5c55, #b1ada3);       /* secondary text */
+    --ink-3: light-dark(#77736b, #8a867d);       /* labels, axis numbers */
+    --line: light-dark(rgba(29, 28, 26, 0.16), rgba(235, 232, 225, 0.18));   /* hairlines and borders */
+    --grid: light-dark(rgba(29, 28, 26, 0.07), rgba(235, 232, 225, 0.08));   /* grid lines */
+    --accent: light-dark(#c2410c, #ff8f5a);      /* the one thing being pointed at */
+    /* Colour is for quantities, never for decoration. Give each quantity one of these and keep it
+       the same in the figure, the numbers and the prose. */
+    --c1: light-dark(#2458c4, #7aa7ff);          /* blue */
+    --c2: light-dark(#c2410c, #ff9a62);          /* orange */
+    --c3: light-dark(#0f7f6b, #4fd3b4);          /* teal */
+    --c4: light-dark(#9d3fb0, #d78be6);          /* purple */
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+    --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  }
+  :root[data-theme="light"] { color-scheme: light; }
+  :root[data-theme="dark"] { color-scheme: dark; }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 17px/1.55 var(--serif);
+    -webkit-font-smoothing: antialiased;
+  }
+  .bar {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 22px;
+    font: 12px/1 var(--mono);
+    letter-spacing: 0.06em;
+    color: var(--ink-3);
+  }
+  .bar a { color: var(--ink-2); text-decoration: none; border-bottom: 1px solid var(--line); padding-bottom: 2px; }
+  .bar a:hover { color: var(--accent); border-color: var(--accent); }
+  .bar .grow { flex: 1; }
+  button {
+    font: 12px/1 var(--mono);
+    color: var(--ink-2);
+    background: transparent;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 7px 10px;
+    cursor: pointer;
+  }
+  button:hover { color: var(--ink); border-color: var(--ink-2); }
+  button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  button:disabled { opacity: 0.4; cursor: default; }
+  :focus-visible { outline: 1px dashed var(--ink); outline-offset: 2px; }
+
+  main { max-width: 1120px; margin: 0 auto; padding: 4px 22px 72px; }
+  h1 { font: 400 clamp(30px, 4.6vw, 44px)/1.08 var(--serif); letter-spacing: -0.015em; margin: 14px 0 10px; }
+  .lede { max-width: 62ch; margin: 0 0 26px; color: var(--ink-2); font-size: 18px; }
+  h2 {
+    font: 500 10.5px/1.4 var(--mono);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin: 0 0 10px;
+  }
+  .bench { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(280px, 1fr); gap: 28px; align-items: start; }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-top: 28px; }
+  figure { margin: 0; }
+  .stage { border: 1px solid var(--line); border-radius: 4px; background: var(--surface); overflow: hidden; }
+  .stage svg { display: block; width: 100%; height: auto; touch-action: none; user-select: none; -webkit-user-select: none; }
+  figcaption { padding: 9px 12px; border-top: 1px solid var(--line); font: 11.5px/1.5 var(--mono); color: var(--ink-3); }
+  .controls { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 12px; }
+  .controls label { font: 12px/1 var(--mono); color: var(--ink-2); display: inline-flex; align-items: center; gap: 6px; margin-left: 6px; }
+  input[type="range"] { accent-color: var(--ink); }
+  input[type="checkbox"] { accent-color: var(--ink); }
+
+  .notes { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 44px; margin-top: 46px; padding-top: 28px; border-top: 1px solid var(--line); }
+  .notes p { margin: 0 0 14px; max-width: 62ch; }
+  .notes p b { font-weight: 600; }
+  .notes ul { margin: 0 0 26px; padding: 0; list-style: none; }
+  .notes li { margin: 0 0 12px; padding-left: 14px; border-left: 1px solid var(--line); font-size: 16px; line-height: 1.45; }
+  .notes li a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--line); }
+  .notes li a:hover { color: var(--accent); border-color: var(--accent); }
+  details { margin-top: 4px; }
+  summary { font: 11.5px/1.4 var(--mono); color: var(--ink-3); cursor: pointer; }
+  details span { color: var(--ink-2); font-size: 15px; }
+  sup, sub { font-size: 0.72em; line-height: 0; }
+
+  @media (max-width: 860px) {
+    .bench, .pair, .notes { grid-template-columns: 1fr; }
+    .notes { gap: 28px; }
+  }
+  /* ---- momentos house style: end ---- */
+
+  /* ---- this tool: everything below is yours ---- */
+  var { font-style: italic; font-family: var(--serif); }
+  .grid line { stroke: var(--grid); stroke-width: 1; }
+  .grid .axis { stroke: var(--line); }
+  .tick { font: 10.5px var(--mono); fill: var(--ink-3); }
+  .w { fill: none; stroke: var(--ink); stroke-width: 1.6; stroke-linejoin: round; stroke-linecap: round; }
+  .src { fill: var(--surface); stroke: var(--ink); stroke-width: 1.6; }
+  .src1 { fill: var(--surface); stroke: var(--c1); stroke-width: 1.8; }
+  .h1 { fill: var(--c1); } .h2 { fill: var(--c2); } .hk { fill: var(--ink); }
+  .a2 { fill: none; stroke: var(--c2); stroke-width: 1.8; }
+  .t0 { font: 11.5px var(--mono); fill: var(--ink-2); }
+  .t1 { font: 11.5px var(--mono); fill: var(--c1); } .t2 { font: 11.5px var(--mono); fill: var(--c2); }
+  .t3 { font: 11.5px var(--mono); fill: var(--c3); } .t4 { font: 11.5px var(--mono); fill: var(--c4); }
+  .ta { font: 11.5px var(--mono); fill: var(--accent); }
+  .shade { fill: var(--grid); }
+  .curve { fill: none; stroke: var(--c2); stroke-width: 2.4; }
+  .ideal { stroke: var(--c1); stroke-width: 1.4; stroke-dasharray: 6 4; }
+  .vov { stroke: var(--c4); stroke-width: 1.2; stroke-dasharray: 4 3; }
+  .exact { stroke: var(--c3); stroke-width: 1.2; stroke-dasharray: 1 3; }
+  .dot { fill: var(--c2); }
+  .ring { fill: transparent; stroke: transparent; stroke-width: 1.5; cursor: ew-resize; outline: none; }
+  .ring:hover, .ring:focus-visible { stroke: var(--ink-2); stroke-dasharray: 3 3; }
+  .hit { fill: transparent; cursor: ew-resize; }
+  .bar-on { fill: var(--c2); } .bar-off { fill: var(--ink-3); opacity: 0.5; }
+  .read { font: 13px/1.6 var(--mono); font-variant-numeric: tabular-nums; }
+  .read p { margin: 0 0 4px; }
+  .read .big { font: 400 30px/1.15 var(--serif); color: var(--c2); margin: 6px 0 4px; }
+  .q1 { color: var(--c1); } .q2 { color: var(--c2); } .q3 { color: var(--c3); } .q4 { color: var(--c4); } .q0 { color: var(--ink-2); }
+  .warn { color: var(--accent); }
+  .controls output { font: 12px/1 var(--mono); color: var(--ink-2); min-width: 11ch; display: inline-block; }
+  .controls .lbl { font: 12px/1 var(--mono); color: var(--ink-3); }
+  .stack { display: grid; gap: 18px; }
+</style>
+</head>
+<body>
+
+<header class="bar">
+  <a href="../../index.html#current-mirror">← map</a>
+  <span>circuits / amplifiers</span>
+  <span class="grow"></span>
+  <button type="button" id="theme" aria-label="Switch between light and dark">◐</button>
+</header>
+
+<main>
+  <h1>Current mirror</h1>
+  <p class="lede">Feed a current into a transistor whose gate is tied to its drain, and it settles at the one V_GS that
+    carries that current. Hand that V_GS to a second transistor and it carries the same current, scaled by how much
+    wider it is. Drag its drain voltage and see how well the copy holds.</p>
+
+  <div class="bench">
+    <div class="stack">
+      <figure class="stage">
+        <svg id="circuit" viewBox="0 0 640 300" role="group" aria-label="The current mirror: a diode-connected M1 and a copying M2"></svg>
+        <figcaption>M1 sets V_GS for I_REF; M2 copies it. The output voltage is whatever the circuit hung on M2's drain
+          imposes.</figcaption>
+      </figure>
+      <div>
+        <div class="controls">
+          <label>I_REF <input type="range" id="sI" min="-5" max="-3" step="0.05" value="-4" aria-label="reference current, log scale"></label><output id="oI"></output>
+          <label>λ <input type="range" id="sL" min="0" max="0.2" step="0.01" value="0.1" aria-label="channel-length modulation lambda"></label><output id="oL"></output>
+        </div>
+        <div class="controls">
+          <span class="lbl">n = (W/L)₂/(W/L)₁</span>
+          <button type="button" data-n="1">1</button><button type="button" data-n="2">2</button>
+          <button type="button" data-n="3">3</button><button type="button" data-n="4">4</button>
+          <span class="lbl" style="margin-left:12px">load</span>
+          <button type="button" data-load="resistor">R_D load</button>
+          <button type="button" data-load="mirror">mirror load</button>
+          <button type="button" id="reset">reset</button>
+        </div>
+      </div>
+      <figure class="stage">
+        <svg id="load" viewBox="0 0 640 240" role="group" aria-label="A common-source stage with a resistor or a mirror as its load, and the two gains"></svg>
+        <figcaption>The same current through a resistor or a mirror: the mirror's large r_o gives the larger gain.</figcaption>
+      </figure>
+    </div>
+    <aside class="read">
+      <h2>The mirror</h2>
+      <p class="q1" id="r-iref"></p>
+      <p class="q3" id="r-vgs"></p>
+      <p class="q4" id="r-vov"></p>
+      <p id="r-n"></p>
+      <div class="big" id="r-iout"></div>
+      <p id="r-ideal"></p>
+      <p id="r-reg"></p>
+      <p id="r-vout"></p>
+    </aside>
+  </div>
+
+  <div class="pair">
+    <figure class="stage">
+      <svg id="iout" viewBox="0 0 480 320" role="group" aria-label="Output current against output voltage"></svg>
+      <figcaption>The output current against the output voltage. Drag the dot, or focus it and use ← →.</figcaption>
+    </figure>
+    <div class="read">
+      <h2>The copy</h2>
+      <div class="big" id="c-err"></div>
+      <p class="q0">= λ(V_out − V_GS)/(1 + λV_GS) in saturation</p>
+      <p id="c-ro"></p>
+      <p class="q4" id="c-min"></p>
+      <p id="c-diode"></p>
+    </div>
+  </div>
+
+  <section class="notes">
+    <div>
+      <h2>What should click</h2>
+      <p><b>The diode connection sets V_GS.</b> With gate tied to drain, M1 is always saturated and settles at the V_GS
+        that carries I_REF: V_GS = V_T + √(2I_REF/k).</p>
+      <p><b>Same V_GS, same current per width.</b> M2 sees the same V_GS, so it carries n times the current if it is n
+        times as wide, as long as it is saturated and its drain sits where M1's does.</p>
+      <p><b>The copy costs λΔV.</b> Channel-length modulation tilts M2's curve: each volt between the two drains adds about
+        λ of error. A cascode is the cure.</p>
+      <p><b>Below V_OV it stops.</b> M2 needs V_out ≥ V_OV to stay saturated. Below that it is a resistor, and the current
+        falls.</p>
+      <p><b>A mirror is a big resistor without the drop.</b> As a load it offers r_o to a signal while dropping only a few
+        tenths of a volt of DC, so a common-source stage gains g_m r_o/2 instead of g_mR_D.</p>
+    </div>
+    <div>
+      <h2>Predict, then try</h2>
+      <ul>
+        <li>With λ = 0.1 /V and V_out = 1.5 V, is I_out exactly 100 µA?
+          <details><summary>why</summary><span>No, 106 µA, 6.4 % high. M2's drain sits 0.7 V above M1's, and with channel-length modulation each extra volt adds about λ of current.</span></details></li>
+        <li>Where should V_out sit for an exact copy?
+          <details><summary>why</summary><span>At V_GS, 0.804 V: then both transistors have the same V_GS and the same V_DS, so they carry the same current per unit W/L.</span></details></li>
+        <li>Drag V_out below 0.3 V. What happens?
+          <details><summary>why</summary><span>M2 leaves saturation (V_out &lt; V_OV = 0.304 V) and the current collapses toward zero: a mirror needs at least V_OV across its output.</span></details></li>
+        <li>Set n = 3. Does the error change?
+          <details><summary>why</summary><span>No: the copy triples, but the percentage error depends only on λ and the drain-voltage difference.</span></details></li>
+        <li>In figure 3, switch between the loads, then change I_REF. Which gain moves?
+          <details><summary>why</summary><span>Neither. With R_D chosen to put the output at mid-supply, g_mR_D = V_DD/V_OV whatever the current; with the mirror, g_m r_o/2 = 1/(λV_OV). The mirror's gain is about four times higher because r_o is far larger than the resistor the supply allows.</span></details></li>
+      </ul>
+      <h2>Where this shows up</h2>
+      <ul>
+        <li><a href="../../index.html#current-mirror">current mirror</a>: the copy, its error λΔV and its lowest output voltage V_OV.</li>
+        <li><a href="../../index.html#diode-connected-transistor">diode-connected transistor</a>: M1, always saturated, setting V_GS for whatever it carries; 1/g_m to a small signal.</li>
+        <li><a href="../../index.html#current-source-load">current-source load</a>: the mirror in place of R_D, gain −g_m(r_o ∥ r_o).</li>
+        <li><a href="../../index.html#channel-length-modulation">channel-length modulation</a>: the slope of the flat part, 1/r_o, which sets both the copy error and the load's resistance.</li>
+        <li><a href="../../index.html#square-law">square law</a>: V_GS from I_REF, and why the copy scales with W/L.</li>
+        <li><a href="../../index.html#common-source">common source</a>: the stage the mirror loads, compared with its resistor load.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<script id="maths">
+// ---- the maths: plain functions with no page behind them. scripts/test-tools.js runs this block on
+// its own and compares it with the check cases below, so nothing in here may touch the DOM.
+// NMOS mirror: M1 diode-connected with I_REF, M2 n times as wide at the same V_GS, drain at V_out.
+var MATHS = (function () {
+  "use strict";
+  function drainCurrent(k, VT, lam, VGS, VDS) {
+    var vov = VGS - VT;
+    if (vov <= 0 || VDS <= 0) return 0;
+    if (VDS >= vov) return 0.5 * k * vov * vov * (1 + lam * VDS);
+    return k * (vov * VDS - 0.5 * VDS * VDS) * (1 + lam * VDS);
+  }
+  // V_GS of a diode-connected transistor (V_DS = V_GS) carrying I
+  function vgsForCurrent(k, VT, lam, I) {
+    var lo = VT, hi = VT + 10;
+    for (var i = 0; i < 200; i++) {
+      var mid = 0.5 * (lo + hi);
+      if (drainCurrent(k, VT, lam, mid, mid) < I) lo = mid; else hi = mid;
+    }
+    return 0.5 * (lo + hi);
+  }
+  function outputResistance(lam, I, VDS) { return lam * I === 0 ? Infinity : (1 + lam * VDS) / (lam * I); }
+  function mirror(k1, VT, lam, Iref, n, Vout) {
+    var vgs = vgsForCurrent(k1, VT, lam, Iref), vov = vgs - VT;
+    var iout = drainCurrent(n * k1, VT, lam, vgs, Vout), sat = Vout >= vov;
+    return { VGS: vgs, VOV: vov, Iout: iout, region: sat ? "saturation" : "triode", error: iout / (n * Iref) - 1,
+      ro: sat ? outputResistance(lam, iout, Vout) : null };
+  }
+  // M1 to a small signal: 1/g_m in parallel with r_o
+  function diodeResistance(k1, VT, lam, Iref) {
+    var vgs = vgsForCurrent(k1, VT, lam, Iref), gm = k1 * (vgs - VT) * (1 + lam * vgs);
+    var ro = outputResistance(lam, Iref, vgs);
+    return 1 / (gm + (ro === Infinity ? 0 : 1 / ro));
+  }
+  // common-source gain with a resistor (output at mid-supply) or a mirror (r_o = 1/(lam I)) as the load
+  function loadGain(kind, I, VOVamp, lam, VDD) {
+    var gm = 2 * I / VOVamp, ro = lam === 0 ? Infinity : 1 / (lam * I);
+    var load = kind === "resistor" ? (VDD / 2) / I : ro, par;
+    if (ro === Infinity && load === Infinity) return -Infinity;
+    if (ro === Infinity) par = load; else if (load === Infinity) par = ro; else par = ro * load / (ro + load);
+    return -gm * par;
+  }
+
+  return { drainCurrent: drainCurrent, vgsForCurrent: vgsForCurrent, outputResistance: outputResistance,
+    mirror: mirror, diodeResistance: diodeResistance, loadGain: loadGain };
+})();
+</script>
+<script type="application/json" id="check-cases">
+[
+  {"fn": "vgsForCurrent", "args": [0.002, 0.5, 0, 0.0001], "expect": 0.816227766016838, "tol": 1e-12, "units": "V", "tag": "typical", "note": "k = 2 mA/V², V_T = 0.5 V, no λ, I_REF = 100 µA: the diode settles at V_GS = 0.5 + √(2I/k) = 0.816 V"},
+  {"fn": "vgsForCurrent", "args": [0.002, 0.5, 0.1, 0.0001], "expect": 0.8042307268054738, "tol": 1e-12, "units": "V", "tag": "typical", "note": "the same with λ = 0.1 /V: 0.804 V, a little lower, because its own V_DS = V_GS adds a few percent of current"},
+  {"fn": "vgsForCurrent", "args": [0.002, 0.5, 0.1, 1e-09], "expect": 0.5009758547267427, "tol": 1e-12, "units": "V", "tag": "limit-zero", "note": "1 nA: V_GS is barely above V_T, 0.501 V; the square law's tail, where real transistors are subthreshold"},
+  {"fn": "mirror", "args": [0.002, 0.5, 0.1, 0.0001, 1, 1.5], "expect": {"VGS": 0.8042307268054738, "VOV": 0.3042307268054738, "Iout": 0.00010643978540247486, "region": "saturation", "error": 0.06439785402474851, "ro": 108042.30726805476}, "tol": 1e-12, "units": "V, A", "tag": "typical", "note": "a 1:1 mirror, I_REF = 100 µA, λ = 0.1 /V, V_out = 1.5 V: I_out = 106 µA, 6.4 % high, because M2's drain sits 0.7 V above M1's"},
+  {"fn": "mirror", "args": [0.002, 0.5, 0.1, 0.0001, 1, 0.804], "expect": {"VGS": 0.8042307268054738, "VOV": 0.3042307268054738, "Iout": 9.999786447724682e-05, "region": "saturation", "error": -2.135522753177188e-05, "ro": 108042.30726805476}, "tol": 1e-12, "units": "V, A", "tag": "typical", "note": "V_out = 0.804 V, almost exactly V_GS: the copy is within 0.003 %"},
+  {"fn": "mirror", "args": [0.002, 0.5, 0.1, 0.0001, 3, 1.5], "expect": {"VGS": 0.8042307268054738, "VOV": 0.3042307268054738, "Iout": 0.0003193193562074246, "region": "saturation", "error": 0.06439785402474851, "ro": 36014.10242268492}, "tol": 1e-12, "units": "V, A", "tag": "typical", "note": "M2 three times as wide: I_out = 319 µA, three times the copy, with the same 6.4 % error"},
+  {"fn": "mirror", "args": [0.002, 0.5, 0, 0.0001, 1, 3], "expect": {"VGS": 0.816227766016838, "VOV": 0.316227766016838, "Iout": 0.00010000000000000005, "region": "saturation", "error": 4.440892098500626e-16, "ro": "Infinity"}, "tol": 1e-12, "units": "V, A", "tag": "limit-infinity", "note": "λ = 0: the copy is exact at any V_out above V_OV, here 3 V, and r_o is infinite"},
+  {"fn": "mirror", "args": [0.002, 0.5, 0.1, 0.0001, 1, 0.15], "expect": {"VGS": 0.8042307268054738, "VOV": 0.3042307268054738, "Iout": 6.980075631226676e-05, "region": "triode", "error": -0.30199243687733235, "ro": null}, "tol": 1e-12, "units": "V, A", "tag": "breaks", "note": "V_out = 0.15 V, below V_OV = 0.304 V: M2 is in triode and gives 69.8 µA, 30 % short; the mirror has stopped being a current source"},
+  {"fn": "outputResistance", "args": [0.1, 0.0001, 1.5], "expect": 114999.99999999999, "tol": 1e-09, "units": "Ω", "tag": "typical", "note": "λ = 0.1 /V at 100 µA and V_DS = 1.5 V: r_o = (1 + λV_DS)/(λI) = 115 kΩ; 1/(λI) alone gives 100 kΩ"},
+  {"fn": "outputResistance", "args": [0, 0.0001, 1.5], "expect": "Infinity", "tol": 1e-09, "units": "Ω", "tag": "limit-infinity", "note": "λ = 0: an ideal current source, infinite output resistance"},
+  {"fn": "diodeResistance", "args": [0.002, 0.5, 0.1, 0.0001], "expect": 1500.0342904135102, "tol": 1e-09, "units": "Ω", "tag": "typical", "note": "the diode-connected M1 at 100 µA: 1/g_m ∥ r_o = 1.50 kΩ, close to 1/g_m; a small resistance, not the 8 kΩ of V_GS/I_REF"},
+  {"fn": "loadGain", "args": ["resistor", 0.0001, 0.2, 0.1, 3], "expect": -13.043478260869565, "tol": 1e-09, "units": "", "tag": "typical", "note": "a common-source stage at 100 µA with V_OV = 0.2 V and R_D = 15 kΩ (the drain at mid-supply on 3 V): A_v = −13.0"},
+  {"fn": "loadGain", "args": ["mirror", 0.0001, 0.2, 0.1, 3], "expect": -49.999999999999986, "tol": 1e-09, "units": "", "tag": "typical", "note": "the same stage with a mirror load of r_o = 100 kΩ: A_v = −g_m(r_o ∥ r_o) = −1/(λV_OV) = −50"},
+  {"fn": "loadGain", "args": ["mirror", 0.001, 0.2, 0.1, 3], "expect": -50.0, "tol": 1e-09, "units": "", "tag": "sign", "note": "ten times the current with the mirror load: still −50. g_m grows with I and r_o falls with it; the gain does not care"},
+  {"fn": "loadGain", "args": ["mirror", 0.0001, 0.2, 0, 3], "expect": "-Infinity", "tol": 1e-09, "units": "", "tag": "limit-infinity", "note": "λ = 0 with a mirror load: the gain would be infinite; in a real circuit the next stage's input or the transistors' r_o set it"}
+]
+</script>
+<script>
+(function () {
+  "use strict";
+
+  const NS = "http://www.w3.org/2000/svg";
+  function S(name, attrs, parent) {
+    const el = document.createElementNS(NS, name);
+    for (const k in attrs) el.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(el);
+    return el;
+  }
+  const $ = (id) => document.getElementById(id);
+  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+  const f1 = (v) => v.toFixed(1);
+  function eng(v, unit) {
+    if (!isFinite(v)) return "∞ " + unit;
+    if (Math.abs(v) < 1e-15) return "0 " + unit;
+    const pre = { "-15": "f", "-12": "p", "-9": "n", "-6": "µ", "-3": "m", "0": "", "3": "k", "6": "M" };
+    let e = clamp(Math.floor(Math.log10(Math.abs(v)) / 3) * 3, -15, 6);
+    let s = Math.abs(v / Math.pow(10, e)).toPrecision(3);
+    if (Number(s) >= 1000 && e < 6) { e += 3; s = Math.abs(v / Math.pow(10, e)).toPrecision(3); }
+    return (v < 0 ? "−" : "") + s + " " + pre[String(e)] + unit;
+  }
+  const volts = (v, d) => v.toFixed(d === undefined ? 3 : d) + " V";
+  function svgPoint(svg, e) {
+    const ctm = svg.getScreenCTM();
+    if (!ctm) return { x: 0, y: 0 };
+    const p = new DOMPoint(e.clientX, e.clientY).matrixTransform(ctm.inverse());
+    return { x: p.x, y: p.y };
+  }
+
+  // ------------------------------------------------------------ the device and state
+
+  const K1 = 2e-3, VT = 0.5, VOVAMP = 0.2, VDD = 3;
+  const START = { lI: -4, lam: 0.1, n: 1, vout: 1.5, load: "mirror" };
+  const st = Object.assign({}, START);
+  const IREF = () => Math.pow(10, st.lI);
+  const at = (v) => MATHS.mirror(K1, VT, st.lam, IREF(), st.n, v);
+
+  // ------------------------------------------------------------ drawing helpers
+
+  function kit(layer) {
+    const W = (d) => S("path", { class: "w", d: d }, layer);
+    const T = (x, y, cls, text, anchor) => { const t = S("text", { x: x, y: y, class: cls, "text-anchor": anchor || "start" }, layer); t.textContent = text; return t; };
+    const ground = (x, y) => W("M" + x + " " + y + "m-11 0h22m-16 5h10m-6 5h2");
+    const dot = (x, y) => S("circle", { cx: x, cy: y, r: 2.6, fill: "var(--ink)" }, layer);
+    // NMOS: drain up at (x, y-30), source down at (x, y+30), gate lead from the left or right at x∓24
+    function nmos(x, y, gateLeft) {
+      const s = gateLeft ? -1 : 1;
+      W("M" + (x + s * 24) + " " + y + "H" + (x + s * 14) + "M" + (x + s * 14) + " " + (y - 14) + "V" + (y + 14));
+      W("M" + (x + s * 8) + " " + (y - 18) + "V" + (y + 18));
+      W("M" + (x + s * 8) + " " + (y - 12) + "H" + x + "V" + (y - 30) + "M" + (x + s * 8) + " " + (y + 12) + "H" + x + "V" + (y + 30));
+      S("path", { d: "M" + (x - s * 1) + " " + (y + 12) + "l" + (s * 7) + " -4v8Z", fill: "var(--ink)" }, layer);
+    }
+    // a current source, arrow pointing down
+    function isrc(x, y, cls, head) {
+      S("circle", { class: cls, cx: x, cy: y, r: 13 }, layer);
+      W("M" + x + " " + (y - 7) + "V" + (y + 3));
+      S("path", { class: head, d: "M" + x + " " + (y + 9) + "l-4 -7h8Z" }, layer);
+    }
+    return { W: W, T: T, ground: ground, dot: dot, nmos: nmos, isrc: isrc };
+  }
+
+  // ------------------------------------------------------------ figure 1: the mirror
+
+  const C = $("circuit"), cl = S("g", {}, C), ck = kit(cl);
+  function drawCircuit(m) {
+    cl.textContent = "";
+    const { W, T, ground, dot, nmos, isrc } = ck;
+    W("M80 30H260"); T(84, 22, "t0", "V_DD");
+    // I_REF into M1
+    W("M160 30V57M160 83V120"); isrc(160, 70, "src1", "h1");
+    T(180, 74, "t1", "I_REF = " + eng(IREF(), "A"));
+    nmos(160, 150, false);            // M1 at x = 160, gate lead to the right at 184
+    W("M160 180V230"); ground(160, 230);
+    // diode connection: drain to gate
+    W("M160 105H210V150H184"); dot(160, 105); dot(210, 150);
+    T(118, 150, "t0", "M1", "end"); T(118, 164, "tick", "W/L = 10", "end");
+    // the gate line to M2
+    W("M210 150H426");
+    T(300, 142, "t3", "V_GS = " + volts(m.VGS), "middle");
+    nmos(450, 150, true);             // M2 at x = 450, gate lead from the left at 426
+    W("M450 180V230"); ground(450, 230);
+    T(482, 150, "t0", "M2"); T(482, 164, "tick", "W/L = 10 × " + st.n);
+    // M2's drain to the V_out source
+    W("M450 120V70H600V117M600 143V230"); ground(600, 230);
+    S("circle", { class: "src", cx: 600, cy: 130, r: 13 }, cl);
+    T(600, 127, "t0", "+", "middle"); T(600, 140, "t0", "−", "middle");
+    T(592, 98, "t0", "V_out", "end"); T(592, 112, "t0", volts(st.vout, 2), "end");
+    S("path", { class: "a2", d: "M436 78V108" }, cl); S("path", { class: "h2", d: "M436 116l-4 -8h8Z" }, cl);
+    T(428, 96, "t2", "I_out = " + eng(m.Iout, "A"), "end");
+    if (m.region !== "saturation") T(482, 192, "ta", "M2 in triode");
+  }
+
+  // ------------------------------------------------------------ figure 2: I_out against V_out
+
+  const F = $("iout");
+  const PX0 = 60, PX1 = 460, PY0 = 20, PY1 = 270;
+  const PX = (v) => PX0 + (v / 3) * (PX1 - PX0);
+  const fShade = S("g", {}, F), fGrid = S("g", { class: "grid" }, F), fLab = S("g", {}, F), fCurves = S("g", {}, F);
+  const fHit = S("rect", { class: "hit", x: PX0, y: PY0, width: PX1 - PX0, height: PY1 - PY0 }, F);
+  const fDot = S("circle", { class: "dot", r: 6 }, F);
+  const fRing = S("circle", { class: "ring", r: 16, tabindex: 0, role: "slider", "aria-label": "output voltage V_out" }, F);
+  S("text", { x: PX1, y: 312, "text-anchor": "end", class: "tick" }, F).textContent = "V_out (V)";
+  S("text", { x: 4, y: 12, class: "t2" }, F).textContent = "I_out";
+  let PY = null;
+
+  function drawIout(m) {
+    const top = 1.3 * st.n * IREF();
+    PY = (i) => PY1 - (i / top) * (PY1 - PY0);
+    fShade.textContent = ""; fGrid.textContent = ""; fLab.textContent = ""; fCurves.textContent = "";
+    S("rect", { class: "shade", x: PX0, y: PY0, width: f1(PX(m.VOV) - PX0), height: PY1 - PY0 }, fShade);
+    S("text", { x: PX0 + 4, y: PY1 - 6, class: "tick" }, fShade).textContent = "triode";
+    for (let v = 0; v <= 3.0001; v += 0.25) {
+      S("line", { x1: PX(v), x2: PX(v), y1: PY0, y2: PY1, class: v === 0 ? "axis" : "" }, fGrid);
+      if (Math.abs(v * 2 - Math.round(v * 2)) < 1e-9) S("text", { x: PX(v), y: PY1 + 16, "text-anchor": "middle", class: "tick" }, fLab).textContent = v.toFixed(1);
+    }
+    for (let j = 0; j <= 5; j++) {
+      const i = (top * j) / 5;
+      S("line", { x1: PX0, x2: PX1, y1: f1(PY(i)), y2: f1(PY(i)), class: j === 0 ? "axis" : "" }, fGrid);
+      if (j > 0) S("text", { x: PX0 - 4, y: f1(PY(i) + 3.5), "text-anchor": "end", class: "tick" }, fLab).textContent = eng(i, "A");
+    }
+    const ideal = st.n * IREF();
+    S("line", { class: "ideal", x1: PX0, x2: PX1, y1: f1(PY(ideal)), y2: f1(PY(ideal)) }, fCurves);
+    S("text", { x: PX1 - 4, y: f1(PY(ideal) + 14), "text-anchor": "end", class: "t1" }, fCurves).textContent = "n·I_REF, the ideal copy";
+    S("line", { class: "vov", x1: f1(PX(m.VOV)), x2: f1(PX(m.VOV)), y1: PY0, y2: PY1 }, fCurves);
+    S("text", { x: f1(PX(m.VOV) + 3), y: PY0 + 12, class: "t4" }, fCurves).textContent = "V_OV, the lowest V_out";
+    S("line", { class: "exact", x1: f1(PX(m.VGS)), x2: f1(PX(m.VGS)), y1: PY0 + 18, y2: PY1 }, fCurves);
+    S("text", { x: f1(PX(m.VGS) + 3), y: PY0 + 28, class: "t3" }, fCurves).textContent = "V_out = V_GS: exact";
+    let d = "";
+    for (let i = 0; i <= 200; i++) { const v = (3 * i) / 200; d += (i ? "L" : "M") + f1(PX(v)) + " " + f1(PY(at(v).Iout)); }
+    S("path", { class: "curve", d: d }, fCurves);
+    const x = f1(PX(st.vout)), y = f1(PY(m.Iout));
+    fDot.setAttribute("cx", x); fDot.setAttribute("cy", y); fRing.setAttribute("cx", x); fRing.setAttribute("cy", y);
+    fRing.setAttribute("aria-valuetext", "V_out = " + volts(st.vout, 2));
+  }
+
+  // ------------------------------------------------------------ figure 3: the load
+
+  const L = $("load"), ll = S("g", {}, L), lk = kit(ll);
+  function drawLoad(m) {
+    ll.textContent = "";
+    const { W, T, ground, dot, nmos, isrc } = lk;
+    const I = m.Iout, gR = MATHS.loadGain("resistor", I, VOVAMP, st.lam, VDD), gM = MATHS.loadGain("mirror", I, VOVAMP, st.lam, VDD);
+    W("M100 30H220"); T(104, 22, "t0", "V_DD = 3 V");
+    if (st.load === "resistor") {
+      let z = "M160 30V48";
+      for (let i = 0; i < 6; i++) z += "L" + (160 + (i % 2 ? 6 : -6)) + " " + (48 + 7 * (i + 0.5));
+      W(z + "L160 90V110");
+      T(172, 74, "t0", "R_D = " + eng((VDD / 2) / I, "Ω"));
+    } else {
+      W("M160 30V57M160 83V110"); isrc(160, 70, "src", "hk");
+      T(178, 66, "t0", "mirror"); T(178, 80, "tick", "r_o = " + eng(st.lam > 0 ? 1 / (st.lam * I) : Infinity, "Ω"));
+    }
+    dot(160, 110);
+    W("M160 110V128"); nmos(160, 158, true);
+    W("M160 188V210"); ground(160, 210);
+    W("M100 158H136"); T(96, 162, "t0", "v_in", "end");
+    W("M160 110H250"); S("circle", { cx: 254, cy: 110, r: 4, fill: "var(--surface)", stroke: "var(--ink)" }, ll);
+    T(254, 98, "t0", "v_out", "middle");
+    // the two gains as bars, 60 fills 260 px
+    const bar = (y, g, on, name) => {
+      const len = isFinite(g) ? Math.min(260, (260 * Math.abs(g)) / 60) : 260;
+      S("rect", { class: on ? "bar-on" : "bar-off", x: 340, y: y, width: f1(Math.max(1, len)), height: 22, rx: 2 }, ll);
+      T(340, y - 6, on ? "t2" : "t0", name + ": A_v = " + (isFinite(g) ? (g < 0 ? "−" : "") + Math.abs(g).toFixed(1) : "−∞"));
+    };
+    bar(70, gR, st.load === "resistor", "R_D load");
+    bar(140, gM, st.load === "mirror", "mirror load");
+    T(340, 196, "t0", "same current I_out;");
+    T(340, 212, "t0", "amplifier V_OV = 0.2 V, λ = " + st.lam.toFixed(2) + " /V");
+  }
+
+  // ------------------------------------------------------------ readouts
+
+  function readouts(m) {
+    $("r-iref").textContent = "I_REF = " + eng(IREF(), "A");
+    $("r-vgs").textContent = "V_GS = " + volts(m.VGS);
+    $("r-vov").textContent = "V_OV = " + volts(m.VOV);
+    $("r-n").textContent = "n = " + st.n;
+    $("r-iout").textContent = "I_out = " + eng(m.Iout, "A");
+    $("r-ideal").textContent = "ideal n·I_REF = " + eng(st.n * IREF(), "A");
+    $("r-reg").className = m.region === "saturation" ? "" : "warn";
+    $("r-reg").textContent = m.region === "saturation" ? "M2: saturation" : "M2: triode, below V_OV";
+    $("r-vout").textContent = "V_out = " + volts(st.vout, 2);
+    $("c-err").textContent = "copy error = " + (m.error >= 0 ? "+" : "−") + Math.abs(100 * m.error).toFixed(2) + " %";
+    $("c-ro").textContent = m.ro === null ? "r_o: none, M2 is not a current source here"
+      : "r_o = (1 + λV_out)/(λI_out) = " + eng(m.ro, "Ω");
+    $("c-min").textContent = "lowest V_out = V_OV = " + volts(m.VOV);
+    $("c-diode").textContent = "M1 to a small signal: 1/g_m ∥ r_o = " + eng(MATHS.diodeResistance(K1, VT, st.lam, IREF()), "Ω") +
+      ", not V_GS/I_REF = " + eng(m.VGS / IREF(), "Ω");
+  }
+
+  function render() { const m = at(st.vout); drawCircuit(m); drawIout(m); drawLoad(m); readouts(m); }
+
+  // ------------------------------------------------------------ controls
+
+  function sync() {
+    document.querySelectorAll("[data-n]").forEach((b) => b.setAttribute("aria-pressed", String(Number(b.dataset.n) === st.n)));
+    document.querySelectorAll("[data-load]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.load === st.load)));
+    $("sI").value = st.lI; $("sL").value = st.lam;
+    $("oI").textContent = "I_REF = " + eng(IREF(), "A");
+    $("oL").textContent = "λ = " + st.lam.toFixed(2) + " /V";
+  }
+  function change(fn) { fn(); sync(); render(); }
+  const setV = (v) => change(() => { st.vout = clamp(Math.round(v * 100) / 100, 0, 3); });
+
+  $("sI").addEventListener("input", (e) => change(() => { st.lI = Number(e.target.value); }));
+  $("sL").addEventListener("input", (e) => change(() => { st.lam = Number(e.target.value); }));
+  document.querySelectorAll("[data-n]").forEach((b) => b.addEventListener("click", () => change(() => { st.n = Number(b.dataset.n); })));
+  document.querySelectorAll("[data-load]").forEach((b) => b.addEventListener("click", () => change(() => { st.load = b.dataset.load; })));
+  $("reset").addEventListener("click", () => change(() => { Object.assign(st, START); }));
+  [fRing, fHit].forEach((el) => {
+    let on = false;
+    const vAt = (e) => ((svgPoint(F, e).x - PX0) / (PX1 - PX0)) * 3;
+    el.addEventListener("pointerdown", (e) => {
+      e.preventDefault(); on = true;
+      try { el.setPointerCapture(e.pointerId); } catch (_) { /* fine without capture */ }
+      fRing.focus({ preventScroll: true });
+      setV(vAt(e));
+    });
+    el.addEventListener("pointermove", (e) => { if (on) setV(vAt(e)); });
+    el.addEventListener("pointerup", () => { on = false; });
+    el.addEventListener("pointercancel", () => { on = false; });
+  });
+  fRing.addEventListener("keydown", (e) => {
+    const dir = { ArrowLeft: -1, ArrowDown: -1, ArrowRight: 1, ArrowUp: 1 }[e.key];
+    if (!dir) return;
+    e.preventDefault();
+    setV(st.vout + dir * (e.shiftKey ? 0.1 : 0.01));
+  });
+
+  $("theme").addEventListener("click", () => {
+    const root = document.documentElement;
+    const dark = root.dataset.theme ? root.dataset.theme === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+    root.dataset.theme = dark ? "light" : "dark";
+    try { localStorage.setItem("momentos-theme", root.dataset.theme); } catch (_) { /* switched, just not remembered */ }
+  });
+
+  sync();
+  render();
+
+  // for checking the numbers from the console
+  window.TOOL = { st: st, set: (o) => change(() => Object.assign(st, o)) };
+})();
+</script>
+</body>
+</html>

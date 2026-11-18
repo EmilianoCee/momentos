@@ -136,5 +136,56 @@
       "limit": "λ made smaller and smaller: what happens to the intrinsic gain, and what else limits the stage?",
       "transfer": "An amplifier needs a gain of 1000 from transistors with g_m r_o = 40: how many stages, or what structure?"
     }
+  },
+  "current-mirror": {
+    "L1": "States that a mirror copies a reference current, scaled by the ratio of W/L, using a diode-connected transistor.",
+    "L2": "Computes the output current n·I_REF, V_GS from I_REF with the square law, and the lowest output voltage V_OV.",
+    "L3": "Explains why the same V_GS gives the same current per width; explains the copy error as λ(V_out − V_GS) and why it vanishes when the drains match; explains why the copy collapses below V_OV.",
+    "L4": "Designs ratios with unit devices; knows V_T mismatch and λ limit accuracy and that a cascode raises the output resistance at the cost of headroom.",
+    "missteps": [
+      "copies the current at any output voltage, even below V_OV",
+      "scales the current by changing L instead of W",
+      "ignores the error from different drain voltages"
+    ],
+    "seeds": {
+      "predict": "A 1:2 mirror with λ = 0.05 /V has its output drain 1 V above its input drain: what does it deliver?",
+      "explain": "Why two transistors with the same V_GS carry currents in the ratio of their W/L.",
+      "limit": "The output voltage lowered toward zero: where does the mirror stop working, and what does M2 become?",
+      "transfer": "One 20 µA reference must bias three stages at 20 µA, 40 µA and 100 µA: draw the mirror and give the device ratios."
+    }
+  },
+  "diode-connected-transistor": {
+    "L1": "States that a diode-connected transistor has its gate tied to its drain and is always saturated.",
+    "L2": "Computes its V_GS for a given current, and its small-signal resistance 1/g_m.",
+    "L3": "Explains why it is always saturated (V_DS = V_GS > V_GS − V_T); explains its small-signal resistance as 1/g_m ∥ r_o and why it differs from V_GS/I.",
+    "L4": "Uses it as a load or a level shifter and knows its large-signal behaviour is the square law, not a resistor.",
+    "missteps": [
+      "takes its resistance as V_GS/I",
+      "thinks it can enter triode",
+      "forgets r_o in parallel with 1/g_m"
+    ],
+    "seeds": {
+      "predict": "The current through a diode-connected transistor is quadrupled: what happens to V_OV and to its small-signal resistance?",
+      "explain": "Why a transistor with its gate tied to its drain can never be in triode.",
+      "limit": "The current made very small: what happens to V_GS and to 1/g_m?",
+      "transfer": "A stage needs a load of about 2 kΩ to a signal at 100 µA: would a diode-connected transistor do, and what V_OV would it need?"
+    }
+  },
+  "current-source-load": {
+    "L1": "States that a transistor current source can replace R_D as a common-source load.",
+    "L2": "Computes the gain −g_m(r_o ∥ r_o,load) of a stage with a current-source load.",
+    "L3": "Explains why a current-source load gives far more gain than a resistor on the same supply: it shows a large r_o to the signal while dropping only a little DC voltage; shows the gain is about 1/(λV_OV), independent of current.",
+    "L4": "Knows the output's DC level is then set by a balance of two currents and needs feedback to hold it; knows the swing limits of the two stacked transistors.",
+    "missteps": [
+      "forgets the load's r_o in parallel",
+      "expects the gain to grow with the bias current",
+      "uses a resistor load's R_D in place of r_o"
+    ],
+    "seeds": {
+      "predict": "A common-source stage with a mirror load has its bias current doubled at the same V_OV: what happens to its gain?",
+      "explain": "Why a resistor big enough to match a current source's r_o is impractical on a low supply.",
+      "limit": "λ made smaller and smaller: what does the gain approach, and what sets it in practice?",
+      "transfer": "An op-amp's first stage uses a mirror load: estimate its gain from λ and V_OV."
+    }
   }
 }

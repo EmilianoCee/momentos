@@ -40,19 +40,22 @@
       "id": "mobility",
       "title": "mobility",
       "essence": "A carrier is pushed by the field, then knocked off course by a collision about every tenth of a picosecond. Mobility μ is its average drift speed per unit field. Dopant ions and a hotter lattice scatter more and lower μ. Electrons outrun holes 2 to 3 times.",
-      "check": "You raise the doping of a silicon bar tenfold. Why does its resistivity fall by less than ten times?"
+      "check": "You raise the doping of a silicon bar tenfold. Why does its resistivity fall by less than ten times?",
+      "tools": ["devices/semiconductors/drift-and-mobility.html"]
     },
     {
       "id": "drift-current",
       "title": "drift current",
       "essence": "A field adds a small average velocity v = μE on top of fast random motion. Current density is charge times density times that velocity, J = q(nμ_n + pμ_p)E. Electrons and holes drift opposite ways, but both currents point along E.",
-      "check": "Two bars of the same size carry the same current. One has twice the electron density. How does its electron drift velocity compare with the other's?"
+      "check": "Two bars of the same size carry the same current. One has twice the electron density. How does its electron drift velocity compare with the other's?",
+      "tools": ["devices/semiconductors/drift-and-mobility.html"]
     },
     {
       "id": "resistivity",
       "title": "resistivity",
       "essence": "A doped bar's resistivity is set almost entirely by its majority carriers: ρ ≈ 1/(qNμ) for a doping N. The minority carriers are outnumbered by many decades and add nothing you could measure.",
-      "check": "A bar is doped with 10¹⁶ cm⁻³ donors. Why can you ignore its holes when you work out its resistance, even though they drift too?"
+      "check": "A bar is doped with 10¹⁶ cm⁻³ donors. Why can you ignore its holes when you work out its resistance, even though they drift too?",
+      "tools": ["devices/semiconductors/drift-and-mobility.html"]
     },
     {
       "id": "diffusion-current",
@@ -70,7 +73,8 @@
       "id": "velocity-saturation",
       "title": "velocity saturation",
       "essence": "At high fields carriers lose energy to the lattice as fast as the field gives it, so their drift speed stops near 10⁷ cm/s in silicon. A very short transistor then carries a current that grows linearly with V_GS − V_T instead of as its square.",
-      "check": "A transistor's channel is made ten times shorter, at the same voltages. Why does its current grow by much less than ten times?"
+      "check": "A transistor's channel is made ten times shorter, at the same voltages. Why does its current grow by much less than ten times?",
+      "tools": ["devices/semiconductors/drift-and-mobility.html"]
     },
     {
       "id": "recombination-and-lifetime",

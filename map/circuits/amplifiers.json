@@ -70,19 +70,22 @@
       "id": "current-source-load",
       "title": "current-source load",
       "essence": "Gain is g_m times the resistance at the output, and a resistor big enough for high gain drops too much DC voltage. A saturated transistor passes the bias current with only a few hundred millivolts across it but looks like r_o to the signal.",
-      "check": "For a gain of 100 with g_m = 1 mS and 100 μA of bias, how much DC voltage would a resistor load drop, and how does a current-source load avoid that?"
+      "check": "For a gain of 100 with g_m = 1 mS and 100 μA of bias, how much DC voltage would a resistor load drop, and how does a current-source load avoid that?",
+      "tools": ["circuits/amplifiers/current-mirror.html"]
     },
     {
       "id": "current-mirror",
       "title": "current mirror",
       "essence": "A diode-connected transistor turns a reference current into a V_GS. A second transistor with the same V_GS carries the same current, scaled by the ratio of widths. Scale it by placing several unit devices side by side, never by changing L.",
-      "check": "A mirror's output device is four times wider than the reference device, and its drain sits at a higher voltage. Is the output current exactly 4·I_REF, above it or below it, and why?"
+      "check": "A mirror's output device is four times wider than the reference device, and its drain sits at a higher voltage. Is the output current exactly 4·I_REF, above it or below it, and why?",
+      "tools": ["circuits/amplifiers/current-mirror.html"]
     },
     {
       "id": "diode-connected-transistor",
       "title": "diode-connected transistor",
       "essence": "Tie the gate to the drain and the transistor is always saturated, setting its own V_GS for whatever current it carries. To a small signal it is a resistor of about 1/g_m.",
-      "check": "Why is a diode-connected NMOS always in saturation, whatever current you push through it?"
+      "check": "Why is a diode-connected NMOS always in saturation, whatever current you push through it?",
+      "tools": ["circuits/amplifiers/current-mirror.html"]
     },
     {
       "id": "cascode-mirror",

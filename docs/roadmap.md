@@ -111,7 +111,9 @@ The owner's record exists and EE 120 is fully mapped. The user can run `onboard 
   - Started 2026-11-17: `bode-plot`, `ideal-op-amp` and `rc-rl-step-response` are full plans with reference
     scripts, and their topics have rubric entries. `small-signal-analysis` followed the same day, then
     `single-stage-amplifiers` (common source, common gate and common drain in one tool, at the owner's choice), which
-    replaces the `common-source` stub. Next: `resistance-looking-in`.
+    replaces the `common-source` stub. Then, on the device side, four new full plans built the same day:
+    `drift-and-mobility`, `mos-capacitor`, `mosfet-channel` and `current-mirror` (from its stub). Next:
+    `resistance-looking-in`.
 
 - [ ] **5. The pilot.** Model: Opus runs it, a Sonnet subagent builds. Skill: `build-tool`.
   - Once one full plan exists, start a Sonnet subagent with only: "Work in the repo at <path>. Follow
@@ -191,3 +193,6 @@ The owner's record exists and EE 120 is fully mapped. The user can run `onboard 
   Then `circuits/amplifiers/small-signal-analysis.html` (20 check cases) and rubric entries for its four topics.
   Then `circuits/amplifiers/single-stage-amplifiers.html` (23 check cases): common source, common gate and the
   source follower in one tool, with rubric entries for its five topics.
+- 2026-11-17: the device chain from carriers to the current mirror: `devices/semiconductors/drift-and-mobility.html`,
+  `devices/mos/mos-capacitor.html`, `devices/mos/mosfet-channel.html` and `circuits/amplifiers/current-mirror.html`
+  (74 check cases), with rubric entries for their seventeen topics.

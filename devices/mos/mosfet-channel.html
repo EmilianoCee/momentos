@@ -1,0 +1,686 @@
+<!doctype html>
+<!--
+  Concept:      The channel is a sheet of electrons C_ox(V_OV − V(x)) drifting from source to drain; every slice
+                carries the same W·Q·μ·E, so the sheet thins toward the drain, pinches off at V_DS = V_OV, and the
+                current settles at (k/2)V_OV².
+  Course:       EE 105 (MOSFET regions, triode, pinch-off, square law)
+  Play with:    V_GS, V_DS and W/L; a probe along the channel; a sweep of V_DS through pinch-off
+  Should click: The current is the same in every slice, so a thinner sheet needs a stronger field; at
+                V_DS = V_OV the sheet at the drain vanishes, the extra voltage drops across a short gap, and the
+                current stops growing.
+  Plan:         plans/mosfet-channel.md
+  Checked:      19 check cases pass (node scripts/test-tools.js). Headless Chrome, light and dark, no console errors:
+                V_GS = 1 V, V_DS = 0.2 V, W/L = 10 reads triode, I_D = 160 µA, R_on = 1.00 kΩ, and at x = 0.5 µm
+                V = 0.088 V, Q = 206 nC/cm², E = 1.94 kV/cm, v = 7.76×10⁵ cm/s, W·Q·μ·E = 160 µA; V_DS = 0.9 V reads
+                saturation, 250 µA, the sheet pinched off at the drain and the gap step in V(x); V_GS = 0.4 V reads
+                cut-off. Handles: ← → move V_DS and V_GS by 0.01 V, Shift 0.1 V, and the probe by 0.01, Shift 0.1;
+                the sweep (with a timer standing in for animation frames) passes 0.99 V at 2 s and ends at 2 V.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>the MOSFET channel · momentos</title>
+<script>
+  // apply a saved light/dark choice before anything is painted
+  try {
+    var saved = localStorage.getItem("momentos-theme");
+    if (saved === "light" || saved === "dark") document.documentElement.dataset.theme = saved;
+  } catch (e) { /* no storage in some previews: follow the system setting */ }
+</script>
+<style>
+  /* ---- momentos house style: begin (the same block in every tool. Change it only in
+     templates/tool-template.html, then run scripts/sync-house-style.py) ---- */
+  :root {
+    color-scheme: light dark;
+    --bg: light-dark(#f6f4ee, #131312);          /* the page */
+    --surface: light-dark(#fbfaf6, #1b1b19);     /* figures and inputs */
+    --ink: light-dark(#1d1c1a, #ebe8e1);         /* text and the main strokes */
+    --ink-2: light-dark(#5f5c55, #b1ada3);       /* secondary text */
+    --ink-3: light-dark(#77736b, #8a867d);       /* labels, axis numbers */
+    --line: light-dark(rgba(29, 28, 26, 0.16), rgba(235, 232, 225, 0.18));   /* hairlines and borders */
+    --grid: light-dark(rgba(29, 28, 26, 0.07), rgba(235, 232, 225, 0.08));   /* grid lines */
+    --accent: light-dark(#c2410c, #ff8f5a);      /* the one thing being pointed at */
+    /* Colour is for quantities, never for decoration. Give each quantity one of these and keep it
+       the same in the figure, the numbers and the prose. */
+    --c1: light-dark(#2458c4, #7aa7ff);          /* blue */
+    --c2: light-dark(#c2410c, #ff9a62);          /* orange */
+    --c3: light-dark(#0f7f6b, #4fd3b4);          /* teal */
+    --c4: light-dark(#9d3fb0, #d78be6);          /* purple */
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+    --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  }
+  :root[data-theme="light"] { color-scheme: light; }
+  :root[data-theme="dark"] { color-scheme: dark; }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 17px/1.55 var(--serif);
+    -webkit-font-smoothing: antialiased;
+  }
+  .bar {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 22px;
+    font: 12px/1 var(--mono);
+    letter-spacing: 0.06em;
+    color: var(--ink-3);
+  }
+  .bar a { color: var(--ink-2); text-decoration: none; border-bottom: 1px solid var(--line); padding-bottom: 2px; }
+  .bar a:hover { color: var(--accent); border-color: var(--accent); }
+  .bar .grow { flex: 1; }
+  button {
+    font: 12px/1 var(--mono);
+    color: var(--ink-2);
+    background: transparent;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 7px 10px;
+    cursor: pointer;
+  }
+  button:hover { color: var(--ink); border-color: var(--ink-2); }
+  button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  button:disabled { opacity: 0.4; cursor: default; }
+  :focus-visible { outline: 1px dashed var(--ink); outline-offset: 2px; }
+
+  main { max-width: 1120px; margin: 0 auto; padding: 4px 22px 72px; }
+  h1 { font: 400 clamp(30px, 4.6vw, 44px)/1.08 var(--serif); letter-spacing: -0.015em; margin: 14px 0 10px; }
+  .lede { max-width: 62ch; margin: 0 0 26px; color: var(--ink-2); font-size: 18px; }
+  h2 {
+    font: 500 10.5px/1.4 var(--mono);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin: 0 0 10px;
+  }
+  .bench { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(280px, 1fr); gap: 28px; align-items: start; }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-top: 28px; }
+  figure { margin: 0; }
+  .stage { border: 1px solid var(--line); border-radius: 4px; background: var(--surface); overflow: hidden; }
+  .stage svg { display: block; width: 100%; height: auto; touch-action: none; user-select: none; -webkit-user-select: none; }
+  figcaption { padding: 9px 12px; border-top: 1px solid var(--line); font: 11.5px/1.5 var(--mono); color: var(--ink-3); }
+  .controls { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 12px; }
+  .controls label { font: 12px/1 var(--mono); color: var(--ink-2); display: inline-flex; align-items: center; gap: 6px; margin-left: 6px; }
+  input[type="range"] { accent-color: var(--ink); }
+  input[type="checkbox"] { accent-color: var(--ink); }
+
+  .notes { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 44px; margin-top: 46px; padding-top: 28px; border-top: 1px solid var(--line); }
+  .notes p { margin: 0 0 14px; max-width: 62ch; }
+  .notes p b { font-weight: 600; }
+  .notes ul { margin: 0 0 26px; padding: 0; list-style: none; }
+  .notes li { margin: 0 0 12px; padding-left: 14px; border-left: 1px solid var(--line); font-size: 16px; line-height: 1.45; }
+  .notes li a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--line); }
+  .notes li a:hover { color: var(--accent); border-color: var(--accent); }
+  details { margin-top: 4px; }
+  summary { font: 11.5px/1.4 var(--mono); color: var(--ink-3); cursor: pointer; }
+  details span { color: var(--ink-2); font-size: 15px; }
+  sup, sub { font-size: 0.72em; line-height: 0; }
+
+  @media (max-width: 860px) {
+    .bench, .pair, .notes { grid-template-columns: 1fr; }
+    .notes { gap: 28px; }
+  }
+  /* ---- momentos house style: end ---- */
+
+  /* ---- this tool: everything below is yours ---- */
+  var { font-style: italic; font-family: var(--serif); }
+  .grid line { stroke: var(--grid); stroke-width: 1; }
+  .grid .axis { stroke: var(--line); }
+  .tick { font: 10.5px var(--mono); fill: var(--ink-3); }
+  .body { fill: none; stroke: var(--line); }
+  .nplus { fill: var(--grid); stroke: var(--line); }
+  .gate { fill: var(--grid); stroke: var(--ink-2); }
+  .oxide { fill: var(--surface); stroke: var(--line); }
+  .sheet { fill: var(--c1); fill-opacity: 0.25; stroke: var(--c1); stroke-width: 1.2; }
+  .el { fill: var(--c1); }
+  .gap { fill: none; stroke: var(--c1); stroke-width: 1.4; stroke-dasharray: 4 3; }
+  .gaph { fill: var(--c1); }
+  .pinch { fill: var(--c4); }
+  .t0 { font: 11.5px var(--mono); fill: var(--ink-2); }
+  .t1 { font: 11.5px var(--mono); fill: var(--c1); } .t2 { font: 11.5px var(--mono); fill: var(--c2); }
+  .t3 { font: 11.5px var(--mono); fill: var(--c3); } .t4 { font: 11.5px var(--mono); fill: var(--c4); }
+  .probe { stroke: var(--ink-2); stroke-width: 1; stroke-dasharray: 3 3; }
+  .handle { fill: var(--surface); stroke: var(--ink-2); stroke-width: 1.5; cursor: ew-resize; outline: none; }
+  .handle:focus-visible { stroke: var(--ink); stroke-dasharray: 2 2; }
+  .ring { fill: transparent; stroke: transparent; stroke-width: 1.5; cursor: ew-resize; outline: none; }
+  .ring:hover, .ring:focus-visible { stroke: var(--ink-2); stroke-dasharray: 3 3; }
+  .tri { fill: var(--ink-2); cursor: ew-resize; outline: none; }
+  .tri:focus-visible { stroke: var(--ink); stroke-width: 1.5; }
+  .hit { fill: transparent; cursor: ew-resize; }
+  .vline { fill: none; stroke: var(--c3); stroke-width: 2.2; }
+  .vgap { stroke: var(--c3); stroke-width: 1.4; stroke-dasharray: 1 3; }
+  .qline { fill: none; stroke: var(--c1); stroke-width: 2.2; }
+  .fam { fill: none; stroke: var(--ink-3); stroke-width: 1; }
+  .cur { fill: none; stroke: var(--c2); stroke-width: 2.6; }
+  .edge { fill: none; stroke: var(--c4); stroke-width: 1.4; stroke-dasharray: 6 4; }
+  .res { fill: none; stroke: var(--c2); stroke-width: 1.4; stroke-dasharray: 1 3; }
+  .vt { stroke: var(--ink-2); stroke-width: 1; stroke-dasharray: 4 3; }
+  .d1 { fill: var(--c1); } .d2 { fill: var(--c2); } .d3 { fill: var(--c3); }
+  .read { font: 13px/1.6 var(--mono); font-variant-numeric: tabular-nums; }
+  .read p { margin: 0 0 4px; }
+  .read .big { font: 400 30px/1.15 var(--serif); color: var(--c2); margin: 6px 0 2px; }
+  .q1 { color: var(--c1); } .q2 { color: var(--c2); } .q3 { color: var(--c3); } .q4 { color: var(--c4); } .q0 { color: var(--ink-2); }
+  .warn { color: var(--accent); }
+  .controls output { font: 12px/1 var(--mono); color: var(--ink-2); min-width: 11ch; display: inline-block; }
+  .stack { display: grid; gap: 18px; }
+</style>
+</head>
+<body>
+
+<header class="bar">
+  <a href="../../index.html#triode-region">← map</a>
+  <span>devices / mos</span>
+  <span class="grow"></span>
+  <button type="button" id="theme" aria-label="Switch between light and dark">◐</button>
+</header>
+
+<main>
+  <h1>The MOSFET channel: triode, pinch-off and the square law</h1>
+  <p class="lede">Above threshold the gate holds a sheet of electrons under the oxide, and the drain pulls them along.
+    Every slice of that sheet must pass the same current, so where it is thin the electrons must move faster. Raise the
+    drain voltage and watch the sheet thin toward the drain until it pinches off, and the current stop growing.</p>
+
+  <div class="bench">
+    <div class="stack">
+      <figure class="stage">
+        <svg id="channel" viewBox="0 0 640 300" role="group" aria-label="Cross-section of the MOSFET with its electron sheet drawn as thick as its charge"></svg>
+        <figcaption>The blue band is the electron sheet, drawn as thick as its charge. Drag the probe, or focus it and use
+          ← →, to read the charge, field and speed at any point.</figcaption>
+      </figure>
+      <div>
+        <div class="controls">
+          <label>V_GS <input type="range" id="sG" min="0" max="2" step="0.01" value="1" aria-label="gate voltage"></label><output id="oG"></output>
+          <label>V_DS <input type="range" id="sD" min="0" max="2" step="0.01" value="0.2" aria-label="drain voltage"></label><output id="oD"></output>
+        </div>
+        <div class="controls">
+          <label>W/L <input type="range" id="sW" min="0" max="2" step="0.05" value="1" aria-label="W over L, log scale"></label><output id="oW"></output>
+          <button type="button" id="sweep">sweep V_DS from 0 to 2 V</button>
+          <button type="button" id="reset">reset</button>
+        </div>
+      </div>
+      <figure class="stage">
+        <svg id="along" viewBox="0 0 640 220" role="group" aria-label="Voltage and charge along the channel"></svg>
+        <figcaption>The voltage along the channel and the charge of the sheet. Where the charge is low the voltage climbs
+          fast.</figcaption>
+      </figure>
+    </div>
+    <aside class="read">
+      <h2>Region</h2>
+      <p id="r-region"></p>
+      <p class="q4" id="r-vov"></p>
+      <p class="q4" id="r-vsat"></p>
+      <div class="big" id="r-id"></div>
+      <p class="q2" id="r-form"></p>
+      <p id="r-k"></p>
+      <p id="r-ron"></p>
+      <h2 style="margin-top:14px">At the probe</h2>
+      <p id="r-x"></p>
+      <p class="q3" id="r-V"></p>
+      <p class="q1" id="r-Q"></p>
+      <p id="r-E"></p>
+      <p id="r-v"></p>
+      <p id="r-I"></p>
+      <p class="warn" id="r-warn"></p>
+    </aside>
+  </div>
+
+  <div class="pair">
+    <figure class="stage">
+      <svg id="output" viewBox="0 0 480 320" role="group" aria-label="Drain current against drain voltage for several gate voltages"></svg>
+      <figcaption>Output curves for several V_GS. Drag the dot to change V_DS; the dashed curve is the edge of saturation.</figcaption>
+    </figure>
+    <figure class="stage">
+      <svg id="transfer" viewBox="0 0 480 320" role="group" aria-label="Drain current against gate voltage at the chosen drain voltage"></svg>
+      <figcaption>The current against V_GS at this V_DS. Drag the dot to change V_GS.</figcaption>
+    </figure>
+  </div>
+
+  <section class="notes">
+    <div>
+      <h2>What should click</h2>
+      <p><b>A sheet of charge, drifting.</b> The gate holds C_ox(V_GS − V_T − V(x)) of electrons per area. The drain's field
+        drags them along: I_D = W·Q(x)·μ·E(x), the drift current of a very thin layer.</p>
+      <p><b>Same current everywhere.</b> Charge cannot pile up, so every slice carries the same I_D. Near the source the
+        sheet is thick and a weak field will do; toward the drain it thins and the field must grow.</p>
+      <p><b>Pinch-off.</b> When V_DS = V_OV the gate-to-channel voltage at the drain falls to V_T and the sheet there
+        vanishes. More drain voltage drops across a short high-field gap; the rest of the channel, and so the current,
+        hardly change.</p>
+      <p><b>Triode is a resistor, saturation is a current source.</b> With small V_DS, I_D ≈ kV_OV·V_DS: a resistor set by
+        the gate. Past pinch-off, I_D = (k/2)V_OV², set by the gate alone. That flat current is what amplifiers and
+        current mirrors use.</p>
+    </div>
+    <div>
+      <h2>Predict, then try</h2>
+      <ul>
+        <li>With V_DS = 0.2 V, is the voltage halfway along the channel 0.1 V?
+          <details><summary>why</summary><span>No, 0.088 V. The sheet is thicker near the source, so the field there can be weaker and still carry the same current; more of the voltage drops near the drain.</span></details></li>
+        <li>Press "sweep V_DS". What happens to the channel at the drain end as V_DS passes V_OV = 0.5 V?
+          <details><summary>why</summary><span>Its thickness reaches zero: the gate-to-channel voltage there has fallen to V_T. Past that, the extra drain voltage drops across a short gap and the current stays at 250 µA.</span></details></li>
+        <li>Double V_OV from 0.5 V to 1 V with the transistor saturated. By how much does I_D grow?
+          <details><summary>why</summary><span>Four times. Twice the overdrive gives twice the charge per area and, at pinch-off, twice the voltage to drift through: (k/2)V_OV².</span></details></li>
+        <li>With a tiny V_DS, what is the transistor?
+          <details><summary>why</summary><span>A resistor, 1/(kV_OV) = 1 kΩ here, whose value the gate sets: more V_GS, more electrons, less resistance.</span></details></li>
+        <li>Move the probe toward the drain in saturation. What happens to the electrons' speed?
+          <details><summary>why</summary><span>It climbs without limit in this model. Real electrons stop near 10⁷ cm/s, so the field the long-channel picture predicts near pinch-off is not what happens; the current is still set by the rest of the channel.</span></details></li>
+      </ul>
+      <h2>Where this shows up</h2>
+      <ul>
+        <li><a href="../../index.html#triode-region">triode region</a>: the channel as a gate-controlled resistor that bends over as it thins toward the drain.</li>
+        <li><a href="../../index.html#pinch-off">pinch-off</a>: the drain end of the channel reaching zero charge at V_DS = V_OV.</li>
+        <li><a href="../../index.html#square-law">square law</a>: I_D = (1/2)μC_ox(W/L)V_OV² once the channel is pinched off.</li>
+        <li><a href="../../index.html#mosfet-regions">MOSFET regions</a>: cut-off, triode and saturation, split by V_GS = V_T and V_DS = V_OV.</li>
+        <li><a href="../../index.html#drift-current">drift current</a>: each slice carries W·Q·μ·E, the same current from source to drain.</li>
+        <li><a href="../../index.html#threshold-voltage">threshold voltage</a>: the channel charge is C_ox(V_GS − V_T) at the source, from the MOS capacitor.</li>
+        <li><a href="../../index.html#channel-length-modulation">channel-length modulation</a>: the gap at the drain grows with V_DS and shortens the channel, which tilts the flat curves.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<script id="maths">
+// ---- the maths: plain functions with no page behind them. scripts/test-tools.js runs this block on
+// its own and compares it with the check cases below, so nothing in here may touch the DOM.
+// Long-channel NMOS, no channel-length modulation, in cm, s, V, A, F. x: 0 at the source, 1 at the drain.
+// V_OV = VGS - VT, V_e = min(VDS, V_OV), F = V_OV V_e - V_e^2/2.
+var MATHS = (function () {
+  "use strict";
+  function vf(VGS, VT, VDS) {
+    var vov = VGS - VT, ve = Math.min(VDS, vov);
+    return { vov: vov, F: vov * ve - ve * ve / 2 };
+  }
+  function region(VGS, VDS, VT) {
+    var vov = VGS - VT;
+    if (vov <= 0) return "cut-off";
+    return VDS < vov ? "triode" : "saturation";
+  }
+  function drainCurrent(k, VT, VGS, VDS) { var a = vf(VGS, VT, VDS); return a.vov <= 0 ? 0 : k * a.F; }
+  // the channel's voltage above the source at x
+  function channelV(VGS, VT, VDS, x) {
+    var a = vf(VGS, VT, VDS);
+    if (a.vov <= 0) return 0;
+    return a.vov - Math.sqrt(Math.max(0, a.vov * a.vov - 2 * x * a.F));
+  }
+  // electron charge per area at x, a magnitude
+  function channelCharge(Cox, VGS, VT, VDS, x) {
+    var a = vf(VGS, VT, VDS);
+    if (a.vov <= 0) return 0;
+    return Cox * Math.sqrt(Math.max(0, a.vov * a.vov - 2 * x * a.F));
+  }
+  // the field along the channel, V/cm
+  function channelField(VGS, VT, VDS, L, x) {
+    var a = vf(VGS, VT, VDS);
+    if (a.vov <= 0 || a.F === 0) return 0;
+    var r = a.vov * a.vov - 2 * x * a.F;
+    return r <= 0 ? Infinity : a.F / (L * Math.sqrt(r));
+  }
+  function speedAt(mu, VGS, VT, VDS, L, x) { return mu * channelField(VGS, VT, VDS, L, x); }
+  // drift through the slice at x: W Q mu E
+  function currentAt(mu, Cox, W, L, VGS, VT, VDS, x) {
+    var E = channelField(VGS, VT, VDS, L, x);
+    if (E === Infinity) return NaN;
+    return W * channelCharge(Cox, VGS, VT, VDS, x) * mu * E;
+  }
+  function onResistance(k, VGS, VT) { var vov = VGS - VT; return vov <= 0 ? Infinity : 1 / (k * vov); }
+
+  return { region: region, drainCurrent: drainCurrent, channelV: channelV, channelCharge: channelCharge,
+    channelField: channelField, speedAt: speedAt, currentAt: currentAt, onResistance: onResistance };
+})();
+</script>
+<script type="application/json" id="check-cases">
+[
+  {"fn": "region", "args": [1.0, 0.2, 0.5], "expect": "triode", "tol": 1e-09, "units": "", "tag": "typical", "note": "V_GS = 1 V, V_T = 0.5 V, V_DS = 0.2 V: V_DS < V_OV = 0.5 V, triode"},
+  {"fn": "region", "args": [1.0, 0.8, 0.5], "expect": "saturation", "tol": 1e-09, "units": "", "tag": "typical", "note": "the same with V_DS = 0.8 V: V_DS ≥ V_OV, saturation"},
+  {"fn": "region", "args": [0.4, 1.0, 0.5], "expect": "cut-off", "tol": 1e-09, "units": "", "tag": "typical", "note": "V_GS = 0.4 V below V_T = 0.5 V: cut-off, whatever V_DS"},
+  {"fn": "drainCurrent", "args": [0.002, 0.5, 1.0, 0.2], "expect": 0.00016, "tol": 1e-15, "units": "A", "tag": "typical", "note": "k = μ_nC_ox·W/L = 2 mA/V², V_OV = 0.5 V, V_DS = 0.2 V: I_D = k(V_OV·V_DS − V_DS²/2) = 160 µA"},
+  {"fn": "drainCurrent", "args": [0.002, 0.5, 1.0, 0.8], "expect": 0.00025, "tol": 1e-15, "units": "A", "tag": "typical", "note": "V_DS = 0.8 V, past V_OV: I_D = (k/2)·V_OV² = 250 µA, the square law"},
+  {"fn": "drainCurrent", "args": [0.002, 0.5, 1.5, 2.0], "expect": 0.001, "tol": 1e-15, "units": "A", "tag": "typical", "note": "double the overdrive to 1 V (saturated): I_D = 1 mA, four times as much"},
+  {"fn": "drainCurrent", "args": [0.002, 0.5, 1.0, 0.001], "expect": 9.99e-07, "tol": 1e-15, "units": "A", "tag": "limit-zero", "note": "V_DS = 1 mV: I_D = 0.999 µA, almost exactly k·V_OV·V_DS: the channel is a resistor of 1/(k·V_OV) = 1 kΩ"},
+  {"fn": "onResistance", "args": [0.002, 1.0, 0.5], "expect": 1000.0, "tol": 1e-09, "units": "Ω", "tag": "limit-zero", "note": "that resistance: 1/(2 mA/V² × 0.5 V) = 1 kΩ, set by the gate"},
+  {"fn": "drainCurrent", "args": [0.002, 0.5, 1.0, 5.0], "expect": 0.00025, "tol": 1e-15, "units": "A", "tag": "limit-infinity", "note": "V_DS = 5 V, far past pinch-off: still 250 µA. Without channel-length modulation the current ignores the drain"},
+  {"fn": "channelCharge", "args": [5e-07, 1.0, 0.5, 0.2, 0], "expect": 2.5e-07, "tol": 1e-15, "units": "C/cm²", "tag": "typical", "note": "at the source, the channel charge is C_ox·V_OV = 5×10⁻⁷ F/cm² × 0.5 V = 250 nC/cm²"},
+  {"fn": "channelCharge", "args": [5e-07, 1.0, 0.5, 0.2, 1], "expect": 1.5e-07, "tol": 1e-15, "units": "C/cm²", "tag": "typical", "note": "at the drain, with V_DS = 0.2 V: C_ox(V_OV − V_DS) = 150 nC/cm²; the sheet is thinner where the gate-to-channel voltage is smaller"},
+  {"fn": "channelV", "args": [1.0, 0.5, 0.2, 0.5], "expect": 0.08768943743823399, "tol": 1e-09, "units": "V", "tag": "typical", "note": "halfway along that channel the voltage is 0.088 V, less than half of 0.2 V: the field is weaker near the source, where the sheet is thick"},
+  {"fn": "channelField", "args": [1.0, 0.5, 0.2, 0.0001, 0.5], "expect": 1940.285000290664, "tol": 1e-09, "units": "V/cm", "tag": "typical", "note": "the field halfway along a 1 µm channel at V_DS = 0.2 V: 1.94 kV/cm"},
+  {"fn": "speedAt", "args": [400, 1.0, 0.5, 0.2, 0.0001, 0.5], "expect": 776114.0001162656, "tol": 1e-09, "units": "cm/s", "tag": "typical", "note": "the electrons there drift at μE = 400 cm²/V·s × 1.94 kV/cm = 7.76×10⁵ cm/s"},
+  {"fn": "currentAt", "args": [400, 5e-07, 0.001, 0.0001, 1.0, 0.5, 0.2, 0.5], "expect": 0.00016, "tol": 1e-15, "units": "A", "tag": "other", "note": "drift in that slice: W·Q·μ·E = 10 µm × 206 nC/cm² × 400 cm²/V·s × 1.94 kV/cm = 160 µA, the drain current"},
+  {"fn": "currentAt", "args": [400, 5e-07, 0.001, 0.0001, 1.0, 0.5, 0.2, 0.9], "expect": 0.00015999999999999996, "tol": 1e-15, "units": "A", "tag": "other", "note": "near the drain the sheet is thinner and the field stronger, and the product is again 160 µA"},
+  {"fn": "channelCharge", "args": [5e-07, 1.0, 0.5, 0.8, 1], "expect": 0.0, "tol": 1e-15, "units": "C/cm²", "tag": "typical", "note": "in saturation the charge at the drain end is zero: the channel has pinched off"},
+  {"fn": "channelField", "args": [1.0, 0.5, 0.8, 0.0001, 1], "expect": "Infinity", "tol": 1e-09, "units": "V/cm", "tag": "breaks", "note": "at the pinch-off point the model's field is infinite, and μE would pass any speed; real electrons stop near 10⁷ cm/s and cross a short high-field gap"},
+  {"fn": "channelField", "args": [1.0, 0.5, 0.8, 0.0001, 0.99], "expect": 24999.999999999985, "tol": 1e-09, "units": "V/cm", "tag": "breaks", "note": "just 10 nm before it the field is already 25 kV/cm: μE = 10⁷ cm/s, at velocity saturation"}
+]
+</script>
+<script>
+(function () {
+  "use strict";
+
+  const NS = "http://www.w3.org/2000/svg";
+  function S(name, attrs, parent) {
+    const el = document.createElementNS(NS, name);
+    for (const k in attrs) el.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(el);
+    return el;
+  }
+  const $ = (id) => document.getElementById(id);
+  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+  const f1 = (v) => v.toFixed(1);
+  const SUP = "⁰¹²³⁴⁵⁶⁷⁸⁹";
+  const sup = (n) => (n < 0 ? "⁻" : "") + String(Math.abs(n)).split("").map((c) => SUP[c]).join("");
+  function sci(v) { if (!isFinite(v)) return "∞"; if (v === 0) return "0"; let e = Math.floor(Math.log10(v)), m = v / Math.pow(10, e); if (Number(m.toFixed(2)) >= 10) { m /= 10; e += 1; } return m.toFixed(2) + "×10" + sup(e); }
+  function eng(v, unit) {
+    if (!isFinite(v)) return "∞ " + unit;
+    if (Math.abs(v) < 1e-15) return "0 " + unit;
+    const pre = { "-15": "f", "-12": "p", "-9": "n", "-6": "µ", "-3": "m", "0": "", "3": "k", "6": "M" };
+    let e = clamp(Math.floor(Math.log10(Math.abs(v)) / 3) * 3, -15, 6);
+    let s = Math.abs(v / Math.pow(10, e)).toPrecision(3);
+    if (Number(s) >= 1000 && e < 6) { e += 3; s = Math.abs(v / Math.pow(10, e)).toPrecision(3); }
+    return (v < 0 ? "−" : "") + s + " " + pre[String(e)] + unit;
+  }
+  const volts = (v) => v.toFixed(2) + " V";
+  function svgPoint(svg, e) {
+    const ctm = svg.getScreenCTM();
+    if (!ctm) return { x: 0, y: 0 };
+    const p = new DOMPoint(e.clientX, e.clientY).matrixTransform(ctm.inverse());
+    return { x: p.x, y: p.y };
+  }
+  const still = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // ------------------------------------------------------------ the device and state
+
+  const MU = 400, COX = 5e-7, VT = 0.5, L = 1e-4;
+  const START = { VGS: 1, VDS: 0.2, lW: 1, x: 0.5 };
+  const st = Object.assign({}, START);
+  const WL = () => Math.pow(10, st.lW), K = () => MU * COX * WL(), W = () => WL() * L;
+  const Id = (vgs, vds) => MATHS.drainCurrent(K(), VT, vgs, vds);
+
+  // ------------------------------------------------------------ figure 1: the cross-section
+
+  const C = $("channel");
+  S("rect", { class: "body", x: 20, y: 120, width: 600, height: 170 }, C);
+  S("rect", { class: "nplus", x: 20, y: 120, width: 100, height: 70, rx: 6 }, C);
+  S("rect", { class: "nplus", x: 520, y: 120, width: 100, height: 70, rx: 6 }, C);
+  S("rect", { class: "oxide", x: 110, y: 100, width: 420, height: 20 }, C);
+  S("rect", { class: "gate", x: 110, y: 70, width: 420, height: 30 }, C);
+  S("text", { x: 26, y: 284, class: "tick" }, C).textContent = "p-type body (0 V)";
+  S("text", { x: 26, y: 140, class: "tick" }, C).textContent = "source n+";
+  S("text", { x: 26, y: 154, class: "tick" }, C).textContent = "0 V";
+  S("text", { x: 526, y: 140, class: "tick" }, C).textContent = "drain n+";
+  const drainV = S("text", { x: 526, y: 184, class: "t3" }, C);
+  const gateV = S("text", { x: 120, y: 90, class: "t3" }, C);
+  S("text", { x: 116, y: 114, class: "tick" }, C).textContent = "oxide";
+  const sheet = S("path", { class: "sheet" }, C), els = S("g", {}, C), extra = S("g", {}, C);
+  S("text", { x: 320, y: 238, "text-anchor": "middle", class: "t1" }, C).textContent = "electrons drift →";
+  const cProbe = S("line", { class: "probe", y1: 60, y2: 210 }, C);
+  const cHandle = S("circle", { class: "handle", r: 7, tabindex: 0, role: "slider", "aria-label": "probe position along the channel" }, C);
+  const CX = (x) => 120 + 400 * x;
+  const thick = (q) => (60 * q) / (COX * 1.5);
+
+  function drawChannel() {
+    const reg = MATHS.region(st.VGS, st.VDS, VT);
+    gateV.textContent = "gate, V_GS = " + volts(st.VGS);
+    drainV.textContent = "V_DS = " + volts(st.VDS);
+    let top = "", bot = "";
+    const N = 100;
+    for (let i = 0; i <= N; i++) {
+      const x = i / N, h = thick(MATHS.channelCharge(COX, st.VGS, VT, st.VDS, x));
+      top += (i ? "L" : "M") + f1(CX(x)) + " 120";
+      bot = "L" + f1(CX(x)) + " " + f1(120 + h) + bot;
+    }
+    sheet.setAttribute("d", reg === "cut-off" ? "" : top + bot + "Z");
+    // electrons: one dot per 50 nC/cm² in each 20 px slice, at fixed pseudo-random places
+    els.textContent = "";
+    if (reg !== "cut-off") for (let s = 0; s < 20; s++) {
+      const xm = (s + 0.5) / 20, q = MATHS.channelCharge(COX, st.VGS, VT, st.VDS, xm), h = thick(q), n = Math.round(q / 5e-8);
+      for (let i = 0; i < n; i++) {
+        const r1 = ((s * 7919 + i * 104729) % 1000) / 1000, r2 = ((s * 6151 + i * 3571) % 997) / 997;
+        S("circle", { class: "el", r: 2, cx: f1(CX(s / 20) + 2 + r1 * 16), cy: f1(122 + r2 * Math.max(0, h - 4)) }, els);
+      }
+    }
+    extra.textContent = "";
+    if (reg === "saturation") {
+      S("circle", { class: "pinch", r: 4, cx: CX(1), cy: 121 }, extra);
+      S("text", { x: CX(1) - 6, y: 114, "text-anchor": "end", class: "t4" }, extra).textContent = "pinch-off";
+      S("path", { class: "gap", d: "M" + CX(1) + " 124Q" + (CX(1) + 20) + " 150 " + (CX(1) + 40) + " 160" }, extra);
+      S("path", { class: "gaph", d: "M" + (CX(1) + 44) + " 163l-9 -1l5 -7Z" }, extra);
+      S("text", { x: 616, y: 208, "text-anchor": "end", class: "t1" }, extra).textContent = "the gap: high field, V_DS − V_OV dropped here";
+    }
+    if (reg === "cut-off") S("text", { x: 320, y: 140, "text-anchor": "middle", class: "t0" }, extra).textContent = "no channel: V_GS < V_T";
+    const px = f1(CX(st.x));
+    cProbe.setAttribute("x1", px); cProbe.setAttribute("x2", px);
+    cHandle.setAttribute("cx", px); cHandle.setAttribute("cy", 120);
+    cHandle.setAttribute("aria-valuetext", "x = " + st.x.toFixed(2) + " µm");
+  }
+
+  // ------------------------------------------------------------ figure 2: along the channel
+
+  const A = $("along");
+  const AX0 = 60, AX1 = 600, AY0 = 20, AY1 = 190;
+  const AX = (x) => AX0 + x * (AX1 - AX0);
+  let vTop = 1, qTop = 5e-7;
+  const AV = (v) => AY1 - (v / vTop) * (AY1 - AY0), AQ = (q) => AY1 - (q / qTop) * (AY1 - AY0);
+  const aGrid = S("g", {}, A);
+  function alongAxes() {
+    // the voltage axis reaches 1.15 × the larger of V_DS and V_OV (at least 0.5 V), in steps of 0.25 V; the charge axis
+    // reaches C_ox × that voltage, so the two curves share one scale: Q = C_ox(V_OV − V)
+    const vov = Math.max(0, st.VGS - VT);
+    vTop = Math.ceil(1.15 * Math.max(0.5, st.VDS, vov) * 4) / 4;
+    qTop = COX * vTop;
+    aGrid.textContent = "";
+    const g = S("g", { class: "grid" }, aGrid);
+    for (let i = 0; i <= 10; i++) {
+      S("line", { x1: AX(i / 10), x2: AX(i / 10), y1: AY0, y2: AY1, class: i === 0 ? "axis" : "" }, g);
+      if (i % 2 === 0) S("text", { x: AX(i / 10), y: AY1 + 15, "text-anchor": "middle", class: "tick" }, aGrid).textContent = (i / 10).toFixed(1);
+    }
+    for (let k = 0; k <= 4; k++) {
+      const v = (vTop * k) / 4;
+      S("line", { x1: AX0, x2: AX1, y1: f1(AV(v)), y2: f1(AV(v)), class: k === 0 ? "axis" : "" }, g);
+      S("text", { x: AX0 - 5, y: f1(AV(v) + 3.5), "text-anchor": "end", class: "t3" }, aGrid).textContent = v.toFixed(2);
+      S("text", { x: AX1 + 5, y: f1(AV(v) + 3.5), class: "t1" }, aGrid).textContent = String(Math.round(COX * v * 1e9));
+    }
+  }
+  (function () {
+    S("text", { x: 4, y: 12, class: "t3" }, A).textContent = "V(x) (V)";
+    S("text", { x: 636, y: 12, "text-anchor": "end", class: "t1" }, A).textContent = "Q(x) (nC/cm²)";
+    S("text", { x: AX1, y: 214, "text-anchor": "end", class: "tick" }, A).textContent = "x (µm), source → drain";
+  })();
+  const vPath = S("path", { class: "vline" }, A), qPath = S("path", { class: "qline" }, A), vGap = S("line", { class: "vgap" }, A);
+  const vGapT = S("text", { class: "t3", "text-anchor": "end" }, A);
+  const aHit = S("rect", { class: "hit", x: AX0, y: AY0, width: AX1 - AX0, height: AY1 - AY0 }, A);
+  const aProbe = S("line", { class: "probe", y1: AY0, y2: AY1 }, A), aDots = S("g", {}, A);
+  const aTri = S("path", { class: "tri", d: "M0 0L-7 11H7Z", tabindex: 0, role: "slider", "aria-label": "probe position along the channel" }, A);
+
+  function drawAlong() {
+    alongAxes();
+    let v = "", q = "";
+    for (let i = 0; i <= 200; i++) {
+      const x = i / 200, k = i ? "L" : "M";
+      v += k + f1(AX(x)) + " " + f1(AV(MATHS.channelV(st.VGS, VT, st.VDS, x)));
+      q += k + f1(AX(x)) + " " + f1(AQ(MATHS.channelCharge(COX, st.VGS, VT, st.VDS, x)));
+    }
+    vPath.setAttribute("d", v); qPath.setAttribute("d", q);
+    const sat = MATHS.region(st.VGS, st.VDS, VT) === "saturation";
+    vGap.style.display = vGapT.style.display = sat ? "" : "none";
+    if (sat) {
+      vGap.setAttribute("x1", AX(1)); vGap.setAttribute("x2", AX(1));
+      vGap.setAttribute("y1", f1(AV(st.VGS - VT))); vGap.setAttribute("y2", f1(AV(st.VDS)));
+      vGapT.setAttribute("x", AX(1) - 4); vGapT.setAttribute("y", f1(AV(st.VDS) + 12)); vGapT.textContent = "the gap";
+    }
+    const px = f1(AX(st.x));
+    aProbe.setAttribute("x1", px); aProbe.setAttribute("x2", px);
+    aTri.setAttribute("transform", "translate(" + px + " " + (AY1 + 2) + ")");
+    aTri.setAttribute("aria-valuetext", "x = " + st.x.toFixed(2) + " µm");
+    aDots.textContent = "";
+    S("circle", { class: "d3", r: 4, cx: px, cy: f1(AV(MATHS.channelV(st.VGS, VT, st.VDS, st.x))) }, aDots);
+    S("circle", { class: "d1", r: 4, cx: px, cy: f1(AQ(MATHS.channelCharge(COX, st.VGS, VT, st.VDS, st.x))) }, aDots);
+  }
+
+  // ------------------------------------------------------------ figures 3 and 4: the curves
+
+  const PX0 = 60, PX1 = 460, PY0 = 20, PY1 = 270;
+  const PX = (v) => PX0 + (v / 2) * (PX1 - PX0);
+  function curvePlot(svg, xname) {
+    const f = { svg: svg, grid: S("g", { class: "grid" }, svg), labels: S("g", {}, svg) };
+    f.curves = S("g", {}, svg);
+    f.hit = S("rect", { class: "hit", x: PX0, y: PY0, width: PX1 - PX0, height: PY1 - PY0 }, svg);
+    f.dot = S("circle", { class: "d2", r: 6 }, svg);
+    f.ring = S("circle", { class: "ring", r: 16, tabindex: 0, role: "slider" }, svg);
+    S("text", { x: PX1, y: 312, "text-anchor": "end", class: "tick" }, svg).textContent = xname;
+    S("text", { x: 4, y: 12, class: "t2" }, svg).textContent = "I_D";
+    return f;
+  }
+  const FO = curvePlot($("output"), "V_DS (V)"), FT = curvePlot($("transfer"), "V_GS (V)");
+  FO.ring.setAttribute("aria-label", "operating point, V_DS"); FT.ring.setAttribute("aria-label", "operating point, V_GS");
+  let PY = null;
+
+  function axes(f, imax) {
+    f.grid.textContent = ""; f.labels.textContent = "";
+    for (let v = 0; v <= 2.0001; v += 0.25) {
+      S("line", { x1: PX(v), x2: PX(v), y1: PY0, y2: PY1, class: v === 0 ? "axis" : "" }, f.grid);
+      if (Math.abs(v * 2 - Math.round(v * 2)) < 1e-9) S("text", { x: PX(v), y: PY1 + 16, "text-anchor": "middle", class: "tick" }, f.labels).textContent = v.toFixed(1);
+    }
+    for (let j = 0; j <= 5; j++) {
+      const i = (imax * j) / 5;
+      S("line", { x1: PX0, x2: PX1, y1: f1(PY(i)), y2: f1(PY(i)), class: j === 0 ? "axis" : "" }, f.grid);
+      if (j > 0) S("text", { x: PX0 - 4, y: f1(PY(i) + 3.5), "text-anchor": "end", class: "tick" }, f.labels).textContent = eng(i, "A");
+    }
+  }
+
+  function drawCurves() {
+    const k = K(), vov = st.VGS - VT, imax = Math.max(1.4 * Id(st.VGS, 2), 1.4 * Id(1, 2));
+    PY = (i) => PY1 - (i / imax) * (PY1 - PY0);
+    axes(FO, imax); axes(FT, imax);
+    FO.curves.textContent = ""; FT.curves.textContent = "";
+    const path = (fn) => { let d = ""; for (let i = 0; i <= 200; i++) { const v = (2 * i) / 200; d += (i ? "L" : "M") + f1(PX(v)) + " " + f1(PY(fn(v))); } return d; };
+    [0.7, 0.9, 1.1, 1.3, 1.5, 1.7, 1.9].forEach((g) => {
+      if (Id(g, 2) > imax) return;           // above this axis: left out
+      S("path", { class: "fam", d: path((v) => Id(g, v)) }, FO.curves);
+      S("text", { x: PX1 - 2, y: f1(PY(Id(g, 2)) - 4), "text-anchor": "end", class: "tick" }, FO.curves).textContent = "V_GS = " + g.toFixed(1);
+    });
+    S("path", { class: "edge", d: path((v) => Math.min(imax * 1.2, (k / 2) * v * v)) }, FO.curves);
+    const vEdge = Math.sqrt((2 * 0.8 * imax) / k);           // where the edge curve reaches 80 % of the axis
+    S("text", { x: f1(PX(vEdge) + 6), y: f1(PY(0.8 * imax)), class: "t4" }, FO.curves).textContent = "V_DS = V_OV";
+    S("text", { x: PX0 + 6, y: PY0 + 12, class: "tick" }, FO.curves).textContent = "triode";
+    S("text", { x: PX1 - 6, y: PY0 + 12, "text-anchor": "end", class: "tick" }, FO.curves).textContent = "saturation";
+    if (vov > 0) {
+      S("path", { class: "cur", d: path((v) => Id(st.VGS, v)) }, FO.curves);
+      S("path", { class: "res", d: "M" + PX0 + " " + PY1 + "L" + f1(PX(vov / 2)) + " " + f1(PY(k * vov * vov / 2)) }, FO.curves);
+      S("text", { x: PX0 + 6, y: PY0 + 28, class: "t2" }, FO.curves).textContent = "dotted: resistor 1/(kV_OV)";
+    }
+    // transfer
+    S("line", { class: "vt", x1: PX(VT), x2: PX(VT), y1: PY0, y2: PY1 }, FT.curves);
+    S("text", { x: PX(VT) + 3, y: PY0 + 12, class: "tick" }, FT.curves).textContent = "V_T";
+    S("path", { class: "edge", d: path((g) => Math.min(imax * 1.2, (k / 2) * Math.pow(Math.max(0, g - VT), 2))) }, FT.curves);
+    S("text", { x: f1(PX(VT + vEdge) - 8), y: f1(PY(0.8 * imax)), "text-anchor": "end", class: "t4" }, FT.curves).textContent = "saturated: (k/2)V_OV²";
+    S("path", { class: "cur", d: path((g) => Id(g, st.VDS)) }, FT.curves);
+    // operating points
+    const i0 = Id(st.VGS, st.VDS);
+    [[FO, PX(st.VDS), "V_DS = " + volts(st.VDS)], [FT, PX(st.VGS), "V_GS = " + volts(st.VGS)]].forEach((p) => {
+      p[0].dot.setAttribute("cx", f1(p[1])); p[0].dot.setAttribute("cy", f1(PY(i0)));
+      p[0].ring.setAttribute("cx", f1(p[1])); p[0].ring.setAttribute("cy", f1(PY(i0)));
+      p[0].ring.setAttribute("aria-valuetext", p[2]);
+    });
+  }
+
+  // ------------------------------------------------------------ readouts
+
+  function readouts() {
+    const reg = MATHS.region(st.VGS, st.VDS, VT), vov = st.VGS - VT, k = K();
+    const rule = { "cut-off": "V_GS < V_T", triode: "V_DS < V_OV", saturation: "V_DS ≥ V_OV" }[reg];
+    $("r-region").innerHTML = "<b>" + reg + "</b>: " + rule;
+    $("r-vov").textContent = "V_OV = V_GS − V_T = " + volts(vov);
+    $("r-vsat").textContent = "V_DS,sat = V_OV = " + (vov > 0 ? volts(vov) : "none");
+    $("r-id").textContent = "I_D = " + eng(Id(st.VGS, st.VDS), "A");
+    $("r-form").textContent = { "cut-off": "0", triode: "k(V_OV·V_DS − V_DS²/2)", saturation: "(k/2)V_OV²" }[reg];
+    $("r-k").textContent = "k = μ_nC_ox·W/L = " + eng(k, "A/V²");
+    $("r-ron").textContent = vov > 0 ? "with V_DS ≪ V_OV the channel is a resistor 1/(kV_OV) = " + eng(MATHS.onResistance(k, st.VGS, VT), "Ω") : "";
+    const E = MATHS.channelField(st.VGS, VT, st.VDS, L, st.x), v = MATHS.speedAt(MU, st.VGS, VT, st.VDS, L, st.x);
+    const I = MATHS.currentAt(MU, COX, W(), L, st.VGS, VT, st.VDS, st.x);
+    $("r-x").textContent = "x = " + st.x.toFixed(2) + " µm from the source";
+    $("r-V").textContent = "V(x) = " + MATHS.channelV(st.VGS, VT, st.VDS, st.x).toFixed(3) + " V";
+    $("r-Q").textContent = "Q(x) = " + eng(MATHS.channelCharge(COX, st.VGS, VT, st.VDS, st.x), "C/cm²");
+    $("r-E").textContent = E === Infinity ? "E = ∞ in this model (the pinch-off point)" : "E(x) = " + eng(E, "V/cm");
+    $("r-v").textContent = "v = μE = " + sci(v) + " cm/s";
+    $("r-I").textContent = isNaN(I) ? "W·Q·μ·E: 0 × ∞ at pinch-off" : "W·Q·μ·E = " + eng(I, "A") + (reg === "cut-off" ? "" : " = I_D");
+    $("r-warn").textContent = v > 1e7 ? "faster than velocity saturation allows: the long-channel model fails here" : "";
+  }
+
+  function render() { drawChannel(); drawAlong(); drawCurves(); readouts(); }
+  function renderProbe() { drawChannel(); drawAlong(); readouts(); }
+
+  // ------------------------------------------------------------ controls
+
+  let sweeping = null;
+  function sync() {
+    $("sG").value = st.VGS; $("sD").value = st.VDS; $("sW").value = st.lW;
+    $("oG").textContent = "V_GS = " + volts(st.VGS);
+    $("oD").textContent = "V_DS = " + volts(st.VDS);
+    $("oW").textContent = "W/L = " + WL().toPrecision(3);
+  }
+  function change(fn) { fn(); sync(); render(); }
+  const round2 = (v) => Math.round(v * 100) / 100;
+  const setG = (v) => change(() => { st.VGS = clamp(round2(v), 0, 2); });
+  const setD = (v) => change(() => { st.VDS = clamp(round2(v), 0, 2); });
+  const setX = (v) => { st.x = clamp(round2(v), 0, 1); renderProbe(); };
+
+  $("sG").addEventListener("input", (e) => { sweeping = null; setG(Number(e.target.value)); });
+  $("sD").addEventListener("input", (e) => { sweeping = null; setD(Number(e.target.value)); });
+  $("sW").addEventListener("input", (e) => change(() => { st.lW = Number(e.target.value); }));
+  $("reset").addEventListener("click", () => { sweeping = null; change(() => { Object.assign(st, START); }); });
+  $("sweep").addEventListener("click", () => {
+    if (still) { setD(2); return; }
+    sweeping = { t0: 0 };
+    setD(0);
+    requestAnimationFrame(tick);
+  });
+  function tick(now) {
+    if (!sweeping) return;
+    if (!sweeping.t0) sweeping.t0 = now;
+    const u = Math.min(1, (now - sweeping.t0) / 4000);
+    setD(2 * u);
+    if (u < 1) requestAnimationFrame(tick); else sweeping = null;
+  }
+
+  function drag(el, svg, toValue, set) {
+    let on = false;
+    el.addEventListener("pointerdown", (e) => {
+      e.preventDefault(); on = true; sweeping = null;
+      try { el.setPointerCapture(e.pointerId); } catch (_) { /* fine without capture */ }
+      set(toValue(svgPoint(svg, e).x));
+    });
+    el.addEventListener("pointermove", (e) => { if (on) set(toValue(svgPoint(svg, e).x)); });
+    el.addEventListener("pointerup", () => { on = false; });
+    el.addEventListener("pointercancel", () => { on = false; });
+  }
+  function keys(el, get, set) {
+    el.addEventListener("keydown", (e) => {
+      const dir = { ArrowLeft: -1, ArrowDown: -1, ArrowRight: 1, ArrowUp: 1 }[e.key];
+      if (!dir) return;
+      e.preventDefault(); sweeping = null;
+      set(get() + dir * (e.shiftKey ? 0.1 : 0.01));
+    });
+  }
+  const fromCX = (x) => (x - 120) / 400, fromAX = (x) => (x - AX0) / (AX1 - AX0), fromPX = (x) => ((x - PX0) / (PX1 - PX0)) * 2;
+  drag(cHandle, C, fromCX, setX); keys(cHandle, () => st.x, setX);
+  drag(aTri, A, fromAX, setX); drag(aHit, A, fromAX, setX); keys(aTri, () => st.x, setX);
+  drag(FO.ring, FO.svg, fromPX, setD); drag(FO.hit, FO.svg, fromPX, setD); keys(FO.ring, () => st.VDS, setD);
+  drag(FT.ring, FT.svg, fromPX, setG); drag(FT.hit, FT.svg, fromPX, setG); keys(FT.ring, () => st.VGS, setG);
+
+  $("theme").addEventListener("click", () => {
+    const root = document.documentElement;
+    const dark = root.dataset.theme ? root.dataset.theme === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+    root.dataset.theme = dark ? "light" : "dark";
+    try { localStorage.setItem("momentos-theme", root.dataset.theme); } catch (_) { /* switched, just not remembered */ }
+  });
+
+  sync();
+  render();
+
+  // for checking the numbers from the console
+  window.TOOL = { st: st, set: (o) => change(() => Object.assign(st, o)), setX: setX };
+})();
+</script>
+</body>
+</html>

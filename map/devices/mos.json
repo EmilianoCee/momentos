@@ -4,31 +4,36 @@
       "id": "mos-capacitor",
       "title": "MOS capacitor",
       "essence": "A gate sits on thin oxide over a silicon body. The gate side is an ordinary plate, but the body side can answer with piled-up holes, with bare acceptor ions, or with a thin sheet of electrons, depending on the gate voltage.",
-      "check": "An NMOS capacitor is built on a p-type body. Why is it called NMOS?"
+      "check": "An NMOS capacitor is built on a p-type body. Why is it called NMOS?",
+      "tools": ["devices/mos/mos-capacitor.html"]
     },
     {
       "id": "flatband-voltage",
       "title": "flatband voltage",
       "essence": "Gate and body are different materials, so even with them shorted a built-in potential bends the bands at the surface. The flatband voltage V_FB is the gate voltage that cancels it: no charge, no field, flat bands.",
-      "check": "An n+ polysilicon gate sits on a p-type body. Is V_FB positive or negative, and why?"
+      "check": "An n+ polysilicon gate sits on a p-type body. Is V_FB positive or negative, and why?",
+      "tools": ["devices/mos/mos-capacitor.html"]
     },
     {
       "id": "accumulation-depletion-inversion",
       "title": "accumulation, depletion, inversion",
       "essence": "Raise the gate of an NMOS capacitor. Below V_FB holes pile up at the surface. Above it they are pushed away, leaving bare acceptors. Above V_T electrons gather in a thin surface layer, and they, not a deeper depletion, answer any further gate charge.",
-      "check": "Sketch the charge in the body with the gate well above threshold. Why does the depletion region stop widening once the electron layer forms?"
+      "check": "Sketch the charge in the body with the gate well above threshold. Why does the depletion region stop widening once the electron layer forms?",
+      "tools": ["devices/mos/mos-capacitor.html"]
     },
     {
       "id": "threshold-voltage",
       "title": "threshold voltage",
       "essence": "Threshold is the gate voltage at which the surface is as strongly n-type as the body is p-type: the surface potential has moved by 2|φ_p|. V_T = V_FB + 2|φ_p| + Q_dep/C_ox, the last term being the oxide voltage needed to hold the depletion charge.",
-      "check": "You raise the body doping of an NMOS. Does V_T go up or down, and which of its three parts change?"
+      "check": "You raise the body doping of an NMOS. Does V_T go up or down, and which of its three parts change?",
+      "tools": ["devices/mos/mos-capacitor.html"]
     },
     {
       "id": "mos-cv-curve",
       "title": "MOS C–V curve",
       "essence": "Capacitance is the slope of gate charge against gate voltage. In accumulation it is C_ox. In depletion the depletion layer adds a capacitor in series and C dips. In inversion, measured slowly, the electrons sit right at the surface and C returns to C_ox.",
-      "check": "Measured at high frequency, an NMOS capacitor's C–V curve stays low in inversion instead of returning to C_ox. Why?"
+      "check": "Measured at high frequency, an NMOS capacitor's C–V curve stays low in inversion instead of returning to C_ox. Why?",
+      "tools": ["devices/mos/mos-capacitor.html"]
     },
     {
       "id": "mosfet-structure",
@@ -40,31 +45,36 @@
       "id": "mosfet-regions",
       "title": "MOSFET regions",
       "essence": "Cut-off when V_GS < V_T. Triode when the channel reaches all the way to the drain, V_DS < V_GS − V_T. Saturation when it does not, V_DS ≥ V_GS − V_T. Find the region before using any equation.",
-      "check": "An NMOS with V_T = 0.5 V has its gate at 1.2 V, source at 0 V and drain at 0.5 V. Which region is it in, and how far must the drain rise to change that?"
+      "check": "An NMOS with V_T = 0.5 V has its gate at 1.2 V, source at 0 V and drain at 0.5 V. Which region is it in, and how far must the drain rise to change that?",
+      "tools": ["devices/mos/mosfet-channel.html"]
     },
     {
       "id": "triode-region",
       "title": "triode region",
       "essence": "With a small V_DS the channel is a uniform sheet of charge C_ox(V_GS − V_T) per area, and the transistor is a resistor set by the gate. As V_DS grows the channel thins toward the drain and the current bends over: I_D = μC_ox(W/L)(V_GS − V_T − V_DS/2)V_DS.",
-      "check": "With V_DS = 10 mV you double V_GS − V_T. What happens to the channel's resistance, and why?"
+      "check": "With V_DS = 10 mV you double V_GS − V_T. What happens to the channel's resistance, and why?",
+      "tools": ["devices/mos/mosfet-channel.html"]
     },
     {
       "id": "pinch-off",
       "title": "pinch-off",
       "essence": "When V_DS reaches V_GS − V_T, the gate-to-channel voltage at the drain end falls to threshold and the channel charge there vanishes. Any extra drain voltage drops across a short high-field gap that carriers shoot through, so the current stops growing.",
-      "check": "If the channel charge is zero at the drain end, how can current still flow there?"
+      "check": "If the channel charge is zero at the drain end, how can current still flow there?",
+      "tools": ["devices/mos/mosfet-channel.html"]
     },
     {
       "id": "square-law",
       "title": "square law",
       "essence": "In saturation the gate alone sets the current: I_D = ½μC_ox(W/L)(V_GS − V_T)². Call V_OV = V_GS − V_T the overdrive. Double it and the current quadruples.",
-      "check": "A transistor in saturation carries 100 μA with V_OV = 0.2 V. What current flows at V_OV = 0.3 V? What if instead you keep V_OV = 0.2 V and double W?"
+      "check": "A transistor in saturation carries 100 μA with V_OV = 0.2 V. What current flows at V_OV = 0.3 V? What if instead you keep V_OV = 0.2 V and double W?",
+      "tools": ["devices/mos/mosfet-channel.html"]
     },
     {
       "id": "channel-length-modulation",
       "title": "channel-length modulation",
       "essence": "Above saturation the pinch-off point creeps toward the source, so the channel gets shorter and the current rises slowly with V_DS: I_D(1 + λV_DS). Seen by a small signal this is the output resistance r_o = 1/(λI_D).",
-      "check": "Two transistors carry the same current, and one is twice as long as the other. Which has the larger r_o, and why?"
+      "check": "Two transistors carry the same current, and one is twice as long as the other. Which has the larger r_o, and why?",
+      "tools": ["circuits/amplifiers/current-mirror.html"]
     },
     {
       "id": "pmos",
